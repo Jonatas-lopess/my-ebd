@@ -1,22 +1,10 @@
 import { createTheme } from "@shopify/restyle";
-
-const colors = {
-  primary: "#2359CF",
-  secondary: "#375AA5",
-  lightBlue: "#0050FA",
-
-  black: "#0B0B0B",
-  white: "#F0F2F3",
-};
+import { colors } from "./Colors";
+import { spacing } from "./Spacing";
 
 const theme = createTheme({
   colors,
-  spacing: {
-    s: 8,
-    m: 16,
-    l: 24,
-    xl: 40,
-  },
+  spacing,
   textVariants: {
     header: {
       fontWeight: "bold",
