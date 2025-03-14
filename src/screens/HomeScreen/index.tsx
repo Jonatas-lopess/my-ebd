@@ -4,7 +4,9 @@ import ThemedText from "../../components/ThemedText";
 import { useTheme } from "@shopify/restyle";
 import { ThemeProps } from "../../theme";
 import { ScrollView } from "react-native";
-import CustomCard from "../../components/CustomCard";
+import CustomTextCard from "../../components/CustomTextCard";
+import { CircularProgress } from "react-native-circular-progress";
+import ChartCard from "../../components/ChartCard";
 
 export default function HomeScreen() {
   const theme = useTheme<ThemeProps>();
@@ -35,28 +37,29 @@ export default function HomeScreen() {
           <ScrollView
             horizontal={true}
             style={{ marginTop: 20 }}
+            showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ gap: 10, paddingHorizontal: 10 }}
           >
-            <CustomCard
+            <CustomTextCard
               text="Últimas 13 aulas"
               height={theme.spacing.xl}
-              active
+              isActive
             />
-            <CustomCard
+            <CustomTextCard
               text="2º Trimestre"
               height={theme.spacing.xl}
               onPress={() => alert("oi")}
             />
-            <CustomCard text="1º Trimestre" height={theme.spacing.xl} />
+            <CustomTextCard text="1º Trimestre" height={theme.spacing.xl} />
           </ScrollView>
 
-          <ThemedView flexDirection="row" mt="xl" justifyContent="space-around">
-            <CustomCard text="Matriculados: 22" height={34} active={false} />
-            <CustomCard
-              text="Média no Intervalo: 76%"
-              height={34}
-              active={false}
-            />
+          <ThemedView
+            flexDirection="row"
+            mt="xxxl"
+            justifyContent="space-around"
+          >
+            <CustomTextCard text="Matriculados: 22" height={34} />
+            <CustomTextCard text="Média no Intervalo: 76%" height={34} />
           </ThemedView>
 
           <ThemedView
@@ -66,7 +69,34 @@ export default function HomeScreen() {
             borderTopLeftRadius={20}
             borderTopRightRadius={20}
           >
-            <ThemedView height={450} />
+            <ThemedView alignItems="center">
+              <ThemedText color="black" fontWeight="bold" mt="m">
+                Ranking de Turmas
+              </ThemedText>
+              <ThemedText color="gray" fontSize={12}>
+                O ranking é baseado no intervalo selecionado.
+              </ThemedText>
+            </ThemedView>
+
+            <ScrollView
+              horizontal={true}
+              style={{ marginTop: 20 }}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 10, paddingHorizontal: 10 }}
+            >
+              <ChartCard title="1º Ano A" value={80} />
+              <ChartCard title="1º Ano B" value={76} />
+              <ChartCard title="1º Ano C" value={49} />
+            </ScrollView>
+
+            <ThemedView alignItems="center">
+              <ThemedText color="black" fontWeight="bold" mt="m">
+                Ranking de Presença
+              </ThemedText>
+              <ThemedText color="gray" fontSize={12}>
+                A frequência é baseada no intervalo selecionado.
+              </ThemedText>
+            </ThemedView>
           </ThemedView>
         </ScrollView>
       </ThemedView>
