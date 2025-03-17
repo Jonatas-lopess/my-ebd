@@ -7,6 +7,7 @@ import { ScrollView, SectionList } from "react-native";
 import CustomTextCard from "../../components/CustomTextCard";
 import ChartCard from "../../components/ChartCard";
 import SwitchSelector from "react-native-switch-selector";
+import FocusAwareStatusBar from "../../components/FocusAwareStatusBar";
 
 export default function HomeScreen() {
   const theme = useTheme<ThemeProps>();
@@ -32,6 +33,8 @@ export default function HomeScreen() {
 
   return (
     <ThemedView flex={1} backgroundColor="secondary">
+      <FocusAwareStatusBar style="light" translucent />
+
       <ThemedView paddingTop="safeArea">
         <ScrollView nestedScrollEnabled>
           <ThemedView flexDirection="row" mx="s" mt="s">
