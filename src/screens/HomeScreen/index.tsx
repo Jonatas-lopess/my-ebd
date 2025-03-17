@@ -3,19 +3,37 @@ import ThemedView from "../../components/ThemedView";
 import ThemedText from "../../components/ThemedText";
 import { useTheme } from "@shopify/restyle";
 import { ThemeProps } from "../../theme";
-import { ScrollView } from "react-native";
+import { ScrollView, SectionList } from "react-native";
 import CustomTextCard from "../../components/CustomTextCard";
-import { CircularProgress } from "react-native-circular-progress";
 import ChartCard from "../../components/ChartCard";
+import SwitchSelector from "react-native-switch-selector";
 
 export default function HomeScreen() {
   const theme = useTheme<ThemeProps>();
   const iconSize = theme.spacing.l;
 
+  const DATA = [
+    {
+      title: "Classe Homens",
+      data: [
+        { nome: "Josue", pontos: 12 },
+        { nome: "Carlos", pontos: 10 },
+      ],
+    },
+    {
+      title: "Classe Jovem",
+      data: [
+        { nome: "Amanda", pontos: 14 },
+        { nome: "Henrique", pontos: 14 },
+        { nome: "João", pontos: 11 },
+      ],
+    },
+  ];
+
   return (
     <ThemedView flex={1} backgroundColor="secondary">
       <ThemedView paddingTop="safeArea">
-        <ScrollView>
+        <ScrollView nestedScrollEnabled>
           <ThemedView flexDirection="row" mx="s" mt="s">
             <ThemedView flex={1} alignItems="center" pl="l">
               <ThemedText color="gray" variant="body" fontWeight="bold">
@@ -96,6 +114,51 @@ export default function HomeScreen() {
               <ThemedText color="gray" fontSize={12}>
                 A frequência é baseada no intervalo selecionado.
               </ThemedText>
+              <SwitchSelector
+                options={[
+                  { label: "Alunos", value: "alunos" },
+                  { label: "Professores", value: "professores" },
+                ]}
+                initial={0}
+                textColor={theme.colors.gray}
+                selectedColor={theme.colors.black}
+                buttonColor={theme.colors.gray}
+                style={{ marginVertical: 10, marginHorizontal: 5 }}
+              />
+              <SectionList
+                sections={DATA}
+                scrollEnabled={false}
+                style={{ width: "90%", marginBottom: 10 }}
+                renderItem={({ item, index, section }) => (
+                  <ThemedView
+                    p="s"
+                    style={[
+                      {
+                        backgroundColor: "#ddd",
+                        borderBottomColor: theme.colors.black,
+                        borderBottomWidth: 1,
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                      },
+                      index === 0 && {
+                        borderTopLeftRadius: 10,
+                        borderTopRightRadius: 10,
+                      },
+                      index === section.data.length - 1 && {
+                        borderBottomWidth: 0,
+                        borderBottomLeftRadius: 10,
+                        borderBottomRightRadius: 10,
+                      },
+                    ]}
+                  >
+                    <ThemedText>{item.nome}</ThemedText>
+                    <ThemedText>{item.pontos}</ThemedText>
+                  </ThemedView>
+                )}
+                renderSectionHeader={({ section: { title } }) => (
+                  <ThemedText my="s">{title}</ThemedText>
+                )}
+              />
             </ThemedView>
           </ThemedView>
         </ScrollView>
