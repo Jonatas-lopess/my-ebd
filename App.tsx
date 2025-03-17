@@ -5,18 +5,21 @@ import HomeScreen from "./src/screens/HomeScreen";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStaticNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import StudentScreen from "./src/screens/StudentScreen";
 
 const MyTabs = createBottomTabNavigator({
-  initialRouteName: "Home",
+  initialRouteName: "Inicio",
   screens: {
-    Home: HomeScreen,
+    Inicio: HomeScreen,
+    Alunos: StudentScreen,
   },
   screenOptions: ({ route }) => ({
     headerShown: false,
     tabBarIcon: ({ color, size }) => {
       let icon: keyof typeof Ionicons.glyphMap = "tablet-landscape-outline";
 
-      if (route.name === "Home") icon = "home";
+      if (route.name === "Inicio") icon = "home";
+      if (route.name === "Alunos") icon = "people";
 
       return <Ionicons name={icon} size={size} color={color} />;
     },
