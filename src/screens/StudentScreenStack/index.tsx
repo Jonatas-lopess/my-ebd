@@ -1,20 +1,10 @@
-import {
-  createNativeStackNavigator,
-  NativeStackNavigationProp,
-} from "@react-navigation/native-stack";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import StudentScreen from "./StudentScreen";
 import HistoryScreen from "./HistoryScreen";
-
-type StudentScreenStackParamList = {
-  Alunos_Lista: undefined;
-  Alunos_Historico: { studentId: string };
-};
-
-export type StudentStackTypes =
-  NativeStackNavigationProp<StudentScreenStackParamList>;
+import { StudentStackParamList } from "../../types/navigation";
 
 export default function StudentScreenStack() {
-  const Stack = createNativeStackNavigator();
+  const Stack = createNativeStackNavigator<StudentStackParamList>();
 
   return (
     <Stack.Navigator initialRouteName="Alunos_Lista">

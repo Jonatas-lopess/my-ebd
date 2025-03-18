@@ -7,7 +7,6 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useState } from "react";
 import { FlatList, Pressable, TextInput, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { StudentStackTypes } from "..";
 
 type Student = {
   id: string;
@@ -17,7 +16,7 @@ type Student = {
 
 export default function StudentScreen() {
   const theme = useTheme<ThemeProps>();
-  const navigation = useNavigation<StudentStackTypes>();
+  const navigation = useNavigation();
   const [birthdayFilter, setBirthdayFilter] = useState(false);
   const [nameFilter, setNameFilter] = useState("");
 
@@ -93,7 +92,10 @@ export default function StudentScreen() {
           renderItem={({ item }) => (
             <Pressable
               onPress={() =>
-                navigation.navigate("Alunos_Historico", { studentId: item.id })
+                navigation.navigate("Alunos", {
+                  screen: "Alunos_Historico",
+                  params: { studentId: item.id },
+                })
               }
             >
               <ThemedView
