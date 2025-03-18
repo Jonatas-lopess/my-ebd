@@ -5,7 +5,9 @@ import ThemedView from "../../../components/ThemedView";
 import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useState } from "react";
-import { FlatList, TextInput, View } from "react-native";
+import { FlatList, Pressable, TextInput, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { StudentStackTypes } from "..";
 
 type Student = {
   id: string;
@@ -15,6 +17,7 @@ type Student = {
 
 export default function StudentScreen() {
   const theme = useTheme<ThemeProps>();
+  const navigation = useNavigation<StudentStackTypes>();
   const [birthdayFilter, setBirthdayFilter] = useState(false);
   const [nameFilter, setNameFilter] = useState("");
 
@@ -88,27 +91,33 @@ export default function StudentScreen() {
         <FlatList
           data={DATA_FILTERED}
           renderItem={({ item }) => (
-            <ThemedView
-              py="s"
-              px="m"
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
-              borderRadius={20}
-              style={{ backgroundColor: "#fff" }}
+            <Pressable
+              onPress={() =>
+                navigation.navigate("Alunos_Historico", { studentId: item.id })
+              }
             >
-              <ThemedText fontSize={16}>{item.name}</ThemedText>
-              {matchMounth(item) && (
-                <ThemedView flexDirection="row" alignItems="center" gap="s">
-                  <ThemedText color="secondary">{item.birthday}</ThemedText>
-                  <FontAwesome
-                    name="birthday-cake"
-                    color={theme.colors.secondary}
-                    size={18}
-                  />
-                </ThemedView>
-              )}
-            </ThemedView>
+              <ThemedView
+                py="s"
+                px="m"
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems="center"
+                borderRadius={20}
+                style={{ backgroundColor: "#fff" }}
+              >
+                <ThemedText fontSize={16}>{item.name}</ThemedText>
+                {matchMounth(item) && (
+                  <ThemedView flexDirection="row" alignItems="center" gap="s">
+                    <ThemedText color="secondary">{item.birthday}</ThemedText>
+                    <FontAwesome
+                      name="birthday-cake"
+                      color={theme.colors.secondary}
+                      size={18}
+                    />
+                  </ThemedView>
+                )}
+              </ThemedView>
+            </Pressable>
           )}
           keyExtractor={(item) => item.id}
           style={{
