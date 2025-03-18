@@ -1,6 +1,5 @@
 import { ThemeProvider } from "@shopify/restyle";
 import { theme } from "./src/theme";
-import { StatusBar } from "expo-status-bar";
 import HomeScreen from "./src/screens/HomeScreen";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStaticNavigation } from "@react-navigation/native";
@@ -32,7 +31,6 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <TabNavigation />
-      <StatusBar style="light" translucent />
     </ThemeProvider>
   );
 }
