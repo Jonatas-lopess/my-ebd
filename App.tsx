@@ -4,9 +4,7 @@ import HomeScreen from "./src/screens/HomeScreen";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStaticNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import StudentScreenStack, {
-  StudentScreenStackParamList,
-} from "./src/screens/StudentScreenStack";
+import StudentScreenStack from "./src/screens/StudentScreenStack";
 
 const Tabs = createBottomTabNavigator({
   initialRouteName: "Inicio",
@@ -28,11 +26,6 @@ const Tabs = createBottomTabNavigator({
 });
 
 const TabNavigation = createStaticNavigation(Tabs);
-
-export type RootTabParamList = {
-  Inicio: undefined;
-  Alunos: StudentScreenStackParamList;
-};
 
 export default function App() {
   return (
