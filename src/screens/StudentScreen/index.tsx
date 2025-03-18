@@ -94,7 +94,8 @@ export default function StudentScreen() {
               flexDirection="row"
               justifyContent="space-between"
               alignItems="center"
-              style={{ backgroundColor: "#fff", borderRadius: 20 }}
+              borderRadius={20}
+              style={{ backgroundColor: "#fff" }}
             >
               <ThemedText fontSize={16}>{item.name}</ThemedText>
               {matchMounth(item) && (

@@ -3,17 +3,19 @@ import ThemedView from "../../components/ThemedView";
 import ThemedText from "../../components/ThemedText";
 import { useTheme } from "@shopify/restyle";
 import { ThemeProps } from "../../theme";
-import { ScrollView, SectionList } from "react-native";
+import { FlatList, ScrollView, SectionList } from "react-native";
 import CustomTextCard from "../../components/CustomTextCard";
 import ChartCard from "../../components/ChartCard";
 import SwitchSelector from "react-native-switch-selector";
 import FocusAwareStatusBar from "../../components/FocusAwareStatusBar";
+import { useState } from "react";
 
 export default function HomeScreen() {
   const theme = useTheme<ThemeProps>();
   const iconSize = theme.spacing.l;
+  const [selectedList, setSelectedList] = useState("alunos");
 
-  const DATA = [
+  const DATA_STUDENTS = [
     {
       title: "Classe Homens",
       data: [
@@ -29,6 +31,14 @@ export default function HomeScreen() {
         { nome: "João", pontos: 11 },
       ],
     },
+  ];
+
+  const DATA_TEACHERS = [
+    { nome: "Marta", pontos: 12 },
+    { nome: "Zé", pontos: 10 },
+    { nome: "Amalia", pontos: 14 },
+    { nome: "Ronaldo", pontos: 14 },
+    { nome: "Diego", pontos: 11 },
   ];
 
   return (
@@ -117,52 +127,74 @@ export default function HomeScreen() {
               <ThemedText color="gray" fontSize={12}>
                 A frequência é baseada no intervalo selecionado.
               </ThemedText>
-              <SwitchSelector
-                options={[
-                  { label: "Alunos", value: "alunos" },
-                  { label: "Professores", value: "professores" },
-                ]}
-                initial={0}
-                textColor={theme.colors.gray}
-                selectedColor={theme.colors.black}
-                buttonColor={theme.colors.gray}
-                style={{ marginVertical: 10, marginHorizontal: 5 }}
-              />
+            </ThemedView>
+
+            <SwitchSelector
+              options={[
+                { label: "Alunos", value: "alunos" },
+                { label: "Professores", value: "professores" },
+              ]}
+              onPress={(value: string) => setSelectedList(value)}
+              initial={0}
+              textColor={theme.colors.gray}
+              selectedColor={theme.colors.white}
+              buttonColor={theme.colors.gray}
+              style={{ marginVertical: 10, marginHorizontal: 5 }}
+            />
+
+            {selectedList === "alunos" ? (
               <SectionList
-                sections={DATA}
+                sections={DATA_STUDENTS}
                 scrollEnabled={false}
-                style={{ width: "90%", marginBottom: 10 }}
-                renderItem={({ item, index, section }) => (
+                contentContainerStyle={{ gap: theme.spacing.s }}
+                style={{ marginHorizontal: 10 }}
+                renderItem={({ item }) => (
                   <ThemedView
-                    p="s"
-                    style={[
-                      {
-                        backgroundColor: "#ddd",
-                        borderBottomColor: theme.colors.black,
-                        borderBottomWidth: 1,
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                      },
-                      index === 0 && {
-                        borderTopLeftRadius: 10,
-                        borderTopRightRadius: 10,
-                      },
-                      index === section.data.length - 1 && {
-                        borderBottomWidth: 0,
-                        borderBottomLeftRadius: 10,
-                        borderBottomRightRadius: 10,
-                      },
-                    ]}
+                    py="s"
+                    px="m"
+                    flexDirection="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    borderRadius={20}
+                    style={{
+                      backgroundColor: "#fff",
+                    }}
                   >
-                    <ThemedText>{item.nome}</ThemedText>
+                    <ThemedText fontSize={16}>{item.nome}</ThemedText>
                     <ThemedText>{item.pontos}</ThemedText>
                   </ThemedView>
                 )}
                 renderSectionHeader={({ section: { title } }) => (
-                  <ThemedText my="s">{title}</ThemedText>
+                  <ThemedText>{title}</ThemedText>
                 )}
               />
-            </ThemedView>
+            ) : (
+              <FlatList
+                data={DATA_TEACHERS}
+                scrollEnabled={false}
+                contentContainerStyle={{
+                  gap: theme.spacing.s,
+                  marginVertical: theme.spacing.s,
+                  marginHorizontal: theme.spacing.s,
+                }}
+                renderItem={({ item }) => (
+                  <ThemedView
+                    py="s"
+                    px="m"
+                    flexDirection="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    borderRadius={20}
+                    style={{
+                      backgroundColor: "#fff",
+                    }}
+                  >
+                    <ThemedText fontSize={16}>{item.nome}</ThemedText>
+                    <ThemedText>{item.pontos}</ThemedText>
+                  </ThemedView>
+                )}
+              />
+            )}
           </ThemedView>
         </ScrollView>
       </ThemedView>
