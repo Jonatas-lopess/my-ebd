@@ -1,8 +1,8 @@
 import { useTheme } from "@shopify/restyle";
-import { ThemeProps } from "../../theme";
-import ThemedText from "../../components/ThemedText";
-import ThemedView from "../../components/ThemedView";
-import FocusAwareStatusBar from "../../components/FocusAwareStatusBar";
+import { ThemeProps } from "../../../theme";
+import ThemedText from "../../../components/ThemedText";
+import ThemedView from "../../../components/ThemedView";
+import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useState } from "react";
 import { FlatList, TextInput, View } from "react-native";
