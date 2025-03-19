@@ -1,4 +1,4 @@
-import { DimensionValue, TouchableWithoutFeedback } from "react-native";
+import { DimensionValue, Pressable } from "react-native";
 import ThemedText from "../ThemedText";
 import ThemedView from "../ThemedView";
 
@@ -16,11 +16,7 @@ export default function CustomTextCard({
   onPress,
 }: CustomTextCardProps) {
   return (
-    <TouchableWithoutFeedback
-      onPress={() => {
-        if (isActive != true) onPress;
-      }}
-    >
+    <Pressable onPress={onPress}>
       <ThemedView
         borderRadius={18}
         backgroundColor={isActive ? "white" : "primary"}
@@ -32,6 +28,6 @@ export default function CustomTextCard({
       >
         <ThemedText color={isActive ? "lightBlue" : "white"}>{text}</ThemedText>
       </ThemedView>
-    </TouchableWithoutFeedback>
+    </Pressable>
   );
 }
