@@ -57,7 +57,7 @@ export default function HomeScreen() {
           </ThemedView>
 
           <ThemedView flexDirection="column" alignItems="center" mt="m">
-            <ThemedText variant="header" color="white">
+            <ThemedText variant="h1" color="white">
               Escola Bíblica
             </ThemedText>
             <ThemedText variant="body" color="white">

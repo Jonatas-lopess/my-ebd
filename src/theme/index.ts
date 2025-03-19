@@ -6,13 +6,16 @@ const theme = createTheme({
   colors,
   spacing,
   textVariants: {
-    header: {
+    h1: {
       fontWeight: "bold",
       fontSize: 34,
     },
+    h2: {
+      fontSize: 26,
+      fontWeight: "bold",
+    },
     body: {
-      fontSize: 16,
-      lineHeight: 24,
+      fontSize: 14,
     },
     defaults: {
       // We can define a default text variant here.
