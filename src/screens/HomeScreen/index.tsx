@@ -8,12 +8,17 @@ import CustomTextCard from "../../components/CustomTextCard";
 import ChartCard from "../../components/ChartCard";
 import SwitchSelector from "react-native-switch-selector";
 import FocusAwareStatusBar from "../../components/FocusAwareStatusBar";
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import IntervalControl, {
+  IntervalOptionTypes,
+} from "../../components/IntervalControl";
 
 export default function HomeScreen() {
   const theme = useTheme<ThemeProps>();
   const iconSize = theme.spacing.l;
   const [selectedList, setSelectedList] = useState("alunos");
+  const [interval, setInterval] =
+    useState<IntervalOptionTypes>("Últimas 13 aulas");
 
   const DATA_STUDENTS = [
     {
@@ -41,6 +46,10 @@ export default function HomeScreen() {
     { nome: "Diego", pontos: 11 },
   ];
 
+  const handleCardPress = useCallback((newInterval: IntervalOptionTypes) => {
+    setInterval(newInterval);
+  }, []);
+
   return (
     <ThemedView flex={1} backgroundColor="secondary">
       <FocusAwareStatusBar style="light" translucent />
@@ -65,24 +74,7 @@ export default function HomeScreen() {
             </ThemedText>
           </ThemedView>
 
-          <ScrollView
-            horizontal={true}
-            style={{ marginTop: 20 }}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 10, paddingHorizontal: 10 }}
-          >
-            <CustomTextCard
-              text="Últimas 13 aulas"
-              height={theme.spacing.xl}
-              isActive
-            />
-            <CustomTextCard
-              text="2º Trimestre"
-              height={theme.spacing.xl}
-              onPress={() => alert("oi")}
-            />
-            <CustomTextCard text="1º Trimestre" height={theme.spacing.xl} />
-          </ScrollView>
+          <IntervalControl interval={interval} onCardPress={handleCardPress} />
 
           <ThemedView
             flexDirection="row"
