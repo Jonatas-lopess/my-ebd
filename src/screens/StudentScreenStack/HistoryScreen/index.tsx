@@ -4,7 +4,7 @@ import ThemedText from "../../../components/ThemedText";
 import ThemedView from "../../../components/ThemedView";
 import { StudentStackScreenProps } from "../../../types/navigation";
 import { Ionicons } from "@expo/vector-icons";
-import { ScrollView } from "react-native";
+import { ScrollView, SectionList } from "react-native";
 import CustomTextCard from "../../../components/CustomTextCard";
 import { ThemeProps } from "../../../theme";
 import { useTheme } from "@shopify/restyle";
@@ -15,6 +15,57 @@ export default function HistoryScreen({
   const { studentId } = route.params;
   const navigation = useNavigation();
   const theme = useTheme<ThemeProps>();
+
+  const DATA_HISTORY = [
+    {
+      mounth: 3,
+      data: [
+        { date: 25, lesson: 4, isPresent: true },
+        { date: 11, lesson: 3, isPresent: false },
+      ],
+    },
+    {
+      mounth: 2,
+      data: [
+        { date: 25, lesson: 4, isPresent: true },
+        { date: 11, lesson: 3, isPresent: false },
+      ],
+    },
+    {
+      mounth: 1,
+      data: [
+        { date: 14, lesson: 2, isPresent: false },
+        { date: 7, lesson: 1, isPresent: true },
+      ],
+    },
+  ];
+
+  const MOUNTHS = [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ];
+
+  const PRESENCE = DATA_HISTORY.reduce(
+    (acc, item) =>
+      acc + item.data.reduce((acc, item) => acc + (item.isPresent ? 1 : 0), 0),
+    0
+  );
+
+  const ABSCENCE = DATA_HISTORY.reduce(
+    (acc, item) =>
+      acc + item.data.reduce((acc, item) => acc + (item.isPresent ? 0 : 1), 0),
+    0
+  );
 
   return (
     <ThemedView flex={1} backgroundColor="secondary" pt="safeArea">
@@ -39,9 +90,9 @@ export default function HistoryScreen({
         </ThemedView>
       </ThemedView>
 
-      <ScrollView nestedScrollEnabled>
+      <ScrollView nestedScrollEnabled contentContainerStyle={{ flexGrow: 1 }}>
         <ThemedView flexDirection="column" alignItems="center" mt="m">
-          <ThemedText variant="header" color="white">
+          <ThemedText variant="h1" color="white">
             João
           </ThemedText>
           <ThemedText variant="body" color="white">
@@ -49,28 +100,75 @@ export default function HistoryScreen({
           </ThemedText>
         </ThemedView>
 
-        <ScrollView
-          horizontal={true}
-          style={{ marginTop: 20 }}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 10, paddingHorizontal: 10 }}
-        >
-          <CustomTextCard
-            text="Últimas 13 aulas"
-            height={theme.spacing.xl}
-            isActive
-          />
-          <CustomTextCard
-            text="2º Trimestre"
-            height={theme.spacing.xl}
-            onPress={() => alert("oi")}
-          />
-          <CustomTextCard text="1º Trimestre" height={theme.spacing.xl} />
-        </ScrollView>
+        <ThemedView mt="l">
+          <ScrollView
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              gap: 10,
+              paddingHorizontal: theme.spacing.s,
+            }}
+          >
+            <CustomTextCard
+              text="Últimas 13 aulas"
+              height={theme.spacing.xl}
+              isActive
+            />
+            <CustomTextCard
+              text="2º Trimestre"
+              height={theme.spacing.xl}
+              onPress={() => console.log("oi")}
+            />
+            <CustomTextCard text="1º Trimestre" height={theme.spacing.xl} />
+          </ScrollView>
+        </ThemedView>
 
         <ThemedView
-          mt="s"
+          flexDirection="row"
+          justifyContent="space-between"
+          my="m"
+          mx="s"
+        >
+          <ThemedView alignItems="center">
+            <ThemedText variant="h2" color="white">
+              {PRESENCE}
+            </ThemedText>
+            <ThemedText variant="body" color="white">
+              Presenças
+            </ThemedText>
+          </ThemedView>
+
+          <ThemedView alignItems="center">
+            <ThemedText variant="h2" color="white">
+              {ABSCENCE}
+            </ThemedText>
+            <ThemedText variant="body" color="white">
+              Ausências
+            </ThemedText>
+          </ThemedView>
+
+          <ThemedView alignItems="center">
+            <ThemedText variant="h2" color="white">
+              22
+            </ThemedText>
+            <ThemedText variant="body" color="white">
+              Pontos
+            </ThemedText>
+          </ThemedView>
+
+          <ThemedView alignItems="center">
+            <ThemedText variant="h2" color="white">
+              {`${(PRESENCE / (PRESENCE + ABSCENCE)) * 100}%`}
+            </ThemedText>
+            <ThemedText variant="body" color="white">
+              Aproveitamento
+            </ThemedText>
+          </ThemedView>
+        </ThemedView>
+
+        <ThemedView
           height="auto"
+          flex={1}
           backgroundColor="white"
           borderTopLeftRadius={20}
           borderTopRightRadius={20}
@@ -84,7 +182,61 @@ export default function HistoryScreen({
             </ThemedText>
           </ThemedView>
 
-          <ThemedView height={100}></ThemedView>
+          <SectionList
+            scrollEnabled={false}
+            contentContainerStyle={{
+              gap: theme.spacing.xs,
+              paddingHorizontal: 5,
+            }}
+            style={{ marginVertical: theme.spacing.s }}
+            sections={DATA_HISTORY}
+            renderItem={({ item }) => (
+              <ThemedView
+                flexDirection="row"
+                borderRadius={20}
+                borderWidth={1}
+                borderColor="gray"
+                justifyContent="space-between"
+              >
+                <ThemedView flexDirection="row" alignItems="center" gap="s">
+                  <ThemedText
+                    p="xs"
+                    textAlign="center"
+                    textAlignVertical="center"
+                    style={{
+                      aspectRatio: 1,
+                      width: 30,
+                      backgroundColor: theme.colors.lightgrey,
+                      borderRadius: 50,
+                    }}
+                  >
+                    {item.date}
+                  </ThemedText>
+                  <ThemedText>{`Lição ${item.lesson}`}</ThemedText>
+                </ThemedView>
+                <Ionicons
+                  name={item.isPresent ? "checkmark-circle" : "close-circle"}
+                  size={30}
+                  style={{ margin: 0 }}
+                  color={item.isPresent ? "green" : "red"}
+                />
+              </ThemedView>
+            )}
+            renderSectionHeader={({ section: { mounth } }) => (
+              <ThemedView alignItems="center">
+                <ThemedText
+                  px="m"
+                  py="xs"
+                  style={{
+                    backgroundColor: theme.colors.lightgrey,
+                    borderRadius: 20,
+                  }}
+                >
+                  {MOUNTHS[mounth - 1]}
+                </ThemedText>
+              </ThemedView>
+            )}
+          />
         </ThemedView>
       </ScrollView>
     </ThemedView>
