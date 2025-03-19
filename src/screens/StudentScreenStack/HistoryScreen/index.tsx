@@ -8,6 +8,9 @@ import { ScrollView, SectionList } from "react-native";
 import CustomTextCard from "../../../components/CustomTextCard";
 import { ThemeProps } from "../../../theme";
 import { useTheme } from "@shopify/restyle";
+import { useState } from "react";
+
+type IntervalTypes = "Últimas 13 aulas" | "2º Trimestre" | "1º Trimestre";
 
 export default function HistoryScreen({
   route,
@@ -15,6 +18,7 @@ export default function HistoryScreen({
   const { studentId } = route.params;
   const navigation = useNavigation();
   const theme = useTheme<ThemeProps>();
+  const [interval, setInterval] = useState<IntervalTypes>("Últimas 13 aulas");
 
   const DATA_HISTORY = [
     {
@@ -67,6 +71,10 @@ export default function HistoryScreen({
     0
   );
 
+  const handleCardPress = (newInterval: IntervalTypes) => {
+    setInterval(newInterval);
+  };
+
   return (
     <ThemedView flex={1} backgroundColor="secondary" pt="safeArea">
       <FocusAwareStatusBar style="light" translucent />
@@ -112,14 +120,21 @@ export default function HistoryScreen({
             <CustomTextCard
               text="Últimas 13 aulas"
               height={theme.spacing.xl}
-              isActive
+              isActive={interval === "Últimas 13 aulas"}
+              onPress={() => handleCardPress("Últimas 13 aulas")}
             />
             <CustomTextCard
               text="2º Trimestre"
               height={theme.spacing.xl}
-              onPress={() => console.log("oi")}
+              isActive={interval === "2º Trimestre"}
+              onPress={() => handleCardPress("2º Trimestre")}
             />
-            <CustomTextCard text="1º Trimestre" height={theme.spacing.xl} />
+            <CustomTextCard
+              text="1º Trimestre"
+              height={theme.spacing.xl}
+              isActive={interval === "1º Trimestre"}
+              onPress={() => handleCardPress("1º Trimestre")}
+            />
           </ScrollView>
         </ThemedView>
 
