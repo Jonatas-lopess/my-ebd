@@ -5,12 +5,20 @@ import type {
 import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
+export type RootStackParamList = {
+  LoginStack: NavigatorScreenParams<LoginStackParamList>;
+  Tab: NavigatorScreenParams<RootTabParamList>;
+};
+
+export type RootStackProps<T extends keyof RootStackParamList> =
+  NativeStackScreenProps<RootStackParamList, T>;
+
 export type RootTabParamList = {
   Inicio: undefined;
   Alunos: NavigatorScreenParams<StudentStackParamList>;
 };
 
-export type RootStackScreenProps<T extends keyof RootTabParamList> =
+export type RootTabProps<T extends keyof RootTabParamList> =
   BottomTabScreenProps<RootTabParamList, T>;
 
 export type StudentStackParamList = {
@@ -18,11 +26,16 @@ export type StudentStackParamList = {
   Alunos_Historico: { studentId: string };
 };
 
-export type StudentStackScreenProps<T extends keyof StudentStackParamList> =
+export type StudentStackProps<T extends keyof StudentStackParamList> =
   CompositeScreenProps<
     NativeStackScreenProps<StudentStackParamList, T>,
-    RootStackScreenProps<keyof RootTabParamList>
+    RootTabProps<keyof RootTabParamList>
   >;
+
+export type LoginStackParamList = {
+  Login: undefined;
+  Register: undefined;
+};
 
 declare global {
   namespace ReactNavigation {

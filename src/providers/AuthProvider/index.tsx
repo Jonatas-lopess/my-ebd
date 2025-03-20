@@ -11,20 +11,20 @@ type User =
 
 type AuthContextType = {
   user: User;
-  setSessionUser?: (user: User) => void;
+  setSessionUser: (user: User) => void;
 };
 
 type AuthProviderProps = {
   children: React.ReactNode;
 };
 
-const AuthContext = createContext<AuthContextType>({ user: undefined });
+const AuthContext = createContext<AuthContextType>({
+  user: undefined,
+  setSessionUser: () => {},
+});
 
 export default function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User>({
-    name: "João",
-    role: "admin",
-  });
+  const [user, setUser] = useState<User>();
 
   const handleSessionRegister = useCallback((newUser: User) => {
     setUser(newUser);
