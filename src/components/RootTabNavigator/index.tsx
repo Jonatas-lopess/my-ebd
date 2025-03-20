@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeScreen from "../../screens/HomeScreen";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../providers/AuthProvider";
-import StudentScreenStack from "../../screens/StudentScreenStack";
+import StudentStack from "../../screens/StudentStack";
 import { NavigationContainer } from "@react-navigation/native";
 import LoginScreen from "../../screens/LoginScreen";
 
@@ -30,7 +30,7 @@ export default function RootTabNavigator() {
             })}
           >
             <Tabs.Screen name="Inicio" component={HomeScreen} />
-            <Tabs.Screen name="Alunos" component={StudentScreenStack} />
+            <Tabs.Screen name="Alunos" component={StudentStack} />
           </Tabs.Group>
         ) : (
           <Tabs.Screen

@@ -18,6 +18,6 @@ const StudentNavigator = createComponentForStaticNavigation(
   "Alunos"
 );
 
-export default function StudentScreenStack() {
+export default function StudentStack() {
   return <StudentNavigator />;
 }
