@@ -12,10 +12,12 @@ import { useCallback, useState } from "react";
 import IntervalControl, {
   IntervalOptionTypes,
 } from "../../components/IntervalControl";
+import { DrawerActions, useNavigation } from "@react-navigation/native";
 
 export default function GeneralScreen() {
   const theme = useTheme<ThemeProps>();
-  const iconSize = theme.spacing.l;
+  const navigation = useNavigation();
+
   const [selectedList, setSelectedList] = useState("alunos");
   const [interval, setInterval] =
     useState<IntervalOptionTypes>("Últimas 13 aulas");
@@ -56,13 +58,22 @@ export default function GeneralScreen() {
 
       <ThemedView paddingTop="safeArea">
         <ScrollView nestedScrollEnabled>
-          <ThemedView flexDirection="row" mx="s" mt="s">
+          <ThemedView flexDirection="row" mx="s" mt="s" alignItems="center">
             <ThemedView flex={1} alignItems="center" pl="l">
               <ThemedText color="gray" variant="body" fontWeight="bold">
                 Minha EBD
               </ThemedText>
             </ThemedView>
-            <Ionicons name="menu" size={iconSize} color="white" />
+            <Ionicons.Button
+              name="menu"
+              color={theme.colors.gray}
+              onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+              size={25}
+              backgroundColor="transparent"
+              underlayColor="transparent"
+              style={{ padding: 0 }}
+              iconStyle={{ marginRight: 0 }}
+            />
           </ThemedView>
 
           <ThemedView flexDirection="column" alignItems="center" mt="m">

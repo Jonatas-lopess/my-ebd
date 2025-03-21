@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import StudentStack from "../../screens/StudentStack";
 import ClassScreen from "../../screens/ClassStack/ClassScreen";
 import { AdminRootTabParamList } from "../../types/navigation";
-import GeneralScreen from "../../screens/GeneralScreen";
+import StatisticsDrawer from "../../screens/StatisticsDrawer";
 
 const Tabs = createBottomTabNavigator<AdminRootTabParamList>();
 
@@ -30,7 +30,7 @@ export default function AdminRootTabNavigator() {
         <Tabs.Screen name="Inicio" component={HomeScreen} />
         <Tabs.Screen name="Turmas" component={ClassScreen} />
         <Tabs.Screen name="Cadastros" component={StudentStack} />
-        <Tabs.Screen name="Geral" component={GeneralScreen} />
+        <Tabs.Screen name="Geral" component={StatisticsDrawer} />
       </Tabs.Group>
     </Tabs.Navigator>
   );

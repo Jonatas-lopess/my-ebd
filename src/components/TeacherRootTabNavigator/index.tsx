@@ -3,7 +3,7 @@ import { TeacherRootTabParamList } from "../../types/navigation";
 import { Ionicons } from "@expo/vector-icons";
 import StudentStack from "../../screens/StudentStack";
 import HomeScreen from "../../screens/HomeScreen";
-import GeneralScreen from "../../screens/GeneralScreen";
+import StatisticsDrawer from "../../screens/StatisticsDrawer";
 
 const Tabs = createBottomTabNavigator<TeacherRootTabParamList>();
 
@@ -25,7 +25,7 @@ export default function TeacherRootTabNavigator() {
     >
       <Tabs.Screen name={"Inicio"} component={HomeScreen} />
       <Tabs.Screen name={"Alunos"} component={StudentStack} />
-      <Tabs.Screen name={"Geral"} component={GeneralScreen} />
+      <Tabs.Screen name={"Geral"} component={StatisticsDrawer} />
     </Tabs.Navigator>
   );
 }
