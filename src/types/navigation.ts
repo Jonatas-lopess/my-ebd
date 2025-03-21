@@ -15,7 +15,9 @@ export type RootStackProps<T extends keyof RootStackParamList> =
 
 export type RootTabParamList = {
   Inicio: undefined;
-  Alunos: NavigatorScreenParams<StudentStackParamList>;
+  Turmas: undefined;
+  Cadastros: NavigatorScreenParams<StudentStackParamList>;
+  Geral: undefined;
 };
 
 export type RootTabProps<T extends keyof RootTabParamList> =
@@ -36,6 +38,17 @@ export type LoginStackParamList = {
   Login: undefined;
   Register: undefined;
 };
+
+export type ClassStackParamList = {
+  Class_List: undefined;
+  Class_Details: { classId: string };
+};
+
+export type ClassStackProps<T extends keyof ClassStackParamList> =
+  CompositeScreenProps<
+    NativeStackScreenProps<ClassStackParamList, T>,
+    RootTabProps<keyof RootTabParamList>
+  >;
 
 declare global {
   namespace ReactNavigation {
