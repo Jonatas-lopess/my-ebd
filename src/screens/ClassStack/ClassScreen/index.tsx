@@ -1,4 +1,4 @@
-import { FlatList, Pressable, ScrollView } from "react-native";
+import { FlatList } from "react-native";
 import ThemedView from "../../../components/ThemedView";
 import ThemedText from "../../../components/ThemedText";
 import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
