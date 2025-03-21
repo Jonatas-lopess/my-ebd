@@ -5,6 +5,7 @@ import { useAuth } from "../../providers/AuthProvider";
 import StudentStack from "../../screens/StudentStack";
 import ClassScreen from "../../screens/ClassStack/ClassScreen";
 import { RootTabParamList } from "../../types/navigation";
+import GeneralScreen from "../../screens/GeneralScreen";
 
 const Tabs = createBottomTabNavigator<RootTabParamList>();
 
@@ -24,6 +25,7 @@ export default function RootTabNavigator() {
               if (route.name === "Inicio") icon = "home";
               if (route.name === "Turmas") icon = "school";
               if (route.name === "Cadastros") icon = "people";
+              if (route.name === "Geral") icon = "stats-chart";
 
               return <Ionicons name={icon} size={size} color={color} />;
             },
@@ -32,6 +34,7 @@ export default function RootTabNavigator() {
           <Tabs.Screen name="Inicio" component={HomeScreen} />
           <Tabs.Screen name="Turmas" component={ClassScreen} />
           <Tabs.Screen name="Cadastros" component={StudentStack} />
+          <Tabs.Screen name="Geral" component={GeneralScreen} />
         </Tabs.Group>
       )}
     </Tabs.Navigator>
