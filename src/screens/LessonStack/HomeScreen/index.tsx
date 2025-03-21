@@ -1,14 +1,18 @@
-import FocusAwareStatusBar from "../../components/FocusAwareStatusBar";
-import ThemedText from "../../components/ThemedText";
-import ThemedView from "../../components/ThemedView";
+import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
+import ThemedText from "../../../components/ThemedText";
+import ThemedView from "../../../components/ThemedView";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { ThemeProps } from "../../theme";
+import { ThemeProps } from "../../../theme";
 import { useTheme } from "@shopify/restyle";
 import { FlatList } from "react-native";
-import InfoCard from "../../components/InfoCard";
+import InfoCard from "../../../components/InfoCard";
+import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "../../../providers/AuthProvider";
 
 export default function HomeScreen() {
   const theme = useTheme<ThemeProps>();
+  const navigation = useNavigation();
+  const { user } = useAuth();
 
   const DATA_LESSONS = [
     {
@@ -64,8 +68,13 @@ export default function HomeScreen() {
           <InfoCard
             title={`${item.title} - ${item.date}`}
             detail={((item.presents / item.total) * 100).toFixed(2) + "%"}
-            onPress={() => {}}
-            onLongPress={() => {}}
+            onPress={() =>
+              navigation.navigate("Inicio", {
+                screen: "Lessons_Details",
+                params: { lessonId: item.id },
+              })
+            }
+            onLongPress={() => user?.role === "admin" && alert("edit")}
             info={{ title: "Presentes", detail: item.presents.toString() }}
             extraInfo={{
               title: "Ausentes",

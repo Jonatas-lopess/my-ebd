@@ -1,6 +1,6 @@
 import ThemedText from "../ThemedText";
 import ThemedView from "../ThemedView";
-import { Pressable } from "react-native";
+import { Pressable, TouchableOpacity } from "react-native";
 
 type Info = {
   title: string;
@@ -35,7 +35,7 @@ export default function InfoCard({
   const { extraInfo } = rest as PropsWithExtraInfo;
 
   return (
-    <Pressable onPress={onPress} onLongPress={onLongPress}>
+    <TouchableOpacity onPress={onPress} onLongPress={onLongPress}>
       <ThemedView
         style={{ backgroundColor: "white" }}
         borderRadius={10}
@@ -74,6 +74,6 @@ export default function InfoCard({
           )}
         </ThemedView>
       </ThemedView>
-    </Pressable>
+    </TouchableOpacity>
   );
 }

@@ -30,6 +30,9 @@ export type HomeStackParamList = {
   Lessons_Details: { lessonId: string };
 };
 
+export type HomeStackProps<T extends keyof HomeStackParamList> =
+  NativeStackScreenProps<HomeStackParamList, T>;
+
 export type StudentStackParamList = {
   Alunos_Lista: undefined;
   Alunos_Historico: { studentId: string };
