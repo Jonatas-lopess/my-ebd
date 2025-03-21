@@ -5,6 +5,7 @@ import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { ThemeProps } from "../../../theme";
 import { useTheme } from "@shopify/restyle";
+import InfoCard from "../../../components/InfoCard";
 
 export default function ClassScreen() {
   const theme = useTheme<ThemeProps>();
@@ -48,34 +49,12 @@ export default function ClassScreen() {
       <FlatList
         data={DATA_CLASS}
         renderItem={({ item }) => (
-          <Pressable onPress={() => {}} onLongPress={() => alert("long press")}>
-            <ThemedView
-              style={{ backgroundColor: "white" }}
-              borderRadius={10}
-              py="s"
-              px="m"
-            >
-              <ThemedView alignItems="center" flexDirection="row" mb="s">
-                <ThemedText variant="h3" mr="xs">
-                  {item.name}
-                </ThemedText>
-                <ThemedText variant="body" color="gray">
-                  • {item.type}
-                </ThemedText>
-              </ThemedView>
-              <ThemedView
-                borderTopWidth={1}
-                borderColor="lightgrey"
-                flexDirection="row"
-                justifyContent="space-around"
-                pt="s"
-              >
-                <ThemedText>Alunos: {item.students}</ThemedText>
-                <ThemedView borderLeftWidth={1} borderLeftColor="lightgrey" />
-                <ThemedText>Presença: 100%</ThemedText>
-              </ThemedView>
-            </ThemedView>
-          </Pressable>
+          <InfoCard
+            title={item.name}
+            detail={item.type}
+            info={{ title: "Alunos", detail: item.students.toString() }}
+            extraInfo={{ title: "Media", detail: "100%" }}
+          />
         )}
         keyExtractor={(item) => item.id.toString()}
         style={{ backgroundColor: theme.colors.white }}
