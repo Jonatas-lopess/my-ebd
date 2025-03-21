@@ -10,6 +10,8 @@ type Info = {
 type BaseInfoCardProps = {
   title: string;
   detail?: string;
+  onPress?: () => void;
+  onLongPress?: () => void;
 };
 
 type PropsWithInfo = BaseInfoCardProps & {
@@ -22,12 +24,18 @@ type PropsWithExtraInfo = BaseInfoCardProps & {
 
 type InfoCardProps = PropsWithInfo | PropsWithExtraInfo;
 
-export default function InfoCard({ detail, title, ...rest }: InfoCardProps) {
+export default function InfoCard({
+  detail,
+  title,
+  onPress,
+  onLongPress,
+  ...rest
+}: InfoCardProps) {
   const { info } = rest as PropsWithInfo;
   const { extraInfo } = rest as PropsWithExtraInfo;
 
   return (
-    <Pressable onPress={() => {}} onLongPress={() => alert("long press")}>
+    <Pressable onPress={onPress} onLongPress={onLongPress}>
       <ThemedView
         style={{ backgroundColor: "white" }}
         borderRadius={10}

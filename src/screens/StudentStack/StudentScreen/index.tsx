@@ -40,99 +40,94 @@ export default function StudentScreen() {
   });
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+    <ThemedView flex={1} style={{ backgroundColor: "#fff" }}>
       <FocusAwareStatusBar style="dark" translucent />
 
-      <ThemedView mt="safeArea">
-        <ThemedView
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="space-between"
-          mt="m"
-          mx="s"
-        >
-          <ThemedView flexDirection="row" alignItems="center">
-            <ThemedText
-              color="secondary"
-              fontSize={26}
-              fontWeight="bold"
-              pr="s"
-            >
-              Minha EBD
-            </ThemedText>
-            <ThemedText color="gray" fontSize={20}>
-              • Vila Mury
-            </ThemedText>
-          </ThemedView>
-          <FontAwesome.Button
-            name="birthday-cake"
-            color={birthdayFilter ? theme.colors.primary : theme.colors.gray}
-            onPress={() => setBirthdayFilter(!birthdayFilter)}
-            backgroundColor="transparent"
-            underlayColor="transparent"
-          />
+      <ThemedView
+        flexDirection="row"
+        alignItems="center"
+        justifyContent="space-between"
+        mt="safeArea"
+        py="m"
+        mx="s"
+      >
+        <ThemedView flexDirection="row" alignItems="center">
+          <ThemedText color="secondary" fontSize={26} fontWeight="bold" pr="s">
+            Minha EBD
+          </ThemedText>
+          <ThemedText color="gray" fontSize={20}>
+            • Vila Mury
+          </ThemedText>
         </ThemedView>
-
-        <TextInput
-          placeholder="Pesquisar por nome"
-          value={nameFilter}
-          onChangeText={setNameFilter}
-          style={{
-            backgroundColor: theme.colors.white,
-            borderRadius: 20,
-            padding: theme.spacing.s,
-            marginTop: theme.spacing.l,
-            marginBottom: theme.spacing.s,
-            marginHorizontal: theme.spacing.s,
-          }}
+        <FontAwesome.Button
+          name="birthday-cake"
+          color={birthdayFilter ? theme.colors.primary : theme.colors.gray}
+          onPress={() => setBirthdayFilter(!birthdayFilter)}
+          size={25}
+          backgroundColor="transparent"
+          underlayColor="transparent"
+          iconStyle={{ marginRight: 0 }}
         />
-
-        <FlatList
-          data={DATA_FILTERED}
-          renderItem={({ item }) => (
-            <Pressable
-              onPress={() =>
-                navigation.navigate("Cadastros", {
-                  screen: "Alunos_Historico",
-                  params: { studentId: item.id },
-                })
-              }
-            >
-              <ThemedView
-                py="s"
-                px="m"
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
-                borderRadius={20}
-                style={{ backgroundColor: "#fff" }}
-              >
-                <ThemedText fontSize={16}>{item.name}</ThemedText>
-                {matchMounth(item) && (
-                  <ThemedView flexDirection="row" alignItems="center" gap="s">
-                    <ThemedText color="secondary">{item.birthday}</ThemedText>
-                    <FontAwesome
-                      name="birthday-cake"
-                      color={theme.colors.secondary}
-                      size={18}
-                    />
-                  </ThemedView>
-                )}
-              </ThemedView>
-            </Pressable>
-          )}
-          keyExtractor={(item) => item.id}
-          style={{
-            backgroundColor: theme.colors.white,
-            height: "100%",
-          }}
-          contentContainerStyle={{
-            gap: theme.spacing.s,
-            marginTop: theme.spacing.s,
-            paddingHorizontal: theme.spacing.s,
-          }}
-        ></FlatList>
       </ThemedView>
-    </View>
+
+      <TextInput
+        placeholder="Pesquisar por nome"
+        value={nameFilter}
+        onChangeText={setNameFilter}
+        style={{
+          backgroundColor: theme.colors.white,
+          borderRadius: 20,
+          padding: theme.spacing.s,
+          marginBottom: theme.spacing.s,
+          marginHorizontal: theme.spacing.s,
+        }}
+      />
+
+      <FlatList
+        data={DATA_FILTERED}
+        renderItem={({ item }) => (
+          <Pressable
+            onPress={() =>
+              navigation.navigate("Cadastros", {
+                screen: "Alunos_Historico",
+                params: { studentId: item.id },
+              })
+            }
+          >
+            <ThemedView
+              py="s"
+              px="m"
+              flexDirection="row"
+              justifyContent="space-between"
+              alignItems="center"
+              borderRadius={20}
+              style={{ backgroundColor: "#fff" }}
+            >
+              <ThemedText fontSize={16}>{item.name}</ThemedText>
+              {matchMounth(item) && (
+                <ThemedView flexDirection="row" alignItems="center" gap="s">
+                  <ThemedText color="secondary">{item.birthday}</ThemedText>
+                  <FontAwesome
+                    name="birthday-cake"
+                    color={theme.colors.secondary}
+                    size={18}
+                  />
+                </ThemedView>
+              )}
+            </ThemedView>
+          </Pressable>
+        )}
+        keyExtractor={(item) => item.id}
+        style={{
+          backgroundColor: theme.colors.white,
+          height: "100%",
+        }}
+        contentContainerStyle={{
+          gap: theme.spacing.s,
+          marginTop: theme.spacing.s,
+          paddingHorizontal: theme.spacing.s,
+        }}
+      ></FlatList>
+    </ThemedView>
   );
 }
