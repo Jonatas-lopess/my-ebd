@@ -4,12 +4,13 @@ import type {
 } from "@react-navigation/native";
 import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { DrawerScreenProps } from "@react-navigation/drawer";
 
 export type AdminRootTabParamList = {
   Inicio: NavigatorScreenParams<HomeStackParamList>;
   Turmas: undefined;
   Cadastros: NavigatorScreenParams<StudentStackParamList>;
-  Geral: undefined;
+  Geral: NavigatorScreenParams<StatisticsDrawerParamList>;
 };
 
 export type AdminRootTabProps<T extends keyof AdminRootTabParamList> =
@@ -18,7 +19,7 @@ export type AdminRootTabProps<T extends keyof AdminRootTabParamList> =
 export type TeacherRootTabParamList = {
   Inicio: NavigatorScreenParams<HomeStackParamList>;
   Alunos: NavigatorScreenParams<StudentStackParamList>;
-  Geral: undefined;
+  Geral: NavigatorScreenParams<StatisticsDrawerParamList>;
 };
 
 export type TeacherRootTabProps<T extends keyof TeacherRootTabParamList> =
@@ -55,6 +56,14 @@ export type ClassStackProps<T extends keyof ClassStackParamList> =
     NativeStackScreenProps<ClassStackParamList, T>,
     AdminRootTabProps<keyof AdminRootTabParamList>
   >;
+
+export type StatisticsDrawerParamList = {
+  Statistics: undefined;
+  Settings: undefined;
+};
+
+export type StatisticsDrawerProps<T extends keyof StatisticsDrawerParamList> =
+  DrawerScreenProps<StatisticsDrawerParamList, T>;
 
 declare global {
   namespace ReactNavigation {
