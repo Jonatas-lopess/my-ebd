@@ -42,7 +42,7 @@ export default function ClassScreen() {
           size={25}
           backgroundColor="transparent"
           underlayColor="transparent"
-          style={{ marginRight: 5, padding: 0 }}
+          iconStyle={{ marginRight: 0 }}
         />
       </ThemedView>
 
@@ -52,6 +52,8 @@ export default function ClassScreen() {
           <InfoCard
             title={item.name}
             detail={item.type}
+            onPress={() => {}}
+            onLongPress={() => {}}
             info={{ title: "Alunos", detail: item.students.toString() }}
             extraInfo={{ title: "Media", detail: "100%" }}
           />
