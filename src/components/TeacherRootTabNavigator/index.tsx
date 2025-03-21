@@ -1,8 +1,11 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { RootTabParamList } from "../../types/navigation";
+import { TeacherRootTabParamList } from "../../types/navigation";
 import { Ionicons } from "@expo/vector-icons";
+import StudentStack from "../../screens/StudentStack";
+import HomeScreen from "../../screens/HomeScreen";
+import GeneralScreen from "../../screens/GeneralScreen";
 
-const Tabs = createBottomTabNavigator<RootTabParamList>();
+const Tabs = createBottomTabNavigator<TeacherRootTabParamList>();
 
 export default function TeacherRootTabNavigator() {
   return (
@@ -13,15 +16,16 @@ export default function TeacherRootTabNavigator() {
           let icon: keyof typeof Ionicons.glyphMap = "tablet-landscape-outline";
 
           if (route.name === "Inicio") icon = "home";
-          if (route.name === "Turmas") icon = "school";
-          if (route.name === "Cadastros") icon = "people";
+          if (route.name === "Alunos") icon = "school";
           if (route.name === "Geral") icon = "stats-chart";
 
           return <Ionicons name={icon} size={size} color={color} />;
         },
       })}
     >
-      <Tabs.Screen name={"Inicio"} component={() => <></>} />
+      <Tabs.Screen name={"Inicio"} component={HomeScreen} />
+      <Tabs.Screen name={"Alunos"} component={StudentStack} />
+      <Tabs.Screen name={"Geral"} component={GeneralScreen} />
     </Tabs.Navigator>
   );
 }

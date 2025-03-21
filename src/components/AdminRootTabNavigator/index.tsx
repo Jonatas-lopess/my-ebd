@@ -3,10 +3,10 @@ import HomeScreen from "../../screens/HomeScreen";
 import { Ionicons } from "@expo/vector-icons";
 import StudentStack from "../../screens/StudentStack";
 import ClassScreen from "../../screens/ClassStack/ClassScreen";
-import { RootTabParamList } from "../../types/navigation";
+import { AdminRootTabParamList } from "../../types/navigation";
 import GeneralScreen from "../../screens/GeneralScreen";
 
-const Tabs = createBottomTabNavigator<RootTabParamList>();
+const Tabs = createBottomTabNavigator<AdminRootTabParamList>();
 
 export default function AdminRootTabNavigator() {
   return (

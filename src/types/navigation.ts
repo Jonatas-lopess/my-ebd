@@ -5,23 +5,29 @@ import type {
 import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
-export type RootStackParamList = {
-  LoginStack: NavigatorScreenParams<LoginStackParamList>;
-  Tab: NavigatorScreenParams<RootTabParamList>;
-};
-
-export type RootStackProps<T extends keyof RootStackParamList> =
-  NativeStackScreenProps<RootStackParamList, T>;
-
-export type RootTabParamList = {
-  Inicio: undefined;
+export type AdminRootTabParamList = {
+  Inicio: NavigatorScreenParams<HomeStackParamList>;
   Turmas: undefined;
   Cadastros: NavigatorScreenParams<StudentStackParamList>;
   Geral: undefined;
 };
 
-export type RootTabProps<T extends keyof RootTabParamList> =
-  BottomTabScreenProps<RootTabParamList, T>;
+export type AdminRootTabProps<T extends keyof AdminRootTabParamList> =
+  BottomTabScreenProps<AdminRootTabParamList, T>;
+
+export type TeacherRootTabParamList = {
+  Inicio: NavigatorScreenParams<HomeStackParamList>;
+  Alunos: NavigatorScreenParams<StudentStackParamList>;
+  Geral: undefined;
+};
+
+export type TeacherRootTabProps<T extends keyof TeacherRootTabParamList> =
+  BottomTabScreenProps<TeacherRootTabParamList, T>;
+
+export type HomeStackParamList = {
+  Lessons_List: undefined;
+  Lessons_Details: { lessonId: string };
+};
 
 export type StudentStackParamList = {
   Alunos_Lista: undefined;
@@ -31,7 +37,7 @@ export type StudentStackParamList = {
 export type StudentStackProps<T extends keyof StudentStackParamList> =
   CompositeScreenProps<
     NativeStackScreenProps<StudentStackParamList, T>,
-    RootTabProps<keyof RootTabParamList>
+    AdminRootTabProps<keyof AdminRootTabParamList>
   >;
 
 export type LoginStackParamList = {
@@ -47,11 +53,13 @@ export type ClassStackParamList = {
 export type ClassStackProps<T extends keyof ClassStackParamList> =
   CompositeScreenProps<
     NativeStackScreenProps<ClassStackParamList, T>,
-    RootTabProps<keyof RootTabParamList>
+    AdminRootTabProps<keyof AdminRootTabParamList>
   >;
 
 declare global {
   namespace ReactNavigation {
-    interface RootParamList extends RootTabParamList {}
+    interface RootParamList
+      extends AdminRootTabParamList,
+        TeacherRootTabParamList {}
   }
 }
