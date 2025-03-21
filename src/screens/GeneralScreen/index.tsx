@@ -74,7 +74,12 @@ export default function GeneralScreen() {
             </ThemedText>
           </ThemedView>
 
-          <IntervalControl interval={interval} onCardPress={handleCardPress} />
+          <ThemedView mt="m">
+            <IntervalControl
+              interval={interval}
+              onCardPress={handleCardPress}
+            />
+          </ThemedView>
 
           <ThemedView
             flexDirection="row"
