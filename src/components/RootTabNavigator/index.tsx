@@ -3,8 +3,10 @@ import HomeScreen from "../../screens/HomeScreen";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../providers/AuthProvider";
 import StudentStack from "../../screens/StudentStack";
+import ClassScreen from "../../screens/ClassStack/ClassScreen";
+import { RootTabParamList } from "../../types/navigation";
 
-const Tabs = createBottomTabNavigator();
+const Tabs = createBottomTabNavigator<RootTabParamList>();
 
 export default function RootTabNavigator() {
   const { user } = useAuth();
@@ -20,14 +22,16 @@ export default function RootTabNavigator() {
                 "tablet-landscape-outline";
 
               if (route.name === "Inicio") icon = "home";
-              if (route.name === "Alunos") icon = "people";
+              if (route.name === "Turmas") icon = "school";
+              if (route.name === "Cadastros") icon = "people";
 
               return <Ionicons name={icon} size={size} color={color} />;
             },
           })}
         >
           <Tabs.Screen name="Inicio" component={HomeScreen} />
-          <Tabs.Screen name="Alunos" component={StudentStack} />
+          <Tabs.Screen name="Turmas" component={ClassScreen} />
+          <Tabs.Screen name="Cadastros" component={StudentStack} />
         </Tabs.Group>
       )}
     </Tabs.Navigator>

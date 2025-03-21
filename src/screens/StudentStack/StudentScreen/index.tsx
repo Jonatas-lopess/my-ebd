@@ -92,7 +92,7 @@ export default function StudentScreen() {
           renderItem={({ item }) => (
             <Pressable
               onPress={() =>
-                navigation.navigate("Alunos", {
+                navigation.navigate("Cadastros", {
                   screen: "Alunos_Historico",
                   params: { studentId: item.id },
                 })
