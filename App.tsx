@@ -1,13 +1,13 @@
 import { ThemeProvider } from "@shopify/restyle";
 import { theme } from "./src/theme";
 import AuthProvider from "./src/providers/AuthProvider";
-import RootStackNavigator from "./src/components/RootStackNavigator";
+import AuthController from "./src/components/AuthController";
 
 export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <AuthProvider>
-        <RootStackNavigator />
+        <AuthController />
       </AuthProvider>
     </ThemeProvider>
   );
