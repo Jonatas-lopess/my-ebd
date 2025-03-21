@@ -2,8 +2,8 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { TeacherRootTabParamList } from "../../types/navigation";
 import { Ionicons } from "@expo/vector-icons";
 import StudentStack from "../../screens/StudentStack";
-import HomeScreen from "../../screens/HomeScreen";
 import StatisticsDrawer from "../../screens/StatisticsDrawer";
+import LessonStack from "../../screens/LessonStack";
 
 const Tabs = createBottomTabNavigator<TeacherRootTabParamList>();
 
@@ -23,7 +23,7 @@ export default function TeacherRootTabNavigator() {
         },
       })}
     >
-      <Tabs.Screen name={"Inicio"} component={HomeScreen} />
+      <Tabs.Screen name={"Inicio"} component={LessonStack} />
       <Tabs.Screen name={"Alunos"} component={StudentStack} />
       <Tabs.Screen name={"Geral"} component={StatisticsDrawer} />
     </Tabs.Navigator>
