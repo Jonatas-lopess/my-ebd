@@ -7,6 +7,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useState } from "react";
 import { FlatList, Pressable, TextInput, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { StackHeader } from "../../../components/StackHeader";
 
 type Student = {
   id: string;
@@ -43,32 +44,19 @@ export default function StudentScreen() {
     <ThemedView flex={1} style={{ backgroundColor: "#fff" }}>
       <FocusAwareStatusBar style="dark" translucent />
 
-      <ThemedView
-        flexDirection="row"
-        alignItems="center"
-        justifyContent="space-between"
-        mt="safeArea"
-        py="m"
-        mx="s"
-      >
-        <ThemedView flexDirection="row" alignItems="center">
-          <ThemedText color="secondary" fontSize={26} fontWeight="bold" pr="s">
-            Minha EBD
-          </ThemedText>
-          <ThemedText color="gray" fontSize={20}>
-            • Vila Mury
-          </ThemedText>
-        </ThemedView>
-        <FontAwesome.Button
-          name="birthday-cake"
-          color={birthdayFilter ? theme.colors.primary : theme.colors.gray}
-          onPress={() => setBirthdayFilter(!birthdayFilter)}
-          size={25}
-          backgroundColor="transparent"
-          underlayColor="transparent"
-          iconStyle={{ marginRight: 0 }}
-        />
-      </ThemedView>
+      <StackHeader.Root>
+        <StackHeader.Content>
+          <StackHeader.Title>Minha EBD</StackHeader.Title>
+          <StackHeader.Detail>• Vila Mury</StackHeader.Detail>
+        </StackHeader.Content>
+        <StackHeader.Actions>
+          <StackHeader.Action
+            name="birthday-cake"
+            onPress={() => setBirthdayFilter(!birthdayFilter)}
+            color={birthdayFilter ? theme.colors.primary : theme.colors.gray}
+          />
+        </StackHeader.Actions>
+      </StackHeader.Root>
 
       <TextInput
         placeholder="Pesquisar por nome"

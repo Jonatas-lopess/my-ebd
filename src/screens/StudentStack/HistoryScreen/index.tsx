@@ -2,10 +2,9 @@ import { useNavigation } from "@react-navigation/native";
 import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
 import ThemedText from "../../../components/ThemedText";
 import ThemedView from "../../../components/ThemedView";
-import { StudentStackScreenProps } from "../../../types/navigation";
+import { StudentStackProps } from "../../../types/navigation";
 import { Ionicons } from "@expo/vector-icons";
 import { ScrollView, SectionList } from "react-native";
-import CustomTextCard from "../../../components/CustomTextCard";
 import { ThemeProps } from "../../../theme";
 import { useTheme } from "@shopify/restyle";
 import { useCallback, useState } from "react";
@@ -15,7 +14,7 @@ import IntervalControl, {
 
 export default function HistoryScreen({
   route,
-}: StudentStackScreenProps<"Alunos_Historico">) {
+}: StudentStackProps<"Alunos_Historico">) {
   const { studentId } = route.params;
   const navigation = useNavigation();
   const theme = useTheme<ThemeProps>();
