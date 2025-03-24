@@ -27,12 +27,24 @@ type TeacherCallType = {
   isPresent: boolean;
 };
 
+type TeacherInfoType = {
+  bibles: number;
+  books: number;
+  offer: number;
+};
+
 export default function LessonDetails({
   route,
 }: HomeStackProps<"Lessons_Details">) {
   const { lessonId } = route.params;
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
+  const [isEditable, setIsEditable] = useState(false);
+  const [teacherInfos, setTeacherInfos] = useState<TeacherInfoType>({
+    bibles: 0,
+    books: 0,
+    offer: 0,
+  });
 
   const initialTeachersValue: TeacherCallType[] = [
     {
@@ -140,8 +152,8 @@ export default function LessonDetails({
             color={theme.colors.gray}
           />
           <StackHeader.Action
-            name="pencil"
-            onPress={() => {}}
+            name={isEditable ? "close" : "pencil"}
+            onPress={() => setIsEditable(!isEditable)}
             color={theme.colors.gray}
           />
         </StackHeader.Actions>
@@ -149,6 +161,39 @@ export default function LessonDetails({
 
       <ThemedView flex={1} backgroundColor="white" padding="s">
         <ScrollView nestedScrollEnabled contentContainerStyle={{ gap: 10 }}>
+          <ThemedView
+            style={{ backgroundColor: "white" }}
+            padding="s"
+            borderRadius={20}
+          >
+            <ThemedText variant="h3" textAlign="center">
+              Relatório Geral
+            </ThemedText>
+            <ThemedText color="gray" textAlign="center">
+              O relatório geral é o conjunto de dados do dia de aula. É
+              necessário que todas as chamadas sejam feitas para obter um
+              resultado completo.
+            </ThemedText>
+            <TouchableOpacity
+              style={{
+                backgroundColor: theme.colors.secondary,
+                paddingVertical: 10,
+                borderRadius: 20,
+                marginTop: theme.spacing.s,
+              }}
+            >
+              <ThemedText
+                fontSize={16}
+                fontWeight="bold"
+                textTransform="uppercase"
+                color="white"
+                textAlign="center"
+              >
+                Gerar Relatório
+              </ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+
           <ThemedView
             style={{ backgroundColor: "white" }}
             padding="s"
@@ -223,7 +268,9 @@ export default function LessonDetails({
               }}
               keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }) => (
-                <Pressable onPress={() => handleTeachersChange(item.id)}>
+                <Pressable
+                  onPress={() => isEditable && handleTeachersChange(item.id)}
+                >
                   <ThemedView
                     padding="xs"
                     flexDirection="row"
@@ -285,7 +332,42 @@ export default function LessonDetails({
                   Bíblias
                 </ThemedText>
               </ThemedView>
-              <ThemedText variant="h3">0</ThemedText>
+              <ThemedView flexDirection="row" gap="m">
+                {isEditable && (
+                  <Ionicons
+                    name="arrow-up"
+                    size={25}
+                    style={{ margin: 0 }}
+                    onPress={() =>
+                      setTeacherInfos((teacherInfos) => ({
+                        ...teacherInfos,
+                        bibles: teacherInfos.bibles + 1,
+                      }))
+                    }
+                  />
+                )}
+
+                <ThemedText variant="h3">{teacherInfos.bibles}</ThemedText>
+
+                {isEditable && (
+                  <Ionicons
+                    name="arrow-down"
+                    size={25}
+                    style={{ margin: 0 }}
+                    onPress={() =>
+                      setTeacherInfos((teacherInfos) => ({
+                        ...teacherInfos,
+                        bibles:
+                          teacherInfos.bibles === 0
+                            ? teacherInfos.bibles
+                            : teacherInfos.bibles - 1,
+                      }))
+                    }
+                    disabled={teacherInfos.bibles === 0}
+                    color={teacherInfos.bibles === 0 ? "lightgrey" : "black"}
+                  />
+                )}
+              </ThemedView>
             </ThemedView>
 
             <ThemedView
@@ -304,7 +386,42 @@ export default function LessonDetails({
                   Revistas
                 </ThemedText>
               </ThemedView>
-              <ThemedText variant="h3">0</ThemedText>
+              <ThemedView flexDirection="row" gap="m">
+                {isEditable && (
+                  <Ionicons
+                    name="arrow-up"
+                    size={25}
+                    style={{ margin: 0 }}
+                    onPress={() =>
+                      setTeacherInfos((teacherInfos) => ({
+                        ...teacherInfos,
+                        books: teacherInfos.books + 1,
+                      }))
+                    }
+                  />
+                )}
+
+                <ThemedText variant="h3">{teacherInfos.books}</ThemedText>
+
+                {isEditable && (
+                  <Ionicons
+                    name="arrow-down"
+                    size={25}
+                    style={{ margin: 0 }}
+                    onPress={() =>
+                      setTeacherInfos((teacherInfos) => ({
+                        ...teacherInfos,
+                        books:
+                          teacherInfos.books === 0
+                            ? teacherInfos.books
+                            : teacherInfos.books - 1,
+                      }))
+                    }
+                    disabled={teacherInfos.books === 0}
+                    color={teacherInfos.books === 0 ? "lightgrey" : "black"}
+                  />
+                )}
+              </ThemedView>
             </ThemedView>
             <ThemedView
               py="xs"
