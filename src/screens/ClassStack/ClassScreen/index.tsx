@@ -6,6 +6,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { ThemeProps } from "../../../theme";
 import { useTheme } from "@shopify/restyle";
 import InfoCard from "../../../components/InfoCard";
+import { StackHeader } from "../../../components/StackHeader";
 
 export default function ClassScreen() {
   const theme = useTheme<ThemeProps>();
@@ -19,32 +20,19 @@ export default function ClassScreen() {
     <ThemedView flex={1} style={{ backgroundColor: "white" }}>
       <FocusAwareStatusBar style="dark" translucent />
 
-      <ThemedView
-        flexDirection="row"
-        alignItems="center"
-        justifyContent="space-between"
-        mt="safeArea"
-        py="m"
-        mx="s"
-      >
-        <ThemedView flexDirection="row" alignItems="center">
-          <ThemedText color="secondary" fontSize={26} fontWeight="bold" pr="s">
-            Minha EBD
-          </ThemedText>
-          <ThemedText color="gray" fontSize={20}>
-            • Vila Mury
-          </ThemedText>
-        </ThemedView>
-        <Ionicons.Button
-          name="add-outline"
-          color={theme.colors.gray}
-          onPress={() => {}}
-          size={25}
-          backgroundColor="transparent"
-          underlayColor="transparent"
-          iconStyle={{ marginRight: 0 }}
-        />
-      </ThemedView>
+      <StackHeader.Root>
+        <StackHeader.Content>
+          <StackHeader.Title>Minha EBD</StackHeader.Title>
+          <StackHeader.Detail>• Vila Mury</StackHeader.Detail>
+        </StackHeader.Content>
+        <StackHeader.Actions>
+          <StackHeader.Action
+            name="add-outline"
+            onPress={() => {}}
+            color={theme.colors.gray}
+          />
+        </StackHeader.Actions>
+      </StackHeader.Root>
 
       <FlatList
         data={DATA_CLASS}

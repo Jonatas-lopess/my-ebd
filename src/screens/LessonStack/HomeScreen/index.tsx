@@ -8,6 +8,7 @@ import { FlatList } from "react-native";
 import InfoCard from "../../../components/InfoCard";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../../providers/AuthProvider";
+import { StackHeader } from "../../../components/StackHeader";
 
 export default function HomeScreen() {
   const theme = useTheme<ThemeProps>();
@@ -28,39 +29,21 @@ export default function HomeScreen() {
     <ThemedView flex={1} style={{ backgroundColor: "white" }}>
       <FocusAwareStatusBar style="dark" translucent />
 
-      <ThemedView
-        flexDirection="row"
-        alignItems="center"
-        justifyContent="space-between"
-        mt="safeArea"
-        py="m"
-        mx="s"
-      >
-        <ThemedText color="secondary" fontSize={26} fontWeight="bold" pr="s">
-          Minha EBD
-        </ThemedText>
-
-        <ThemedView flexDirection="row">
-          <Ionicons.Button
+      <StackHeader.Root>
+        <StackHeader.Title>Minha EBD</StackHeader.Title>
+        <StackHeader.Actions>
+          <StackHeader.Action
             name="calendar-clear"
-            color={theme.colors.gray}
             onPress={() => {}}
-            size={25}
-            backgroundColor="transparent"
-            underlayColor="transparent"
-            iconStyle={{ marginRight: 0 }}
+            color={theme.colors.gray}
           />
-          <Ionicons.Button
+          <StackHeader.Action
             name="add-outline"
-            color={theme.colors.gray}
             onPress={() => {}}
-            size={25}
-            backgroundColor="transparent"
-            underlayColor="transparent"
-            iconStyle={{ marginRight: 0 }}
+            color={theme.colors.gray}
           />
-        </ThemedView>
-      </ThemedView>
+        </StackHeader.Actions>
+      </StackHeader.Root>
 
       <FlatList
         data={DATA_LESSONS}
