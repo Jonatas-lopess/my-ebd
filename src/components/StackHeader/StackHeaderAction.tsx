@@ -39,7 +39,7 @@ export default function StackHeaderAction({
       name={name as keyof typeof FontAwesome.glyphMap}
       color={color}
       onPress={onPress}
-      size={25}
+      size={22}
       backgroundColor="transparent"
       underlayColor="transparent"
       iconStyle={{ marginRight: 0 }}
