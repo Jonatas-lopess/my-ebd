@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
+import { FakeCurrencyInput } from "react-native-currency-input";
 
 type ClassesType = {
   id: number;
@@ -439,7 +440,29 @@ export default function LessonDetails({
                   Oferta
                 </ThemedText>
               </ThemedView>
-              <ThemedText variant="h3">0</ThemedText>
+              <FakeCurrencyInput
+                editable={isEditable}
+                value={teacherInfos.offer}
+                placeholder="R$0,00"
+                prefix="R$"
+                delimiter="."
+                separator=","
+                precision={2}
+                minValue={0}
+                onChangeValue={(value) =>
+                  setTeacherInfos((teacherInfos) => ({
+                    ...teacherInfos,
+                    offer: value ? value : 0,
+                  }))
+                }
+                style={{
+                  textAlignVertical: "center",
+                  padding: 0,
+                  margin: 0,
+                  fontWeight: "bold",
+                  fontSize: 20,
+                }}
+              />
             </ThemedView>
           </ThemedView>
         </ScrollView>
