@@ -8,7 +8,7 @@ import { DrawerScreenProps } from "@react-navigation/drawer";
 
 export type AdminRootTabParamList = {
   Inicio: NavigatorScreenParams<HomeStackParamList>;
-  Turmas: undefined;
+  Turmas: NavigatorScreenParams<ClassStackParamList>;
   Cadastros: NavigatorScreenParams<StudentStackParamList>;
   Geral: NavigatorScreenParams<StatisticsDrawerParamList>;
 };
@@ -52,6 +52,7 @@ export type LoginStackParamList = {
 export type ClassStackParamList = {
   Class_List: undefined;
   Class_Details: { classId: string };
+  Class_Details_Student: { studentId: string };
 };
 
 export type ClassStackProps<T extends keyof ClassStackParamList> =

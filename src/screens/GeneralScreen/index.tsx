@@ -14,6 +14,11 @@ import IntervalControl, {
 } from "../../components/IntervalControl";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 
+type DataType = {
+  nome: string;
+  pontos: number;
+};
+
 export default function GeneralScreen() {
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
@@ -22,7 +27,7 @@ export default function GeneralScreen() {
   const [interval, setInterval] =
     useState<IntervalOptionTypes>("Últimas 13 aulas");
 
-  const DATA_STUDENTS = [
+  const DATA_STUDENTS: { title: string; data: DataType[] }[] = [
     {
       title: "Classe Homens",
       data: [
@@ -40,7 +45,7 @@ export default function GeneralScreen() {
     },
   ];
 
-  const DATA_TEACHERS = [
+  const DATA_TEACHERS: DataType[] = [
     { nome: "Marta", pontos: 12 },
     { nome: "Zé", pontos: 10 },
     { nome: "Amalia", pontos: 14 },
@@ -51,6 +56,38 @@ export default function GeneralScreen() {
   const handleCardPress = useCallback((newInterval: IntervalOptionTypes) => {
     setInterval(newInterval);
   }, []);
+
+  const handleRenderItem = (item: DataType, index: number) => (
+    <ThemedView flexDirection="row" gap="s">
+      {index < 3 && (
+        <ThemedView
+          aspectRatio={1}
+          width={35}
+          borderRadius={100}
+          alignItems="center"
+          justifyContent="center"
+          style={{ backgroundColor: "#fff" }}
+        >
+          <ThemedText>{`${index + 1}º`}</ThemedText>
+        </ThemedView>
+      )}
+      <ThemedView
+        flex={1}
+        py="s"
+        px="m"
+        flexDirection="row"
+        justifyContent="space-between"
+        alignItems="center"
+        borderRadius={20}
+        style={{
+          backgroundColor: "#fff",
+        }}
+      >
+        <ThemedText fontSize={16}>{item.nome}</ThemedText>
+        <ThemedText>{item.pontos}</ThemedText>
+      </ThemedView>
+    </ThemedView>
+  );
 
   return (
     <ThemedView flex={1} backgroundColor="secondary">
@@ -156,22 +193,7 @@ export default function GeneralScreen() {
                 scrollEnabled={false}
                 contentContainerStyle={{ gap: theme.spacing.s }}
                 style={{ marginHorizontal: 10 }}
-                renderItem={({ item }) => (
-                  <ThemedView
-                    py="s"
-                    px="m"
-                    flexDirection="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    borderRadius={20}
-                    style={{
-                      backgroundColor: "#fff",
-                    }}
-                  >
-                    <ThemedText fontSize={16}>{item.nome}</ThemedText>
-                    <ThemedText>{item.pontos}</ThemedText>
-                  </ThemedView>
-                )}
+                renderItem={({ item, index }) => handleRenderItem(item, index)}
                 renderSectionHeader={({ section: { title } }) => (
                   <ThemedText>{title}</ThemedText>
                 )}
@@ -185,22 +207,7 @@ export default function GeneralScreen() {
                   marginVertical: theme.spacing.s,
                   marginHorizontal: theme.spacing.s,
                 }}
-                renderItem={({ item }) => (
-                  <ThemedView
-                    py="s"
-                    px="m"
-                    flexDirection="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    borderRadius={20}
-                    style={{
-                      backgroundColor: "#fff",
-                    }}
-                  >
-                    <ThemedText fontSize={16}>{item.nome}</ThemedText>
-                    <ThemedText>{item.pontos}</ThemedText>
-                  </ThemedView>
-                )}
+                renderItem={({ item, index }) => handleRenderItem(item, index)}
               />
             )}
           </ThemedView>

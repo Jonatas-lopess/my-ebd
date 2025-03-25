@@ -1,15 +1,15 @@
 import { FlatList } from "react-native";
 import ThemedView from "../../../components/ThemedView";
-import ThemedText from "../../../components/ThemedText";
 import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { ThemeProps } from "../../../theme";
 import { useTheme } from "@shopify/restyle";
 import InfoCard from "../../../components/InfoCard";
 import { StackHeader } from "../../../components/StackHeader";
+import { useNavigation } from "@react-navigation/native";
 
 export default function ClassScreen() {
   const theme = useTheme<ThemeProps>();
+  const navigation = useNavigation();
 
   const DATA_CLASS = [
     { id: 1, name: "Josué", students: 10, type: "Jovens" },
@@ -40,7 +40,12 @@ export default function ClassScreen() {
           <InfoCard
             title={item.name}
             detail={item.type}
-            onPress={() => {}}
+            onPress={() =>
+              navigation.navigate("Turmas", {
+                screen: "Class_Details",
+                params: { classId: item.id.toString() },
+              })
+            }
             onLongPress={() => {}}
             info={{ title: "Alunos", detail: item.students.toString() }}
             extraInfo={{ title: "Media", detail: "100%" }}
