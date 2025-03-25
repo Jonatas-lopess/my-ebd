@@ -20,6 +20,7 @@ import {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
+import { CustomBottomModal } from "../../../components/CustomBottomModal";
 
 type Lesson = {
   id: string;
@@ -147,126 +148,99 @@ export default function HomeScreen() {
           }}
         />
 
-        <BottomSheetModalProvider>
-          <BottomSheetModal ref={bottomSheetRef} enableDismissOnClose>
-            <BottomSheetView>
-              <ThemedText variant="h3" textAlign="center">
-                Nova Lição
+        <CustomBottomModal.Root ref={bottomSheetRef}>
+          <CustomBottomModal.Content
+            title="Nova Lição"
+            subtitle="Selecione a data e o número da lição para realizar o cadastro e
+                fazer as chamadas."
+          >
+            <ThemedView
+              py="xs"
+              px="m"
+              flexDirection="row"
+              justifyContent="space-between"
+              alignItems="center"
+              borderRadius={25}
+              borderWidth={1}
+              borderColor="lightgrey"
+            >
+              <ThemedText fontSize={16} style={{ color: "grey" }}>
+                Data da aula
               </ThemedText>
-              <ThemedText color="gray" textAlign="center">
-                Selecione a data e o número da lição para realizar o cadastro e
-                fazer as chamadas.
+              <ThemedText
+                onPress={() =>
+                  DateTimePickerAndroid.open({
+                    value: today,
+                    minimumDate: today,
+                    onChange: handleNewLessonDateChange,
+                  })
+                }
+                fontSize={16}
+                fontWeight="600"
+              >
+                {newLesson.date.toLocaleDateString("pt-BR")}
               </ThemedText>
-              <ThemedView gap="s" my="m" mx="s">
-                <ThemedView
-                  py="xs"
-                  px="m"
-                  flexDirection="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  borderRadius={25}
-                  borderWidth={1}
-                  borderColor="lightgrey"
-                >
-                  <ThemedText fontSize={16} style={{ color: "grey" }}>
-                    Data da aula
-                  </ThemedText>
-                  <ThemedText
-                    onPress={() =>
-                      DateTimePickerAndroid.open({
-                        value: today,
-                        minimumDate: today,
-                        onChange: handleNewLessonDateChange,
-                      })
+            </ThemedView>
+            <ThemedView
+              py="xs"
+              px="m"
+              flexDirection="row"
+              justifyContent="space-between"
+              alignItems="center"
+              borderRadius={25}
+              borderWidth={1}
+              borderColor="lightgrey"
+            >
+              <ThemedText fontSize={16} style={{ color: "grey" }}>
+                Número da lição
+              </ThemedText>
+              <ThemedView flexDirection="row" gap="s">
+                <Ionicons
+                  name="arrow-up"
+                  size={25}
+                  style={{ margin: 0 }}
+                  onPress={() =>
+                    setNewLesson((oldLesson) => {
+                      return {
+                        ...oldLesson,
+                        lesson: oldLesson.lesson
+                          ? oldLesson.lesson + 1
+                          : DATA_LESSONS.length + 2,
+                      };
+                    })
+                  }
+                />
+                <ThemedText fontSize={16} fontWeight="600">
+                  {newLesson.lesson || DATA_LESSONS.length + 1}
+                </ThemedText>
+                <Ionicons
+                  name="arrow-down"
+                  size={25}
+                  style={{ margin: 0 }}
+                  onPress={() => {
+                    if (
+                      newLesson.lesson !== DATA_LESSONS.length + 1 ||
+                      undefined
+                    ) {
+                      setNewLesson((oldLesson) => {
+                        return {
+                          ...oldLesson,
+                          lesson: oldLesson.lesson! - 1,
+                        };
+                      });
                     }
-                    fontSize={16}
-                    fontWeight="600"
-                  >
-                    {newLesson.date.toLocaleDateString("pt-BR")}
-                  </ThemedText>
-                </ThemedView>
-                <ThemedView
-                  py="xs"
-                  px="m"
-                  flexDirection="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  borderRadius={25}
-                  borderWidth={1}
-                  borderColor="lightgrey"
-                >
-                  <ThemedText fontSize={16} style={{ color: "grey" }}>
-                    Número da lição
-                  </ThemedText>
-                  <ThemedView flexDirection="row" gap="s">
-                    <Ionicons
-                      name="arrow-up"
-                      size={25}
-                      style={{ margin: 0 }}
-                      onPress={() =>
-                        setNewLesson((oldLesson) => {
-                          return {
-                            ...oldLesson,
-                            lesson: oldLesson.lesson
-                              ? oldLesson.lesson + 1
-                              : DATA_LESSONS.length + 2,
-                          };
-                        })
-                      }
-                    />
-                    <ThemedText fontSize={16} fontWeight="600">
-                      {newLesson.lesson || DATA_LESSONS.length + 1}
-                    </ThemedText>
-                    <Ionicons
-                      name="arrow-down"
-                      size={25}
-                      style={{ margin: 0 }}
-                      onPress={() => {
-                        if (
-                          newLesson.lesson !== DATA_LESSONS.length + 1 ||
-                          undefined
-                        ) {
-                          setNewLesson((oldLesson) => {
-                            return {
-                              ...oldLesson,
-                              lesson: oldLesson.lesson! - 1,
-                            };
-                          });
-                        }
-                      }}
-                      color={
-                        newLesson.lesson ===
-                        (DATA_LESSONS.length + 1 || undefined)
-                          ? theme.colors.lightgrey
-                          : "black"
-                      }
-                    />
-                  </ThemedView>
-                </ThemedView>
+                  }}
+                  color={
+                    newLesson.lesson === (DATA_LESSONS.length + 1 || undefined)
+                      ? theme.colors.lightgrey
+                      : "black"
+                  }
+                />
               </ThemedView>
-              <TouchableOpacity onPress={handleCreateNewLesson}>
-                <ThemedView
-                  backgroundColor="secondary"
-                  py="xs"
-                  px="s"
-                  mb="m"
-                  mx="s"
-                  borderRadius={25}
-                >
-                  <ThemedText
-                    fontSize={18}
-                    fontWeight="bold"
-                    textAlign="center"
-                    style={{ color: "#fff" }}
-                    textTransform="uppercase"
-                  >
-                    Criar
-                  </ThemedText>
-                </ThemedView>
-              </TouchableOpacity>
-            </BottomSheetView>
-          </BottomSheetModal>
-        </BottomSheetModalProvider>
+            </ThemedView>
+          </CustomBottomModal.Content>
+          <CustomBottomModal.Action onPress={handleCreateNewLesson} />
+        </CustomBottomModal.Root>
       </ThemedView>
     </GestureHandlerRootView>
   );
