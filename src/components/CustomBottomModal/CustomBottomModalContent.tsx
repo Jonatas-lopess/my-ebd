@@ -18,7 +18,7 @@ export default function CustomBottomModalContent({
         {title}
       </ThemedText>
       {subtitle && (
-        <ThemedText color="gray" textAlign="center">
+        <ThemedText color="gray" textAlign="center" mx="s">
           {subtitle}
         </ThemedText>
       )}
