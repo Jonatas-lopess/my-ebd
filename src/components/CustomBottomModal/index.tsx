@@ -7,3 +7,13 @@ export const CustomBottomModal = {
   Content: CustomBottomModalContent,
   Action: CustomBottomModalAction,
 };
+
+export type BottomSheetEventType =
+  | {
+      type: "set";
+      value: string;
+    }
+  | {
+      value?: undefined;
+      type: "open" | "close";
+    };

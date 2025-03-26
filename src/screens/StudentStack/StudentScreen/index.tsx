@@ -5,11 +5,20 @@ import ThemedView from "../../../components/ThemedView";
 import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useCallback, useRef, useState } from "react";
-import { FlatList, Pressable, TextInput, View } from "react-native";
+import {
+  FlatList,
+  Pressable,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackHeader } from "../../../components/StackHeader";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { CustomBottomModal } from "../../../components/CustomBottomModal";
+import {
+  BottomSheetEventType,
+  CustomBottomModal,
+} from "../../../components/CustomBottomModal";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 
 type Student = {
@@ -20,7 +29,7 @@ type Student = {
 
 type Register = {
   name: string;
-  class: string;
+  class: string | undefined;
   isProfessor: boolean;
 };
 
@@ -28,11 +37,12 @@ export default function StudentScreen() {
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const optionsSheetRef = useRef<BottomSheetModal>(null);
   const [birthdayFilter, setBirthdayFilter] = useState(false);
   const [nameFilter, setNameFilter] = useState("");
   const [newRegister, setNewRegister] = useState<Register>({
     name: "",
-    class: "",
+    class: undefined,
     isProfessor: false,
   });
 
@@ -55,8 +65,21 @@ export default function StudentScreen() {
     return true;
   });
 
-  const handleOpenBottomSheet = useCallback(() => {
-    bottomSheetRef.current?.present();
+  const handleBottomSheet = useCallback((e: BottomSheetEventType) => {
+    if (e.type === "open") bottomSheetRef.current?.present();
+    if (e.type === "close") {
+      setNewRegister({ name: "", class: "", isProfessor: false });
+      optionsSheetRef.current?.dismiss();
+    }
+  }, []);
+
+  const handleOptionsSheet = useCallback((e: BottomSheetEventType) => {
+    if (e.type === "open") optionsSheetRef.current?.present();
+    if (e.type === "set") {
+      setNewRegister((prev) => ({ ...prev, class: e.value }));
+      optionsSheetRef.current?.dismiss();
+    }
+    if (e.type === "close") optionsSheetRef.current?.dismiss();
   }, []);
 
   return (
@@ -77,7 +100,7 @@ export default function StudentScreen() {
             />
             <StackHeader.Action
               name="add-outline"
-              onPress={handleOpenBottomSheet}
+              onPress={() => handleBottomSheet({ type: "open" })}
               color={theme.colors.gray}
             />
           </StackHeader.Actions>
@@ -143,7 +166,10 @@ export default function StudentScreen() {
         ></FlatList>
       </ThemedView>
 
-      <CustomBottomModal.Root ref={bottomSheetRef}>
+      <CustomBottomModal.Root
+        ref={bottomSheetRef}
+        onDismiss={() => handleBottomSheet({ type: "close" })}
+      >
         <CustomBottomModal.Content title="Novo Cadastro">
           <TextInput
             placeholder="Nome"
@@ -155,6 +181,22 @@ export default function StudentScreen() {
               padding: 10,
             }}
           />
+          <TouchableOpacity
+            onPress={() => handleOptionsSheet({ type: "open" })}
+          >
+            <ThemedView
+              padding="s"
+              borderWidth={1}
+              borderColor="lightgrey"
+              borderRadius={25}
+            >
+              <ThemedText
+                style={{ color: newRegister.class ? "black" : "#a0a0a0" }}
+              >
+                {newRegister.class ? newRegister.class : "Turma"}
+              </ThemedText>
+            </ThemedView>
+          </TouchableOpacity>
 
           <ThemedView
             flexDirection="row"
@@ -195,6 +237,30 @@ export default function StudentScreen() {
           </ThemedView>
         </CustomBottomModal.Content>
         <CustomBottomModal.Action onPress={() => {}} />
+      </CustomBottomModal.Root>
+
+      <CustomBottomModal.Root ref={optionsSheetRef} stackBehavior="push">
+        <CustomBottomModal.Content title="Turmas">
+          <FlatList
+            data={["Josué", "Abraão"]}
+            contentContainerStyle={{ gap: theme.spacing.s }}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => handleOptionsSheet({ type: "set", value: item })}
+              >
+                <ThemedView
+                  py="s"
+                  px="m"
+                  borderWidth={1}
+                  borderColor="lightgrey"
+                  borderRadius={25}
+                >
+                  <ThemedText>{item}</ThemedText>
+                </ThemedView>
+              </TouchableOpacity>
+            )}
+          />
+        </CustomBottomModal.Content>
       </CustomBottomModal.Root>
     </GestureHandlerRootView>
   );
