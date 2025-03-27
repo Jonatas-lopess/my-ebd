@@ -1,16 +1,19 @@
 import {
+  DrawerContentComponentProps,
   DrawerContentScrollView,
   DrawerItemList,
 } from "@react-navigation/drawer";
 import ThemedView from "../ThemedView";
-import { Pressable, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
 import ThemedText from "../ThemedText";
 import { useAuth } from "../../providers/AuthProvider";
 import { useTheme } from "@shopify/restyle";
 import { ThemeProps } from "../../theme";
 import CustomIcon from "../CustomIcon";
 
-export default function CustomSettingsDrawer(props: any) {
+export default function CustomSettingsDrawer(
+  props: DrawerContentComponentProps
+) {
   const { setSessionUser } = useAuth();
   const theme = useTheme<ThemeProps>();
 

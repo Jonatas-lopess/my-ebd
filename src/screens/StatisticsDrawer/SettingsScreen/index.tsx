@@ -1,10 +1,7 @@
-import { useNavigation } from "@react-navigation/native";
+import { DrawerActions, useNavigation } from "@react-navigation/native";
 import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
 import { StackHeader } from "../../../components/StackHeader";
 import ThemedView from "../../../components/ThemedView";
-import ThemedText from "../../../components/ThemedText";
-import { Ionicons } from "@expo/vector-icons";
-import SettingsOptionsCard from "../../../components/SettingsOptions/SettingsOptionsCard";
 import { SettingsOptions } from "../../../components/SettingsOptions";
 
 export default function SettingsScreen() {
@@ -15,24 +12,41 @@ export default function SettingsScreen() {
       <FocusAwareStatusBar style="dark" translucent />
 
       <StackHeader.Root>
-        <StackHeader.Content>
-          <StackHeader.Action
-            name="arrow-back"
-            onPress={() => navigation.goBack()}
-          />
-          <StackHeader.Title>Configurações</StackHeader.Title>
-        </StackHeader.Content>
-        <StackHeader.Action name="menu" onPress={() => {}} />
+        <StackHeader.Title>Configurações</StackHeader.Title>
+        <StackHeader.Action
+          name="menu"
+          onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+        />
       </StackHeader.Root>
 
-      <ThemedView flex={1} py="s" backgroundColor="lightgrey">
+      <ThemedView flex={1} py="s" gap="s" backgroundColor="lightgrey">
         <SettingsOptions.Group>
-          <SettingsOptions.Card title="Conta" icon="person-outline" />
+          <SettingsOptions.Card title="Pontuação" icon="trophy-outline" />
           <SettingsOptions.Card
             title="Notificações"
             icon="notifications-outline"
           />
-          <SettingsOptions.Card title="Pontuação" icon="trophy-outline" />
+        </SettingsOptions.Group>
+
+        <SettingsOptions.Group>
+          <SettingsOptions.Card title="Dados da Igreja" icon="flag-outline" />
+          <SettingsOptions.Card title="Dados da Conta" icon="person-outline" />
+          <SettingsOptions.Card
+            title="Acesso Administrativo"
+            icon="key-outline"
+          />
+          <SettingsOptions.Card
+            title="Acesso aos Professores"
+            icon="school-outline"
+          />
+        </SettingsOptions.Group>
+
+        <SettingsOptions.Group>
+          <SettingsOptions.Card
+            title="Gerenciamento de sede"
+            icon="home-outline"
+          />
+          <SettingsOptions.Card title="Filiais" icon="business-outline" />
         </SettingsOptions.Group>
       </ThemedView>
     </ThemedView>
