@@ -3,33 +3,61 @@ import {
   DrawerItemList,
 } from "@react-navigation/drawer";
 import ThemedView from "../ThemedView";
-import { Pressable } from "react-native";
+import { Pressable, TouchableOpacity } from "react-native";
 import ThemedText from "../ThemedText";
 import { useAuth } from "../../providers/AuthProvider";
+import { useTheme } from "@shopify/restyle";
+import { ThemeProps } from "../../theme";
+import CustomIcon from "../CustomIcon";
 
 export default function CustomSettingsDrawer(props: any) {
   const { setSessionUser } = useAuth();
+  const theme = useTheme<ThemeProps>();
 
   const handleLogout = () => {
     setSessionUser(undefined);
   };
 
   return (
-    <ThemedView flex={1} pb="s">
-      <DrawerContentScrollView {...props}>
+    <ThemedView flex={1} pb="m">
+      <ThemedView
+        py="safeArea"
+        borderBottomWidth={1}
+        borderBottomColor="lightgrey"
+      >
+        <ThemedText variant="h1" color="primary" textAlign="center">
+          Minha EBD
+        </ThemedText>
+      </ThemedView>
+      <DrawerContentScrollView
+        {...props}
+        contentContainerStyle={{ paddingTop: theme.spacing.m }}
+      >
         <DrawerItemList {...props} />
       </DrawerContentScrollView>
-      <Pressable onPress={handleLogout}>
+      <TouchableOpacity onPress={handleLogout}>
         <ThemedView
-          mx="s"
           px="m"
           py="m"
-          backgroundColor="lightgrey"
-          borderRadius={25}
+          flexDirection="row"
+          gap="s"
+          borderBottomColor="lightgrey"
+          borderBottomWidth={1}
         >
-          <ThemedText color="black">Sair</ThemedText>
+          <CustomIcon name="log-out" color="black" size={20} />
+          <ThemedText color="black" fontSize={16}>
+            Sair
+          </ThemedText>
         </ThemedView>
-      </Pressable>
+      </TouchableOpacity>
+      <ThemedText
+        fontWeight="bold"
+        style={{ color: "grey" }}
+        textAlign="center"
+        mt="m"
+      >
+        Versão: 0.0.1
+      </ThemedText>
     </ThemedView>
   );
 }
