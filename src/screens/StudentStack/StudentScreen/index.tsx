@@ -5,13 +5,7 @@ import ThemedView from "../../../components/ThemedView";
 import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useCallback, useRef, useState } from "react";
-import {
-  FlatList,
-  Pressable,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { FlatList, Pressable, TextInput, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackHeader } from "../../../components/StackHeader";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -20,17 +14,19 @@ import {
   CustomBottomModal,
 } from "../../../components/CustomBottomModal";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-
-type Student = {
-  id: string;
-  name: string;
-  birthday: string;
-};
+import {
+  DateTimePickerAndroid,
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+import MaskInput, { Masks } from "react-native-mask-input";
 
 type Register = {
+  id: string | undefined;
   name: string;
   class: string | undefined;
   isProfessor: boolean;
+  birthday?: Date;
+  phoneNumber?: string;
 };
 
 export default function StudentScreen() {
@@ -41,26 +37,36 @@ export default function StudentScreen() {
   const [birthdayFilter, setBirthdayFilter] = useState(false);
   const [nameFilter, setNameFilter] = useState("");
   const [newRegister, setNewRegister] = useState<Register>({
+    id: undefined,
     name: "",
+    phoneNumber: "",
     class: undefined,
     isProfessor: false,
   });
 
-  const DATA: Student[] = [
-    { id: "eqEQ213", name: "João", birthday: "07/12" },
-    { id: "eqEQ210", name: "Maria", birthday: "18/06" },
-    { id: "eqEQ221", name: "Pedro", birthday: "21/03" },
+  const TODAY = new Date();
+
+  const DATA: Register[] = [
+    { id: "eqEQ213", name: "João", isProfessor: false, class: "1A" },
+    { id: "eqEQ210", name: "Maria", isProfessor: false, class: "1A" },
+    {
+      id: "eqEQ221",
+      name: "Pedro",
+      birthday: TODAY,
+      isProfessor: false,
+      class: "1A",
+    },
   ];
 
-  const matchMounth = (item: Student) => {
-    const [_, month] = item.birthday.split("/").map(Number);
+  const matchMounth = (birthday: Date) => {
+    const month = birthday.getMonth() + 1;
     return month === new Date().getMonth() + 1;
   };
 
   const DATA_FILTERED = DATA.filter((item) => {
-    if (birthdayFilter) return matchMounth(item);
+    if (birthdayFilter) return item.birthday && matchMounth(item.birthday);
     if (nameFilter) {
-      return item.name.includes(nameFilter);
+      return item.name.toLowerCase().includes(nameFilter.toLowerCase());
     }
     return true;
   });
@@ -68,7 +74,14 @@ export default function StudentScreen() {
   const handleBottomSheet = useCallback((e: BottomSheetEventType) => {
     if (e.type === "open") bottomSheetRef.current?.present();
     if (e.type === "close") {
-      setNewRegister({ name: "", class: "", isProfessor: false });
+      setNewRegister({
+        id: undefined,
+        name: "",
+        class: undefined,
+        isProfessor: false,
+        birthday: undefined,
+        phoneNumber: undefined,
+      });
       optionsSheetRef.current?.dismiss();
     }
   }, []);
@@ -81,6 +94,18 @@ export default function StudentScreen() {
     }
     if (e.type === "close") optionsSheetRef.current?.dismiss();
   }, []);
+
+  const handleNewRegisterDateChange = (
+    e: DateTimePickerEvent,
+    selectedDate?: Date
+  ) =>
+    e.type === "set" &&
+    setNewRegister((oldRegister) => {
+      return {
+        ...oldRegister,
+        birthday: selectedDate || oldRegister.birthday,
+      };
+    });
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -126,7 +151,7 @@ export default function StudentScreen() {
               onPress={() =>
                 navigation.navigate("Cadastros", {
                   screen: "Alunos_Historico",
-                  params: { studentId: item.id },
+                  params: { studentId: item.id! },
                 })
               }
             >
@@ -140,9 +165,14 @@ export default function StudentScreen() {
                 style={{ backgroundColor: "#fff" }}
               >
                 <ThemedText fontSize={16}>{item.name}</ThemedText>
-                {matchMounth(item) && (
+                {item.birthday && matchMounth(item.birthday!) && (
                   <ThemedView flexDirection="row" alignItems="center" gap="s">
-                    <ThemedText color="secondary">{item.birthday}</ThemedText>
+                    <ThemedText color="secondary">
+                      {item.birthday.toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                      })}
+                    </ThemedText>
                     <FontAwesome
                       name="birthday-cake"
                       color={theme.colors.secondary}
@@ -153,7 +183,7 @@ export default function StudentScreen() {
               </ThemedView>
             </Pressable>
           )}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id!}
           style={{
             backgroundColor: theme.colors.white,
             height: "100%",
@@ -173,12 +203,14 @@ export default function StudentScreen() {
         <CustomBottomModal.Content title="Novo Cadastro">
           <TextInput
             placeholder="Nome"
-            onChangeText={(text) => {}}
+            onChangeText={(text) =>
+              setNewRegister((prev) => ({ ...prev, name: text }))
+            }
             style={{
               borderWidth: 1,
               borderColor: theme.colors.lightgrey,
               borderRadius: 25,
-              padding: 10,
+              padding: theme.spacing.s,
             }}
           />
           <TouchableOpacity
@@ -198,43 +230,79 @@ export default function StudentScreen() {
             </ThemedView>
           </TouchableOpacity>
 
-          <ThemedView
-            flexDirection="row"
-            justifyContent="space-between"
-            gap="s"
-          >
-            <Pressable
-              style={{ flex: 2 }}
-              onPress={() =>
+          <ThemedText color="gray" fontWeight="bold" textAlign="center">
+            Informações Extras
+          </ThemedText>
+          <ThemedView flexDirection="row" gap="s">
+            <MaskInput
+              value={newRegister.phoneNumber}
+              placeholder="Número de Celular"
+              onChangeText={(value) =>
                 setNewRegister((prev) => ({
                   ...prev,
-                  isProfessor: !prev.isProfessor,
+                  phoneNumber: value,
                 }))
+              }
+              mask={Masks.BRL_PHONE}
+              keyboardType="phone-pad"
+              style={{
+                flex: 2,
+                borderWidth: 1,
+                borderColor: theme.colors.lightgrey,
+                borderRadius: 25,
+                padding: theme.spacing.s,
+              }}
+            />
+            <TouchableOpacity
+              onPress={() =>
+                DateTimePickerAndroid.open({
+                  value: TODAY,
+                  maximumDate: TODAY,
+                  onChange: handleNewRegisterDateChange,
+                })
               }
             >
               <ThemedView
-                backgroundColor={
-                  newRegister.isProfessor ? "secondary" : "lightgrey"
-                }
+                flex={1}
+                padding="s"
+                borderWidth={1}
+                borderColor="lightgrey"
                 borderRadius={25}
-                py="s"
               >
                 <ThemedText
-                  textAlign="center"
-                  color={newRegister.isProfessor ? "white" : "gray"}
+                  style={{ color: newRegister.birthday ? "black" : "#a0a0a0" }}
                 >
-                  Criar como Professor
+                  {newRegister.birthday
+                    ? newRegister.birthday.toLocaleDateString("pt-BR")
+                    : "Data de Nascimento"}
                 </ThemedText>
               </ThemedView>
-            </Pressable>
-            <Pressable style={{ flex: 1 }} onPress={() => {}}>
-              <ThemedView backgroundColor="lightgrey" borderRadius={25} py="s">
-                <ThemedText textAlign="center" color="gray">
-                  Dados Extras
-                </ThemedText>
-              </ThemedView>
-            </Pressable>
+            </TouchableOpacity>
           </ThemedView>
+
+          <Pressable
+            onPress={() =>
+              setNewRegister((prev) => ({
+                ...prev,
+                isProfessor: !prev.isProfessor,
+              }))
+            }
+          >
+            <ThemedView
+              backgroundColor={
+                newRegister.isProfessor ? "secondary" : "lightgrey"
+              }
+              borderRadius={25}
+              py="s"
+            >
+              <ThemedText
+                textAlign="center"
+                color={newRegister.isProfessor ? "white" : "gray"}
+              >
+                Criar como Professor
+              </ThemedText>
+            </ThemedView>
+          </Pressable>
         </CustomBottomModal.Content>
         <CustomBottomModal.Action onPress={() => {}} />
       </CustomBottomModal.Root>
