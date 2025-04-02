@@ -63,11 +63,16 @@ export type ClassStackProps<T extends keyof ClassStackParamList> =
 
 export type StatisticsDrawerParamList = {
   Statistics: undefined;
-  Settings: undefined;
+  Settings: NavigatorScreenParams<SettingsStackParamList>;
 };
 
 export type StatisticsDrawerProps<T extends keyof StatisticsDrawerParamList> =
   DrawerScreenProps<StatisticsDrawerParamList, T>;
+
+export type SettingsStackParamList = {
+  SettingsList: undefined;
+  SettingsAccountInfo: undefined;
+};
 
 declare global {
   namespace ReactNavigation {

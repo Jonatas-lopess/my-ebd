@@ -1,8 +1,8 @@
 import { DrawerActions, useNavigation } from "@react-navigation/native";
-import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
-import { StackHeader } from "../../../components/StackHeader";
-import ThemedView from "../../../components/ThemedView";
-import { SettingsOptions } from "../../../components/SettingsOptions";
+import FocusAwareStatusBar from "../../../../components/FocusAwareStatusBar";
+import { StackHeader } from "../../../../components/StackHeader";
+import ThemedView from "../../../../components/ThemedView";
+import { SettingsOptions } from "../../../../components/SettingsOptions";
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
@@ -30,7 +30,16 @@ export default function SettingsScreen() {
 
         <SettingsOptions.Group>
           <SettingsOptions.Card title="Dados da Igreja" icon="flag-outline" />
-          <SettingsOptions.Card title="Dados da Conta" icon="person-outline" />
+          <SettingsOptions.Card
+            title="Dados da Conta"
+            icon="person-outline"
+            onPress={() =>
+              navigation.navigate("Geral", {
+                screen: "Settings",
+                params: { screen: "SettingsAccountInfo" },
+              })
+            }
+          />
           <SettingsOptions.Card
             title="Acesso Administrativo"
             icon="key-outline"
