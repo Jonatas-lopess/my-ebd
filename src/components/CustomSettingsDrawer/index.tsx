@@ -14,12 +14,8 @@ import CustomIcon from "../CustomIcon";
 export default function CustomSettingsDrawer(
   props: DrawerContentComponentProps
 ) {
-  const { setSessionUser } = useAuth();
+  const { onLogOut } = useAuth();
   const theme = useTheme<ThemeProps>();
-
-  const handleLogout = () => {
-    setSessionUser(undefined);
-  };
 
   return (
     <ThemedView flex={1} pb="m">
@@ -38,7 +34,7 @@ export default function CustomSettingsDrawer(
       >
         <DrawerItemList {...props} />
       </DrawerContentScrollView>
-      <TouchableOpacity onPress={handleLogout}>
+      <TouchableOpacity onPress={onLogOut}>
         <ThemedView
           px="m"
           py="m"
