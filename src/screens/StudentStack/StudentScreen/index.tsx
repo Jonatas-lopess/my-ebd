@@ -1,18 +1,18 @@
 import { useTheme } from "@shopify/restyle";
-import { ThemeProps } from "../../../theme";
-import ThemedText from "../../../components/ThemedText";
-import ThemedView from "../../../components/ThemedView";
-import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
+import { ThemeProps } from "@theme";
+import ThemedText from "@components/ThemedText";
+import ThemedView from "@components/ThemedView";
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useCallback, useRef, useState } from "react";
 import { FlatList, Pressable, TextInput, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { StackHeader } from "../../../components/StackHeader";
+import { StackHeader } from "@components/StackHeader";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   BottomSheetEventType,
   CustomBottomModal,
-} from "../../../components/CustomBottomModal";
+} from "@components/CustomBottomModal";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import {
   DateTimePickerAndroid,

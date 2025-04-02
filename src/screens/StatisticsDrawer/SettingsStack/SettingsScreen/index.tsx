@@ -1,8 +1,8 @@
 import { DrawerActions, useNavigation } from "@react-navigation/native";
-import FocusAwareStatusBar from "../../../../components/FocusAwareStatusBar";
-import { StackHeader } from "../../../../components/StackHeader";
-import ThemedView from "../../../../components/ThemedView";
-import { SettingsOptions } from "../../../../components/SettingsOptions";
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
+import { StackHeader } from "@components/StackHeader";
+import ThemedView from "@components/ThemedView";
+import { SettingsOptions } from "@components/SettingsOptions";
 
 export default function SettingsScreen() {
   const navigation = useNavigation();

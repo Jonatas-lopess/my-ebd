@@ -1,4 +1,4 @@
-import ThemedView from "../ThemedView";
+import ThemedView from "@components/ThemedView";
 
 type SettingsOptionsGroupProps = {
   children: React.ReactNode;

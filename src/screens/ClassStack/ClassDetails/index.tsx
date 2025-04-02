@@ -1,14 +1,14 @@
 import { useNavigation } from "@react-navigation/native";
-import ThemedView from "../../../components/ThemedView";
+import ThemedView from "@components/ThemedView";
 import { Ionicons } from "@expo/vector-icons";
-import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import { FlatList, ScrollView, TouchableOpacity } from "react-native";
-import ThemedText from "../../../components/ThemedText";
+import ThemedText from "@components/ThemedText";
 import IntervalControl, {
   IntervalOptionTypes,
-} from "../../../components/IntervalControl";
+} from "@components/IntervalControl";
 import { useState } from "react";
-import { ThemeProps } from "../../../theme";
+import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
 
 type DataType = {

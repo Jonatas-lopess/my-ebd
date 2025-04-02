@@ -1,6 +1,6 @@
 import { createComponentForStaticNavigation } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { LoginStackParamList } from "../../types/navigation";
+import { LoginStackParamList } from "@custom/types/navigation";
 import LoginScreen from "./LoginScreen";
 import RegisterScreen from "./RegisterScreen";
 

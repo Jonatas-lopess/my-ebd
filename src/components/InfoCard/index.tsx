@@ -1,5 +1,5 @@
-import ThemedText from "../ThemedText";
-import ThemedView from "../ThemedView";
+import ThemedText from "@components/ThemedText";
+import ThemedView from "@components/ThemedView";
 import { Pressable, TouchableOpacity } from "react-native";
 
 type Info = {

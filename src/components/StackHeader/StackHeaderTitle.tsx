@@ -1,4 +1,4 @@
-import ThemedText from "../ThemedText";
+import ThemedText from "@components/ThemedText";
 
 type StackHeaderTitleProps = {
   children: React.ReactNode;

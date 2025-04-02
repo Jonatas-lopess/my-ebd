@@ -1,8 +1,8 @@
 import { CircularProgress } from "react-native-circular-progress";
-import ThemedText from "../ThemedText";
+import ThemedText from "@components/ThemedText";
 import { useTheme } from "@shopify/restyle";
-import { ThemeProps } from "../../theme";
-import ThemedView from "../ThemedView";
+import { ThemeProps } from "@theme";
+import ThemedView from "@components/ThemedView";
 
 type ChartCardProps = {
   title: string;

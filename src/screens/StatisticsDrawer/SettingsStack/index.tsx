@@ -1,5 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { SettingsStackParamList } from "../../../types/navigation";
+import { SettingsStackParamList } from "@custom/types/navigation";
 import SettingsScreen from "./SettingsScreen";
 import AccountInfo from "./AccountInfo";
 import { createComponentForStaticNavigation } from "@react-navigation/native";

@@ -1,5 +1,5 @@
 import { createText } from "@shopify/restyle";
-import { ThemeProps } from "../../theme";
+import { ThemeProps } from "@theme";
 
 const ThemedText = createText<ThemeProps>();
 

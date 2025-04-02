@@ -1,5 +1,5 @@
 import { createBox } from "@shopify/restyle";
-import { ThemeProps } from "../../theme";
+import { ThemeProps } from "@theme";
 
 const ThemedView = createBox<ThemeProps>();
 

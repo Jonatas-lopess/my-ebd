@@ -1,6 +1,6 @@
 import { createComponentForStaticNavigation } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { HomeStackParamList } from "../../types/navigation";
+import { HomeStackParamList } from "@custom/types/navigation";
 import HomeScreen from "./HomeScreen";
 import LessonDetails from "./LessonDetails";
 

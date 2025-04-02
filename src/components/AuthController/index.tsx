@@ -1,6 +1,6 @@
 import { NavigationContainer } from "@react-navigation/native";
-import { useAuth } from "../../providers/AuthProvider";
-import LoginStack from "../../screens/LoginStack";
+import { useAuth } from "@providers/AuthProvider";
+import LoginStack from "@screens/LoginStack";
 import AdminRootTabNavigator from "../AdminRootTabNavigator";
 import TeacherRootTabNavigator from "../TeacherRootTabNavigator";
 import { Text, View } from "react-native";

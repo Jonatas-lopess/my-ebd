@@ -1,9 +1,9 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { TeacherRootTabParamList } from "../../types/navigation";
+import { TeacherRootTabParamList } from "@custom/types/navigation";
 import { Ionicons } from "@expo/vector-icons";
-import StudentStack from "../../screens/StudentStack";
-import StatisticsDrawer from "../../screens/StatisticsDrawer";
-import LessonStack from "../../screens/LessonStack";
+import StudentStack from "@screens/StudentStack";
+import StatisticsDrawer from "@screens/StatisticsDrawer";
+import LessonStack from "@screens/LessonStack";
 
 const Tabs = createBottomTabNavigator<TeacherRootTabParamList>();
 

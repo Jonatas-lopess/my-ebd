@@ -1,8 +1,8 @@
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import { StatisticsDrawerParamList } from "../../types/navigation";
+import { StatisticsDrawerParamList } from "@custom/types/navigation";
 import GeneralScreen from "./GeneralScreen";
 import { createComponentForStaticNavigation } from "@react-navigation/native";
-import CustomSettingsDrawer from "../../components/CustomSettingsDrawer";
+import CustomSettingsDrawer from "@components/CustomSettingsDrawer";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import SettingsStack from "./SettingsStack";
 

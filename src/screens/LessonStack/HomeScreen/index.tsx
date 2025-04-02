@@ -1,13 +1,13 @@
-import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
-import ThemedText from "../../../components/ThemedText";
-import ThemedView from "../../../components/ThemedView";
-import { ThemeProps } from "../../../theme";
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
+import ThemedText from "@components/ThemedText";
+import ThemedView from "@components/ThemedView";
+import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
 import { FlatList, TouchableOpacity } from "react-native";
-import InfoCard from "../../../components/InfoCard";
+import InfoCard from "@components/InfoCard";
 import { useNavigation } from "@react-navigation/native";
-import { useAuth } from "../../../providers/AuthProvider";
-import { StackHeader } from "../../../components/StackHeader";
+import { useAuth } from "@providers/AuthProvider";
+import { StackHeader } from "@components/StackHeader";
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
@@ -20,7 +20,7 @@ import {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
-import { CustomBottomModal } from "../../../components/CustomBottomModal";
+import { CustomBottomModal } from "@components/CustomBottomModal";
 
 type Lesson = {
   id: string;
