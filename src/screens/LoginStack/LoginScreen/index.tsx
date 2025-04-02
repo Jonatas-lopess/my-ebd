@@ -4,14 +4,13 @@ import { useAuth } from "../../../providers/AuthProvider";
 import ThemedText from "../../../components/ThemedText";
 
 export default function LoginScreen() {
-  const { setSessionUser } = useAuth();
+  const { onLogIn } = useAuth();
 
-  const handleLogin = (role: "admin" | "teacher") => {
-    setSessionUser({
-      name: "John Doe",
-      role,
-    });
-  };
+  function handleLogin(role: "admin" | "teacher") {
+    const email = role === "admin" ? "user1" : "user2";
+
+    onLogIn(email, "password");
+  }
 
   return (
     <ThemedView flex={1} justifyContent="center" alignItems="center" g="s">

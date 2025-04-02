@@ -5,14 +5,14 @@ import AdminRootTabNavigator from "../AdminRootTabNavigator";
 import TeacherRootTabNavigator from "../TeacherRootTabNavigator";
 
 export default function AuthController() {
-  const { user } = useAuth();
+  const { authState, loading } = useAuth();
 
-  const isLoggedIn = !!user;
-
-  return (
+  return loading ? (
+    <></>
+  ) : (
     <NavigationContainer>
-      {isLoggedIn ? (
-        user.role === "admin" ? (
+      {authState ? (
+        authState.user.role === "admin" ? (
           <AdminRootTabNavigator />
         ) : (
           <TeacherRootTabNavigator />
