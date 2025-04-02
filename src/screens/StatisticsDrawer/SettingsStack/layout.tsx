@@ -1,5 +1,5 @@
-import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
-import ThemedView from "../../../components/ThemedView";
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
+import ThemedView from "@components/ThemedView";
 
 type SettingsStackLayoutProps = {
   children: React.ReactNode;

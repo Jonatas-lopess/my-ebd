@@ -1,16 +1,16 @@
 import { useNavigation } from "@react-navigation/native";
-import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
-import ThemedText from "../../../components/ThemedText";
-import ThemedView from "../../../components/ThemedView";
-import { StudentStackProps } from "../../../types/navigation";
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
+import ThemedText from "@components/ThemedText";
+import ThemedView from "@components/ThemedView";
+import { StudentStackProps } from "@custom/types/navigation";
 import { Ionicons } from "@expo/vector-icons";
 import { ScrollView, SectionList } from "react-native";
-import { ThemeProps } from "../../../theme";
+import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
 import { useCallback, useState } from "react";
 import IntervalControl, {
   IntervalOptionTypes,
-} from "../../../components/IntervalControl";
+} from "@components/IntervalControl";
 
 export default function HistoryScreen({
   route,

@@ -1,7 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import StudentScreen from "./StudentScreen";
 import HistoryScreen from "./HistoryScreen";
-import { StudentStackParamList } from "../../types/navigation";
+import { StudentStackParamList } from "@custom/types/navigation";
 import { createComponentForStaticNavigation } from "@react-navigation/native";
 
 const StackConfig = createNativeStackNavigator<StudentStackParamList>({

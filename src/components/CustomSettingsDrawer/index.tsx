@@ -3,12 +3,12 @@ import {
   DrawerContentScrollView,
   DrawerItemList,
 } from "@react-navigation/drawer";
-import ThemedView from "../ThemedView";
+import ThemedView from "@components/ThemedView";
 import { TouchableOpacity } from "react-native";
-import ThemedText from "../ThemedText";
-import { useAuth } from "../../providers/AuthProvider";
+import ThemedText from "@components/ThemedText";
+import { useAuth } from "@providers/AuthProvider";
 import { useTheme } from "@shopify/restyle";
-import { ThemeProps } from "../../theme";
+import { ThemeProps } from "@theme";
 import CustomIcon from "../CustomIcon";
 
 export default function CustomSettingsDrawer(

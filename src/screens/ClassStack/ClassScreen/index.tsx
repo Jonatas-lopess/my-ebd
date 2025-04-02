@@ -1,19 +1,19 @@
 import { FlatList, TextInput, TouchableOpacity } from "react-native";
-import ThemedView from "../../../components/ThemedView";
-import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
-import { ThemeProps } from "../../../theme";
+import ThemedView from "@components/ThemedView";
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
+import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
-import InfoCard from "../../../components/InfoCard";
-import { StackHeader } from "../../../components/StackHeader";
+import InfoCard from "@components/InfoCard";
+import { StackHeader } from "@components/StackHeader";
 import { useNavigation } from "@react-navigation/native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   BottomSheetEventType,
   CustomBottomModal,
-} from "../../../components/CustomBottomModal";
+} from "@components/CustomBottomModal";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useCallback, useRef, useState } from "react";
-import ThemedText from "../../../components/ThemedText";
+import ThemedText from "@components/ThemedText";
 
 type NewClass = {
   name: string;

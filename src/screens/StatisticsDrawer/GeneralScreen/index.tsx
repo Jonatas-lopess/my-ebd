@@ -4,15 +4,15 @@ import { useTheme } from "@shopify/restyle";
 import { useCallback, useState } from "react";
 import { FlatList, ScrollView, SectionList } from "react-native";
 import SwitchSelector from "react-native-switch-selector";
-import ChartCard from "../../../components/ChartCard";
-import CustomTextCard from "../../../components/CustomTextCard";
-import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
+import ChartCard from "@components/ChartCard";
+import CustomTextCard from "@components/CustomTextCard";
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import IntervalControl, {
   IntervalOptionTypes,
-} from "../../../components/IntervalControl";
-import ThemedText from "../../../components/ThemedText";
-import ThemedView from "../../../components/ThemedView";
-import { ThemeProps } from "../../../theme";
+} from "@components/IntervalControl";
+import ThemedText from "@components/ThemedText";
+import ThemedView from "@components/ThemedView";
+import { ThemeProps } from "@theme";
 
 type DataType = {
   nome: string;

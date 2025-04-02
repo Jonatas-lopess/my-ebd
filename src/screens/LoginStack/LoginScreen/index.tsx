@@ -1,7 +1,7 @@
 import { TouchableOpacity } from "react-native";
-import ThemedView from "../../../components/ThemedView";
-import { useAuth } from "../../../providers/AuthProvider";
-import ThemedText from "../../../components/ThemedText";
+import ThemedView from "@components/ThemedView";
+import { useAuth } from "@providers/AuthProvider";
+import ThemedText from "@components/ThemedText";
 
 export default function LoginScreen() {
   const { onLogIn } = useAuth();

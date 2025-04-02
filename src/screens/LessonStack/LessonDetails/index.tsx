@@ -1,10 +1,10 @@
 import { useTheme } from "@shopify/restyle";
-import FocusAwareStatusBar from "../../../components/FocusAwareStatusBar";
-import { StackHeader } from "../../../components/StackHeader";
-import ThemedText from "../../../components/ThemedText";
-import ThemedView from "../../../components/ThemedView";
-import { HomeStackProps } from "../../../types/navigation";
-import { ThemeProps } from "../../../theme";
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
+import { StackHeader } from "@components/StackHeader";
+import ThemedText from "@components/ThemedText";
+import ThemedView from "@components/ThemedView";
+import { HomeStackProps } from "@custom/types/navigation";
+import { ThemeProps } from "@theme";
 import { useNavigation } from "@react-navigation/native";
 import {
   FlatList,

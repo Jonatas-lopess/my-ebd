@@ -1,6 +1,6 @@
 import { ScrollView } from "react-native";
 import CustomTextCard from "../CustomTextCard";
-import { ThemeProps } from "../../theme";
+import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
 
 export type IntervalOptionTypes =
