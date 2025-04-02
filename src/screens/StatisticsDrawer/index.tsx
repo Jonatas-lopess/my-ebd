@@ -3,8 +3,8 @@ import { StatisticsDrawerParamList } from "../../types/navigation";
 import GeneralScreen from "./GeneralScreen";
 import { createComponentForStaticNavigation } from "@react-navigation/native";
 import CustomSettingsDrawer from "../../components/CustomSettingsDrawer";
-import SettingsScreen from "./SettingsScreen";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import SettingsStack from "./SettingsStack";
 
 const DrawerConfig = createDrawerNavigator<StatisticsDrawerParamList>({
   initialRouteName: "Statistics",
@@ -16,7 +16,7 @@ const DrawerConfig = createDrawerNavigator<StatisticsDrawerParamList>({
       },
     },
     Settings: {
-      screen: SettingsScreen,
+      screen: SettingsStack,
       options: {
         title: "Configurações",
       },
