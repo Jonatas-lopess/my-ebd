@@ -5,10 +5,10 @@ import HomeScreen from "./HomeScreen";
 import LessonDetails from "./LessonDetails";
 
 const StackConfig = createNativeStackNavigator<HomeStackParamList>({
-  initialRouteName: "Lessons_List",
+  initialRouteName: "LessonList",
   screens: {
-    Lessons_List: HomeScreen,
-    Lessons_Details: LessonDetails,
+    LessonList: HomeScreen,
+    LessonDetails: LessonDetails,
   },
   screenOptions: {
     headerShown: false,

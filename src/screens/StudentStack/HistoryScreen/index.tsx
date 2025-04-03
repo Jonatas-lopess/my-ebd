@@ -14,7 +14,7 @@ import IntervalControl, {
 
 export default function HistoryScreen({
   route,
-}: StudentStackProps<"Alunos_Historico">) {
+}: StudentStackProps<"RegisterHistory">) {
   const { studentId } = route.params;
   const navigation = useNavigation();
   const theme = useTheme<ThemeProps>();

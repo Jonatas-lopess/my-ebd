@@ -76,7 +76,7 @@ export default function ClassScreen() {
               detail={item.type}
               onPress={() =>
                 navigation.navigate("Turmas", {
-                  screen: "Class_Details",
+                  screen: "ClassDetails",
                   params: { classId: item.id.toString() },
                 })
               }

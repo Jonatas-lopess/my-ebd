@@ -52,7 +52,7 @@ export default function ClassDetails() {
         style={{ flex: 1 }}
         onPress={() =>
           navigation.navigate("Turmas", {
-            screen: "Class_Details_Student",
+            screen: "StudentDetails",
             params: { studentId: item.nome },
           })
         }

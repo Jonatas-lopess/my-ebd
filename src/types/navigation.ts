@@ -26,16 +26,16 @@ export type TeacherRootTabProps<T extends keyof TeacherRootTabParamList> =
   BottomTabScreenProps<TeacherRootTabParamList, T>;
 
 export type HomeStackParamList = {
-  Lessons_List: undefined;
-  Lessons_Details: { lessonId: string };
+  LessonList: undefined;
+  LessonDetails: { lessonId: string };
 };
 
 export type HomeStackProps<T extends keyof HomeStackParamList> =
   NativeStackScreenProps<HomeStackParamList, T>;
 
 export type StudentStackParamList = {
-  Alunos_Lista: undefined;
-  Alunos_Historico: { studentId: string };
+  RegisterList: undefined;
+  RegisterHistory: { studentId: string };
 };
 
 export type StudentStackProps<T extends keyof StudentStackParamList> =
@@ -46,13 +46,13 @@ export type StudentStackProps<T extends keyof StudentStackParamList> =
 
 export type LoginStackParamList = {
   Login: undefined;
-  Register: undefined;
+  Signin: undefined;
 };
 
 export type ClassStackParamList = {
-  Class_List: undefined;
-  Class_Details: { classId: string };
-  Class_Details_Student: { studentId: string };
+  ClassList: undefined;
+  ClassDetails: { classId: string };
+  StudentDetails: { studentId: string };
 };
 
 export type ClassStackProps<T extends keyof ClassStackParamList> =
@@ -71,11 +71,11 @@ export type StatisticsDrawerProps<T extends keyof StatisticsDrawerParamList> =
 
 export type SettingsStackParamList = {
   SettingsList: undefined;
-  SettingsAccountInfo: undefined;
-  SettingsTeacherAccess: undefined;
-  SettingsAdminAccess: undefined;
-  SettingsManageBranch: undefined;
-  SettingsManageHeadquarter: undefined;
+  AccountInfo: undefined;
+  TeacherAccess: undefined;
+  AdminAccess: undefined;
+  ManageBranch: undefined;
+  ManageHeadquarter: undefined;
 };
 
 declare global {

@@ -36,7 +36,7 @@ export default function SettingsScreen() {
             onPress={() =>
               navigation.navigate("Geral", {
                 screen: "Settings",
-                params: { screen: "SettingsAccountInfo" },
+                params: { screen: "AccountInfo" },
               })
             }
           />
@@ -46,7 +46,7 @@ export default function SettingsScreen() {
             onPress={() =>
               navigation.navigate("Geral", {
                 screen: "Settings",
-                params: { screen: "SettingsAdminAccess" },
+                params: { screen: "AdminAccess" },
               })
             }
           />
@@ -56,7 +56,7 @@ export default function SettingsScreen() {
             onPress={() =>
               navigation.navigate("Geral", {
                 screen: "Settings",
-                params: { screen: "SettingsTeacherAccess" },
+                params: { screen: "TeacherAccess" },
               })
             }
           />
@@ -69,7 +69,7 @@ export default function SettingsScreen() {
             onPress={() =>
               navigation.navigate("Geral", {
                 screen: "Settings",
-                params: { screen: "SettingsManageBranch" },
+                params: { screen: "ManageBranch" },
               })
             }
           />
@@ -79,7 +79,7 @@ export default function SettingsScreen() {
             onPress={() =>
               navigation.navigate("Geral", {
                 screen: "Settings",
-                params: { screen: "SettingsManageHeadquarter" },
+                params: { screen: "ManageHeadquarter" },
               })
             }
           />

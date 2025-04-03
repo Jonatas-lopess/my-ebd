@@ -8,7 +8,7 @@ const StackConfig = createNativeStackNavigator<LoginStackParamList>({
   initialRouteName: "Login",
   screens: {
     Login: LoginScreen,
-    Register: RegisterScreen,
+    Signin: RegisterScreen,
   },
   screenOptions: {
     headerShown: false,

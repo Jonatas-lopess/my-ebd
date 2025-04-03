@@ -36,7 +36,7 @@ type TeacherInfoType = {
 
 export default function LessonDetails({
   route,
-}: HomeStackProps<"Lessons_Details">) {
+}: HomeStackProps<"LessonDetails">) {
   const { lessonId } = route.params;
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
