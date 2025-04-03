@@ -4,12 +4,16 @@ import SettingsScreen from "./SettingsScreen";
 import AccountInfo from "./AccountInfo";
 import { createComponentForStaticNavigation } from "@react-navigation/native";
 import SettingsStackLayout from "./layout";
+import TeacherAccess from "./TeacherAccess";
+import AdminAccess from "./AdminAccess";
 
 const StackConfig = createNativeStackNavigator<SettingsStackParamList>({
   initialRouteName: "SettingsList",
   screens: {
     SettingsList: SettingsScreen,
     SettingsAccountInfo: AccountInfo,
+    SettingsTeacherAccess: TeacherAccess,
+    SettingsAdminAccess: AdminAccess,
   },
   screenOptions: {
     headerShown: false,

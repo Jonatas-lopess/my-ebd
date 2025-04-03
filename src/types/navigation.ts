@@ -72,6 +72,8 @@ export type StatisticsDrawerProps<T extends keyof StatisticsDrawerParamList> =
 export type SettingsStackParamList = {
   SettingsList: undefined;
   SettingsAccountInfo: undefined;
+  SettingsTeacherAccess: undefined;
+  SettingsAdminAccess: undefined;
 };
 
 declare global {

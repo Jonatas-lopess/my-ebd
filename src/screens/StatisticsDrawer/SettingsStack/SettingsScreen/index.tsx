@@ -43,10 +43,22 @@ export default function SettingsScreen() {
           <SettingsOptions.Card
             title="Acesso Administrativo"
             icon="key-outline"
+            onPress={() =>
+              navigation.navigate("Geral", {
+                screen: "Settings",
+                params: { screen: "SettingsAdminAccess" },
+              })
+            }
           />
           <SettingsOptions.Card
             title="Acesso aos Professores"
             icon="school-outline"
+            onPress={() =>
+              navigation.navigate("Geral", {
+                screen: "Settings",
+                params: { screen: "SettingsTeacherAccess" },
+              })
+            }
           />
         </SettingsOptions.Group>
 
