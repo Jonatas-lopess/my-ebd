@@ -66,8 +66,23 @@ export default function SettingsScreen() {
           <SettingsOptions.Card
             title="Gerenciamento de sede"
             icon="home-outline"
+            onPress={() =>
+              navigation.navigate("Geral", {
+                screen: "Settings",
+                params: { screen: "SettingsManageBranch" },
+              })
+            }
           />
-          <SettingsOptions.Card title="Filiais" icon="business-outline" />
+          <SettingsOptions.Card
+            title="Filiais"
+            icon="business-outline"
+            onPress={() =>
+              navigation.navigate("Geral", {
+                screen: "Settings",
+                params: { screen: "SettingsManageHeadquarter" },
+              })
+            }
+          />
         </SettingsOptions.Group>
       </ThemedView>
     </ThemedView>
