@@ -6,7 +6,7 @@ type CustomCardDetailProps = {
 
 export default function CustomCardDetail({ children }: CustomCardDetailProps) {
   return (
-    <ThemedText color="gray" textAlign="center">
+    <ThemedText color="gray" textAlign="center" mb="s">
       {children}
     </ThemedText>
   );

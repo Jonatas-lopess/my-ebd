@@ -74,6 +74,8 @@ export type SettingsStackParamList = {
   SettingsAccountInfo: undefined;
   SettingsTeacherAccess: undefined;
   SettingsAdminAccess: undefined;
+  SettingsManageBranch: undefined;
+  SettingsManageHeadquarter: undefined;
 };
 
 declare global {

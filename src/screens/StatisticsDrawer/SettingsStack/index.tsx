@@ -6,6 +6,8 @@ import { createComponentForStaticNavigation } from "@react-navigation/native";
 import SettingsStackLayout from "./layout";
 import TeacherAccess from "./TeacherAccess";
 import AdminAccess from "./AdminAccess";
+import ManageBranch from "./ManageBranch";
+import ManageHeadquarter from "./ManageHeadquarter";
 
 const StackConfig = createNativeStackNavigator<SettingsStackParamList>({
   initialRouteName: "SettingsList",
@@ -14,6 +16,8 @@ const StackConfig = createNativeStackNavigator<SettingsStackParamList>({
     SettingsAccountInfo: AccountInfo,
     SettingsTeacherAccess: TeacherAccess,
     SettingsAdminAccess: AdminAccess,
+    SettingsManageBranch: ManageBranch,
+    SettingsManageHeadquarter: ManageHeadquarter,
   },
   screenOptions: {
     headerShown: false,

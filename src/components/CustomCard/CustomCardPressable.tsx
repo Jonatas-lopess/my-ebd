@@ -16,7 +16,6 @@ export default function CustomCardPressable({
       <ThemedView
         py="xs"
         px="m"
-        mt="s"
         flexDirection="row"
         justifyContent="space-between"
         alignItems="center"
