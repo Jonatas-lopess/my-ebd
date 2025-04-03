@@ -38,7 +38,7 @@ type NewLesson = {
 export default function HomeScreen() {
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
-  const { user } = useAuth();
+  const { user } = useAuth().authState!;
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
   const today = new Date();
