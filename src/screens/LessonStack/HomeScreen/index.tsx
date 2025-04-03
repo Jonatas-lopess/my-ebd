@@ -122,7 +122,7 @@ export default function HomeScreen() {
               }
               onPress={() =>
                 navigation.navigate("Inicio", {
-                  screen: "Lessons_Details",
+                  screen: "LessonDetails",
                   params: { lessonId: item.id },
                 })
               }

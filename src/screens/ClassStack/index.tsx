@@ -6,11 +6,11 @@ import ClassDetails from "./ClassDetails";
 import HistoryScreen from "../StudentStack/HistoryScreen";
 
 const StackConfig = createNativeStackNavigator<ClassStackParamList>({
-  initialRouteName: "Class_List",
+  initialRouteName: "ClassList",
   screens: {
-    Class_List: ClassScreen,
-    Class_Details: ClassDetails,
-    Class_Details_Student: HistoryScreen,
+    ClassList: ClassScreen,
+    ClassDetails: ClassDetails,
+    StudentDetails: HistoryScreen,
   },
   screenOptions: {
     headerShown: false,

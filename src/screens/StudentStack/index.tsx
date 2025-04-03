@@ -5,10 +5,10 @@ import { StudentStackParamList } from "@custom/types/navigation";
 import { createComponentForStaticNavigation } from "@react-navigation/native";
 
 const StackConfig = createNativeStackNavigator<StudentStackParamList>({
-  initialRouteName: "Alunos_Lista",
+  initialRouteName: "RegisterList",
   screens: {
-    Alunos_Lista: StudentScreen,
-    Alunos_Historico: HistoryScreen,
+    RegisterList: StudentScreen,
+    RegisterHistory: HistoryScreen,
   },
   screenOptions: { headerShown: false },
 });

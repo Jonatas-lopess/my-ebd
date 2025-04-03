@@ -13,11 +13,11 @@ const StackConfig = createNativeStackNavigator<SettingsStackParamList>({
   initialRouteName: "SettingsList",
   screens: {
     SettingsList: SettingsScreen,
-    SettingsAccountInfo: AccountInfo,
-    SettingsTeacherAccess: TeacherAccess,
-    SettingsAdminAccess: AdminAccess,
-    SettingsManageBranch: ManageBranch,
-    SettingsManageHeadquarter: ManageHeadquarter,
+    AccountInfo: AccountInfo,
+    TeacherAccess: TeacherAccess,
+    AdminAccess: AdminAccess,
+    ManageBranch: ManageBranch,
+    ManageHeadquarter: ManageHeadquarter,
   },
   screenOptions: {
     headerShown: false,
