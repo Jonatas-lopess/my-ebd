@@ -21,12 +21,7 @@ export default function AdminAccess() {
         </StackHeader.Content>
       </StackHeader.Root>
 
-      <ThemedView
-        flex={1}
-        style={{ backgroundColor: "lightgray" }}
-        gap="s"
-        py="s"
-      >
+      <ThemedView flex={1} backgroundColor="white" gap="s" py="s">
         <CustomCard.Root>
           <CustomCard.Detail>
             Aqui você pode criar acessos para outros administradores. Com este

@@ -18,7 +18,7 @@ export default function ManageHeadquarter() {
         </StackHeader.Content>
       </StackHeader.Root>
 
-      <ThemedView flex={1} backgroundColor="lightgrey" py="s" gap="s">
+      <ThemedView flex={1} backgroundColor="white" py="s" gap="s">
         <CustomCard.Root>
           <CustomCard.Title>Vincule à sua sede</CustomCard.Title>
           <CustomCard.Detail>

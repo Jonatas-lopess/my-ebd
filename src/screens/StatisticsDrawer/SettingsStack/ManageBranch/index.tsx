@@ -19,7 +19,7 @@ export default function ManageBranch() {
         </StackHeader.Content>
       </StackHeader.Root>
 
-      <ThemedView flex={1} backgroundColor="lightgrey" py="s" gap="s">
+      <ThemedView flex={1} backgroundColor="white" py="s" gap="s">
         <CustomCard.Root>
           <CustomCard.Title>Adicione Novas Igrejas</CustomCard.Title>
           <CustomCard.Detail>
