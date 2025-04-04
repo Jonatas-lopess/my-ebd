@@ -19,7 +19,7 @@ export default function NumberPick({
 }: NumberPickProps) {
   return (
     <ThemedView flexDirection="row" gap="m">
-      {isLocked && (
+      {!isLocked && (
         <Ionicons
           name="arrow-up"
           size={25}
@@ -32,7 +32,7 @@ export default function NumberPick({
 
       <ThemedText variant="h3">{value}</ThemedText>
 
-      {isLocked && (
+      {!isLocked && (
         <Ionicons
           name="arrow-down"
           size={25}

@@ -146,8 +146,11 @@ export default function LessonDetails({
         </StackHeader.Actions>
       </StackHeader.Root>
 
-      <ThemedView flex={1} backgroundColor="white" padding="s">
-        <ScrollView nestedScrollEnabled contentContainerStyle={{ gap: 10 }}>
+      <ThemedView flex={1} backgroundColor="white">
+        <ScrollView
+          nestedScrollEnabled
+          contentContainerStyle={{ gap: 10, padding: theme.spacing.s }}
+        >
           <CustomCard.Root borderRadius={20}>
             <CustomCard.Title>Relatório Geral</CustomCard.Title>
             <CustomCard.Detail>
@@ -244,41 +247,22 @@ export default function LessonDetails({
               }}
               keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }) => (
-                <Pressable
-                  onPress={() => isEditable && handleTeachersChange(item.id)}
+                <TextButton
+                  justifyContent="space-between"
+                  variant="outline"
+                  onClick={() => isEditable && handleTeachersChange(item.id)}
+                  disabled
                 >
-                  <ThemedView
-                    padding="xs"
-                    flexDirection="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    borderRadius={25}
-                    borderWidth={1}
-                    borderLeftWidth={6}
-                    style={{
-                      borderLeftColor: "green",
-                    }}
-                    borderRightColor="lightgrey"
-                    borderBottomColor="lightgrey"
-                    borderTopColor="lightgrey"
-                    opacity={
-                      teachers.find((teacher) => teacher.id === item.id)!
-                        .isPresent
-                        ? 1
-                        : 0.3
-                    }
-                  >
-                    <ThemedText fontSize={16} fontWeight="bold" ml="s">
-                      {item.name}
-                    </ThemedText>
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={35}
-                      style={{ margin: 0 }}
-                      color="green"
-                    />
-                  </ThemedView>
-                </Pressable>
+                  <ThemedText fontSize={16} fontWeight="bold" ml="s">
+                    {item.name}
+                  </ThemedText>
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={35}
+                    style={{ margin: 0 }}
+                    color="green"
+                  />
+                </TextButton>
               )}
             />
           </CustomCard.Root>
@@ -310,15 +294,10 @@ export default function LessonDetails({
                 />
               </TextButton>
 
-              <ThemedView
-                py="xs"
-                px="s"
-                flexDirection="row"
+              <TextButton
                 justifyContent="space-between"
-                alignItems="center"
-                borderRadius={25}
-                borderWidth={1}
-                borderColor="lightgrey"
+                variant="outline"
+                disabled
               >
                 <ThemedView flexDirection="row" alignItems="center">
                   <Ionicons name="book" size={25} style={{ margin: 0 }} />
@@ -337,16 +316,11 @@ export default function LessonDetails({
                   minValue={0}
                   isLocked={!isEditable}
                 />
-              </ThemedView>
-              <ThemedView
-                py="xs"
-                px="s"
-                flexDirection="row"
+              </TextButton>
+              <TextButton
                 justifyContent="space-between"
-                alignItems="center"
-                borderRadius={25}
-                borderWidth={1}
-                borderColor="lightgrey"
+                variant="outline"
+                disabled
               >
                 <ThemedView flexDirection="row" alignItems="center">
                   <Ionicons
@@ -381,7 +355,7 @@ export default function LessonDetails({
                     fontSize: 20,
                   }}
                 />
-              </ThemedView>
+              </TextButton>
             </ThemedView>
           </CustomCard.Root>
         </ScrollView>

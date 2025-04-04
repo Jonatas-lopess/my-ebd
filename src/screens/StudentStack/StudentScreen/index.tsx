@@ -8,7 +8,6 @@ import { useCallback, useRef, useState } from "react";
 import { FlatList, Pressable, TextInput, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackHeader } from "@components/StackHeader";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   BottomSheetEventType,
   CustomBottomModal,
@@ -100,7 +99,7 @@ export default function StudentScreen() {
     });
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <>
       <ThemedView flex={1} style={{ backgroundColor: "#fff" }}>
         <FocusAwareStatusBar style="dark" translucent />
 
@@ -322,6 +321,6 @@ export default function StudentScreen() {
           />
         </CustomBottomModal.Content>
       </CustomBottomModal.Root>
-    </GestureHandlerRootView>
+    </>
   );
 }
