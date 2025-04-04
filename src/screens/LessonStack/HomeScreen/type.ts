@@ -2,8 +2,11 @@ export type Lesson = {
   id: string;
   title: string;
   date: string;
+  reports: {
+    pending: number;
+    presents?: number;
+  };
   total: number;
-  presents?: number;
 };
 
 export type NewLesson = {
