@@ -143,30 +143,10 @@ export default function GeneralScreen() {
           >
             <ThemedView alignItems="center">
               <ThemedText color="black" fontWeight="bold" mt="m">
-                Ranking de Turmas
+                Ranking Geral de Pontuação
               </ThemedText>
               <ThemedText color="gray" fontSize={12}>
-                O ranking é baseado no intervalo selecionado.
-              </ThemedText>
-            </ThemedView>
-
-            <ScrollView
-              horizontal={true}
-              style={{ marginTop: 20 }}
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 10, paddingHorizontal: 10 }}
-            >
-              <ChartCard title="1º Ano A" value={80} />
-              <ChartCard title="1º Ano B" value={76} />
-              <ChartCard title="1º Ano C" value={49} />
-            </ScrollView>
-
-            <ThemedView alignItems="center">
-              <ThemedText color="black" fontWeight="bold" mt="m">
-                Ranking de Presença
-              </ThemedText>
-              <ThemedText color="gray" fontSize={12}>
-                A frequência é baseada no intervalo selecionado.
+                A pontuação é baseada no intervalo selecionado.
               </ThemedText>
             </ThemedView>
 
