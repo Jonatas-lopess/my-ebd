@@ -17,6 +17,8 @@ import { useState } from "react";
 import { FakeCurrencyInput } from "react-native-currency-input";
 import { TeacherCallType, TeacherInfoType, ClassesType } from "./type";
 import { CustomCard } from "@components/CustomCard";
+import TextButton from "@components/TextButton";
+import NumberPick from "@components/NumberPick";
 
 export default function LessonDetails({
   route,
@@ -284,15 +286,10 @@ export default function LessonDetails({
           <CustomCard.Root borderRadius={20}>
             <CustomCard.Title>Relatório de Professores</CustomCard.Title>
             <ThemedView gap="xs" mt="s">
-              <ThemedView
-                py="xs"
-                px="s"
-                flexDirection="row"
+              <TextButton
                 justifyContent="space-between"
-                alignItems="center"
-                borderRadius={25}
-                borderWidth={1}
-                borderColor="lightgrey"
+                variant="outline"
+                disabled
               >
                 <ThemedView flexDirection="row" alignItems="center">
                   <Ionicons name="bookmark" size={25} style={{ margin: 0 }} />
@@ -300,43 +297,18 @@ export default function LessonDetails({
                     Bíblias
                   </ThemedText>
                 </ThemedView>
-                <ThemedView flexDirection="row" gap="m">
-                  {isEditable && (
-                    <Ionicons
-                      name="arrow-up"
-                      size={25}
-                      style={{ margin: 0 }}
-                      onPress={() =>
-                        setTeacherInfos((teacherInfos) => ({
-                          ...teacherInfos,
-                          bibles: teacherInfos.bibles + 1,
-                        }))
-                      }
-                    />
-                  )}
-
-                  <ThemedText variant="h3">{teacherInfos.bibles}</ThemedText>
-
-                  {isEditable && (
-                    <Ionicons
-                      name="arrow-down"
-                      size={25}
-                      style={{ margin: 0 }}
-                      onPress={() =>
-                        setTeacherInfos((teacherInfos) => ({
-                          ...teacherInfos,
-                          bibles:
-                            teacherInfos.bibles === 0
-                              ? teacherInfos.bibles
-                              : teacherInfos.bibles - 1,
-                        }))
-                      }
-                      disabled={teacherInfos.bibles === 0}
-                      color={teacherInfos.bibles === 0 ? "lightgrey" : "black"}
-                    />
-                  )}
-                </ThemedView>
-              </ThemedView>
+                <NumberPick
+                  value={teacherInfos.bibles}
+                  onChange={(value) =>
+                    setTeacherInfos((teacherInfos) => ({
+                      ...teacherInfos,
+                      bibles: value!,
+                    }))
+                  }
+                  minValue={0}
+                  isLocked={!isEditable}
+                />
+              </TextButton>
 
               <ThemedView
                 py="xs"
@@ -354,42 +326,17 @@ export default function LessonDetails({
                     Revistas
                   </ThemedText>
                 </ThemedView>
-                <ThemedView flexDirection="row" gap="m">
-                  {isEditable && (
-                    <Ionicons
-                      name="arrow-up"
-                      size={25}
-                      style={{ margin: 0 }}
-                      onPress={() =>
-                        setTeacherInfos((teacherInfos) => ({
-                          ...teacherInfos,
-                          books: teacherInfos.books + 1,
-                        }))
-                      }
-                    />
-                  )}
-
-                  <ThemedText variant="h3">{teacherInfos.books}</ThemedText>
-
-                  {isEditable && (
-                    <Ionicons
-                      name="arrow-down"
-                      size={25}
-                      style={{ margin: 0 }}
-                      onPress={() =>
-                        setTeacherInfos((teacherInfos) => ({
-                          ...teacherInfos,
-                          books:
-                            teacherInfos.books === 0
-                              ? teacherInfos.books
-                              : teacherInfos.books - 1,
-                        }))
-                      }
-                      disabled={teacherInfos.books === 0}
-                      color={teacherInfos.books === 0 ? "lightgrey" : "black"}
-                    />
-                  )}
-                </ThemedView>
+                <NumberPick
+                  value={teacherInfos.books}
+                  onChange={(value) =>
+                    setTeacherInfos((teacherInfos) => ({
+                      ...teacherInfos,
+                      books: value!,
+                    }))
+                  }
+                  minValue={0}
+                  isLocked={!isEditable}
+                />
               </ThemedView>
               <ThemedView
                 py="xs"
