@@ -10,7 +10,6 @@ import { useAuth } from "@providers/AuthProvider";
 import { StackHeader } from "@components/StackHeader";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useCallback, useRef, useState } from "react";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   DateTimePickerAndroid,
   DateTimePickerEvent,
@@ -82,7 +81,7 @@ export default function HomeScreen() {
   const handleCreateNewLesson = () => {};
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <>
       <ThemedView flex={1} style={{ backgroundColor: "white" }}>
         <FocusAwareStatusBar style="dark" translucent />
 
@@ -249,6 +248,6 @@ export default function HomeScreen() {
           <CustomBottomModal.Action onPress={handleCreateNewLesson} />
         </CustomBottomModal.Root>
       </ThemedView>
-    </GestureHandlerRootView>
+    </>
   );
 }

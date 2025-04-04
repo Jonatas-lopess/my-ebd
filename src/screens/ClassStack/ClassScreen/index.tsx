@@ -6,7 +6,6 @@ import { useTheme } from "@shopify/restyle";
 import { InfoCard } from "@components/InfoCard";
 import { StackHeader } from "@components/StackHeader";
 import { useNavigation } from "@react-navigation/native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   BottomSheetEventType,
   CustomBottomModal,
@@ -46,7 +45,7 @@ export default function ClassScreen() {
   }, []);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <>
       <ThemedView flex={1} style={{ backgroundColor: "white" }}>
         <FocusAwareStatusBar style="dark" translucent />
 
@@ -167,6 +166,6 @@ export default function ClassScreen() {
           />
         </CustomBottomModal.Content>
       </CustomBottomModal.Root>
-    </GestureHandlerRootView>
+    </>
   );
 }

@@ -1,10 +1,8 @@
+import ThemedView from "@components/ThemedView";
 import { useTheme } from "@shopify/restyle";
 import { ThemeProps } from "@theme";
 import { FlexStyle } from "react-native";
-import {
-  GestureHandlerRootView,
-  TouchableOpacity,
-} from "react-native-gesture-handler";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 type TextButtonProps = {
   children: React.ReactNode;
@@ -12,6 +10,15 @@ type TextButtonProps = {
   variant?: "outline" | "solid";
   justifyContent?: FlexStyle["justifyContent"];
   disabled?: boolean;
+};
+
+type OutlineStyleType = {
+  borderWidth: number;
+  borderColor: keyof ThemeProps["colors"];
+};
+
+type SolidStyleType = {
+  backgroundColor: keyof ThemeProps["colors"];
 };
 
 export default function TextButton({
@@ -22,29 +29,27 @@ export default function TextButton({
   disabled = false,
 }: TextButtonProps) {
   const theme = useTheme<ThemeProps>();
-  const outlineStyles = {
+  const outlineStyles: OutlineStyleType = {
     borderWidth: 1,
-    borderColor: theme.colors.lightgrey,
+    borderColor: "lightgrey",
   };
-  const solidStyles = {
-    backgroundColor: theme.colors.primary,
+  const solidStyles: SolidStyleType = {
+    backgroundColor: "primary",
   };
 
   return (
-    <GestureHandlerRootView
-      style={{
-        paddingVertical: theme.spacing.xs,
-        paddingHorizontal: theme.spacing.s,
-        flexDirection: "row",
-        justifyContent: justifyContent,
-        alignItems: "center",
-        borderRadius: 25,
-        ...(variant === "solid" ? solidStyles : outlineStyles),
-      }}
-    >
-      <TouchableOpacity onPress={onClick} disabled={disabled}>
+    <TouchableOpacity onPress={onClick} disabled={disabled}>
+      <ThemedView
+        paddingVertical="xs"
+        paddingHorizontal="s"
+        flexDirection="row"
+        justifyContent={justifyContent}
+        alignItems="center"
+        borderRadius={25}
+        {...(variant === "solid" ? solidStyles : outlineStyles)}
+      >
         {children}
-      </TouchableOpacity>
-    </GestureHandlerRootView>
+      </ThemedView>
+    </TouchableOpacity>
   );
 }
