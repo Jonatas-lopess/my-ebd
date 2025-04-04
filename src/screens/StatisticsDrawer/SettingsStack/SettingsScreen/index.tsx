@@ -19,12 +19,13 @@ export default function SettingsScreen() {
         />
       </StackHeader.Root>
 
-      <ThemedView flex={1} py="s" gap="s" backgroundColor="lightgrey">
+      <ThemedView flex={1} py="s" gap="s" backgroundColor="white">
         <SettingsOptions.Group>
           <SettingsOptions.Card title="Pontuação" icon="trophy-outline" />
           <SettingsOptions.Card
             title="Notificações"
             icon="notifications-outline"
+            disableSeparator
           />
         </SettingsOptions.Group>
 
@@ -59,6 +60,7 @@ export default function SettingsScreen() {
                 params: { screen: "TeacherAccess" },
               })
             }
+            disableSeparator
           />
         </SettingsOptions.Group>
 
@@ -82,6 +84,7 @@ export default function SettingsScreen() {
                 params: { screen: "ManageHeadquarter" },
               })
             }
+            disableSeparator
           />
         </SettingsOptions.Group>
       </ThemedView>

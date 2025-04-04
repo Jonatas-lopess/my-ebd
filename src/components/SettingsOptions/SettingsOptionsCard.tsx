@@ -7,21 +7,27 @@ type SettingsOptionsCardProps = {
   icon: NamePropType;
   title: string;
   onPress?: () => void;
+  disableSeparator?: boolean;
 };
 
 export default function SettingsOptionsCard({
   icon,
   title,
   onPress,
+  disableSeparator = false,
 }: SettingsOptionsCardProps) {
+  const borderStyle = {
+    borderBottomWidth: 1,
+    borderBottomStartRadius: 100,
+    borderBottomEndRadius: 30,
+  };
+
   return (
     <TouchableOpacity onPress={onPress}>
       <ThemedView
         padding="m"
-        borderBottomWidth={1}
+        {...(disableSeparator ? {} : borderStyle)}
         borderBottomColor="lightgrey"
-        borderBottomStartRadius={100}
-        borderBottomEndRadius={30}
         flexDirection="row"
         gap="l"
       >
