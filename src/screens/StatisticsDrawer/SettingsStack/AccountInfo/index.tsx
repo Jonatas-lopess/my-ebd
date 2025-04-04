@@ -23,7 +23,7 @@ export default function AccountInfo() {
         </StackHeader.Content>
       </StackHeader.Root>
 
-      <ThemedView flex={1} py="s" gap="s" backgroundColor="lightgrey">
+      <ThemedView flex={1} py="s" gap="s" backgroundColor="white">
         <CustomCard.Root>
           <CustomCard.Title>Nome Pessoal</CustomCard.Title>
           <CustomCard.Detail>

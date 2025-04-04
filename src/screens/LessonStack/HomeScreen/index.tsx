@@ -3,16 +3,12 @@ import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
-import { FlatList, TouchableOpacity } from "react-native";
+import { FlatList } from "react-native";
 import InfoCard from "@components/InfoCard";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@providers/AuthProvider";
 import { StackHeader } from "@components/StackHeader";
-import {
-  BottomSheetModal,
-  BottomSheetModalProvider,
-  BottomSheetView,
-} from "@gorhom/bottom-sheet";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useCallback, useRef, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
