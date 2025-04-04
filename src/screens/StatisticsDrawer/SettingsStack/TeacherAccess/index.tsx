@@ -21,12 +21,7 @@ export default function TeacherAccess() {
         </StackHeader.Content>
       </StackHeader.Root>
 
-      <ThemedView
-        flex={1}
-        style={{ backgroundColor: "lightgray" }}
-        gap="s"
-        py="s"
-      >
+      <ThemedView flex={1} backgroundColor="white" gap="s" py="s">
         <CustomCard.Root>
           <CustomCard.Detail>
             Aqui você pode criar os acessos para os professores. Com este tokem
