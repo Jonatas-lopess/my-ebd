@@ -8,6 +8,7 @@ export type TeacherCallType = {
   id: number;
   name: string;
   isPresent: boolean;
+  report?: TeacherInfoType;
 };
 
 export type TeacherInfoType = {
