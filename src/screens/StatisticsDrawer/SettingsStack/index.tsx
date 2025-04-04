@@ -22,7 +22,7 @@ const StackConfig = createNativeStackNavigator<SettingsStackParamList>({
   screenOptions: {
     headerShown: false,
   },
-  layout: ({ children }) => (
+  screenLayout: ({ children }) => (
     <SettingsStackLayout>{children}</SettingsStackLayout>
   ),
 });
