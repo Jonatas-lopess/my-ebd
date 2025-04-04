@@ -3,7 +3,7 @@ import ThemedView from "@components/ThemedView";
 import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
-import InfoCard from "@components/InfoCard";
+import { InfoCard } from "@components/InfoCard";
 import { StackHeader } from "@components/StackHeader";
 import { useNavigation } from "@react-navigation/native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -67,9 +67,7 @@ export default function ClassScreen() {
         <FlatList
           data={DATA_CLASS}
           renderItem={({ item }) => (
-            <InfoCard
-              title={item.name}
-              detail={item.type}
+            <InfoCard.Root
               onPress={() =>
                 navigation.navigate("Turmas", {
                   screen: "ClassDetails",
@@ -77,9 +75,17 @@ export default function ClassScreen() {
                 })
               }
               onLongPress={() => {}}
-              info={{ title: "Alunos", detail: item.students.toString() }}
-              extraInfo={{ title: "Media", detail: "100%" }}
-            />
+            >
+              <ThemedView flexDirection="row" alignItems="center" gap="xs">
+                <InfoCard.Title>{item.name}</InfoCard.Title>
+                <InfoCard.Detail>• {item.type}</InfoCard.Detail>
+              </ThemedView>
+              <InfoCard.Content>
+                <ThemedText>Alunos: {item.students.toString()}</ThemedText>
+                <ThemedView borderLeftWidth={1} borderLeftColor="lightgrey" />
+                <ThemedText>Media: 100%</ThemedText>
+              </InfoCard.Content>
+            </InfoCard.Root>
           )}
           keyExtractor={(item) => item.id.toString()}
           style={{ backgroundColor: theme.colors.white }}
