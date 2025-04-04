@@ -16,6 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { FakeCurrencyInput } from "react-native-currency-input";
 import { TeacherCallType, TeacherInfoType, ClassesType } from "./type";
+import { CustomCard } from "@components/CustomCard";
 
 export default function LessonDetails({
   route,
@@ -145,19 +146,13 @@ export default function LessonDetails({
 
       <ThemedView flex={1} backgroundColor="white" padding="s">
         <ScrollView nestedScrollEnabled contentContainerStyle={{ gap: 10 }}>
-          <ThemedView
-            style={{ backgroundColor: "white" }}
-            padding="s"
-            borderRadius={20}
-          >
-            <ThemedText variant="h3" textAlign="center">
-              Relatório Geral
-            </ThemedText>
-            <ThemedText color="gray" textAlign="center">
+          <CustomCard.Root borderRadius={20}>
+            <CustomCard.Title>Relatório Geral</CustomCard.Title>
+            <CustomCard.Detail>
               O relatório geral é o conjunto de dados do dia de aula. É
               necessário que todas as chamadas sejam feitas para obter um
               resultado completo.
-            </ThemedText>
+            </CustomCard.Detail>
             <TouchableOpacity
               style={{
                 backgroundColor: theme.colors.secondary,
@@ -176,20 +171,14 @@ export default function LessonDetails({
                 Gerar Relatório
               </ThemedText>
             </TouchableOpacity>
-          </ThemedView>
+          </CustomCard.Root>
 
-          <ThemedView
-            style={{ backgroundColor: "white" }}
-            padding="s"
-            borderRadius={20}
-          >
-            <ThemedText variant="h3" textAlign="center">
-              Relatórios por Classes
-            </ThemedText>
-            <ThemedText color="gray" textAlign="center">
+          <CustomCard.Root borderRadius={20}>
+            <CustomCard.Title>Relatórios por Classe</CustomCard.Title>
+            <CustomCard.Detail>
               Aqui você acompanha o relatório das chamadas feitas em cada
               classe.
-            </ThemedText>
+            </CustomCard.Detail>
             <FlatList
               data={TURMAS}
               scrollEnabled={false}
@@ -237,19 +226,13 @@ export default function LessonDetails({
                 </TouchableOpacity>
               )}
             />
-          </ThemedView>
+          </CustomCard.Root>
 
-          <ThemedView
-            style={{ backgroundColor: "white" }}
-            padding="s"
-            borderRadius={20}
-          >
-            <ThemedText variant="h3" textAlign="center">
-              Chamada de Professores
-            </ThemedText>
-            <ThemedText color="gray" textAlign="center">
+          <CustomCard.Root borderRadius={20}>
+            <CustomCard.Title>Chamada de Professores</CustomCard.Title>
+            <CustomCard.Detail>
               Clique sobre os nomes para confirmar a presença.
-            </ThemedText>
+            </CustomCard.Detail>
             <FlatList
               data={TURMAS}
               scrollEnabled={false}
@@ -296,165 +279,164 @@ export default function LessonDetails({
                 </Pressable>
               )}
             />
-          </ThemedView>
+          </CustomCard.Root>
 
-          <ThemedView
-            style={{ backgroundColor: "white" }}
-            padding="s"
-            borderRadius={20}
-            gap="s"
-          >
-            <ThemedText variant="h3" textAlign="center">
-              Relatório de Professores
-            </ThemedText>
-            <ThemedView
-              py="xs"
-              px="s"
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
-              borderRadius={25}
-              borderWidth={1}
-              borderColor="lightgrey"
-            >
-              <ThemedView flexDirection="row" alignItems="center">
-                <Ionicons name="bookmark" size={25} style={{ margin: 0 }} />
-                <ThemedText fontSize={16} fontWeight="bold" ml="s">
-                  Bíblias
-                </ThemedText>
+          <CustomCard.Root borderRadius={20}>
+            <CustomCard.Title>Relatório de Professores</CustomCard.Title>
+            <ThemedView gap="xs" mt="s">
+              <ThemedView
+                py="xs"
+                px="s"
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems="center"
+                borderRadius={25}
+                borderWidth={1}
+                borderColor="lightgrey"
+              >
+                <ThemedView flexDirection="row" alignItems="center">
+                  <Ionicons name="bookmark" size={25} style={{ margin: 0 }} />
+                  <ThemedText fontSize={16} fontWeight="bold" ml="s">
+                    Bíblias
+                  </ThemedText>
+                </ThemedView>
+                <ThemedView flexDirection="row" gap="m">
+                  {isEditable && (
+                    <Ionicons
+                      name="arrow-up"
+                      size={25}
+                      style={{ margin: 0 }}
+                      onPress={() =>
+                        setTeacherInfos((teacherInfos) => ({
+                          ...teacherInfos,
+                          bibles: teacherInfos.bibles + 1,
+                        }))
+                      }
+                    />
+                  )}
+
+                  <ThemedText variant="h3">{teacherInfos.bibles}</ThemedText>
+
+                  {isEditable && (
+                    <Ionicons
+                      name="arrow-down"
+                      size={25}
+                      style={{ margin: 0 }}
+                      onPress={() =>
+                        setTeacherInfos((teacherInfos) => ({
+                          ...teacherInfos,
+                          bibles:
+                            teacherInfos.bibles === 0
+                              ? teacherInfos.bibles
+                              : teacherInfos.bibles - 1,
+                        }))
+                      }
+                      disabled={teacherInfos.bibles === 0}
+                      color={teacherInfos.bibles === 0 ? "lightgrey" : "black"}
+                    />
+                  )}
+                </ThemedView>
               </ThemedView>
-              <ThemedView flexDirection="row" gap="m">
-                {isEditable && (
+
+              <ThemedView
+                py="xs"
+                px="s"
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems="center"
+                borderRadius={25}
+                borderWidth={1}
+                borderColor="lightgrey"
+              >
+                <ThemedView flexDirection="row" alignItems="center">
+                  <Ionicons name="book" size={25} style={{ margin: 0 }} />
+                  <ThemedText fontSize={16} fontWeight="bold" ml="s">
+                    Revistas
+                  </ThemedText>
+                </ThemedView>
+                <ThemedView flexDirection="row" gap="m">
+                  {isEditable && (
+                    <Ionicons
+                      name="arrow-up"
+                      size={25}
+                      style={{ margin: 0 }}
+                      onPress={() =>
+                        setTeacherInfos((teacherInfos) => ({
+                          ...teacherInfos,
+                          books: teacherInfos.books + 1,
+                        }))
+                      }
+                    />
+                  )}
+
+                  <ThemedText variant="h3">{teacherInfos.books}</ThemedText>
+
+                  {isEditable && (
+                    <Ionicons
+                      name="arrow-down"
+                      size={25}
+                      style={{ margin: 0 }}
+                      onPress={() =>
+                        setTeacherInfos((teacherInfos) => ({
+                          ...teacherInfos,
+                          books:
+                            teacherInfos.books === 0
+                              ? teacherInfos.books
+                              : teacherInfos.books - 1,
+                        }))
+                      }
+                      disabled={teacherInfos.books === 0}
+                      color={teacherInfos.books === 0 ? "lightgrey" : "black"}
+                    />
+                  )}
+                </ThemedView>
+              </ThemedView>
+              <ThemedView
+                py="xs"
+                px="s"
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems="center"
+                borderRadius={25}
+                borderWidth={1}
+                borderColor="lightgrey"
+              >
+                <ThemedView flexDirection="row" alignItems="center">
                   <Ionicons
-                    name="arrow-up"
+                    name="cash-outline"
                     size={25}
                     style={{ margin: 0 }}
-                    onPress={() =>
-                      setTeacherInfos((teacherInfos) => ({
-                        ...teacherInfos,
-                        bibles: teacherInfos.bibles + 1,
-                      }))
-                    }
                   />
-                )}
-
-                <ThemedText variant="h3">{teacherInfos.bibles}</ThemedText>
-
-                {isEditable && (
-                  <Ionicons
-                    name="arrow-down"
-                    size={25}
-                    style={{ margin: 0 }}
-                    onPress={() =>
-                      setTeacherInfos((teacherInfos) => ({
-                        ...teacherInfos,
-                        bibles:
-                          teacherInfos.bibles === 0
-                            ? teacherInfos.bibles
-                            : teacherInfos.bibles - 1,
-                      }))
-                    }
-                    disabled={teacherInfos.bibles === 0}
-                    color={teacherInfos.bibles === 0 ? "lightgrey" : "black"}
-                  />
-                )}
+                  <ThemedText fontSize={16} fontWeight="bold" ml="s">
+                    Oferta
+                  </ThemedText>
+                </ThemedView>
+                <FakeCurrencyInput
+                  editable={isEditable}
+                  value={teacherInfos.offer}
+                  placeholder="R$0,00"
+                  prefix="R$"
+                  delimiter="."
+                  separator=","
+                  precision={2}
+                  minValue={0}
+                  onChangeValue={(value) =>
+                    setTeacherInfos((teacherInfos) => ({
+                      ...teacherInfos,
+                      offer: value ? value : 0,
+                    }))
+                  }
+                  style={{
+                    textAlignVertical: "center",
+                    padding: 0,
+                    margin: 0,
+                    fontWeight: "bold",
+                    fontSize: 20,
+                  }}
+                />
               </ThemedView>
             </ThemedView>
-
-            <ThemedView
-              py="xs"
-              px="s"
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
-              borderRadius={25}
-              borderWidth={1}
-              borderColor="lightgrey"
-            >
-              <ThemedView flexDirection="row" alignItems="center">
-                <Ionicons name="book" size={25} style={{ margin: 0 }} />
-                <ThemedText fontSize={16} fontWeight="bold" ml="s">
-                  Revistas
-                </ThemedText>
-              </ThemedView>
-              <ThemedView flexDirection="row" gap="m">
-                {isEditable && (
-                  <Ionicons
-                    name="arrow-up"
-                    size={25}
-                    style={{ margin: 0 }}
-                    onPress={() =>
-                      setTeacherInfos((teacherInfos) => ({
-                        ...teacherInfos,
-                        books: teacherInfos.books + 1,
-                      }))
-                    }
-                  />
-                )}
-
-                <ThemedText variant="h3">{teacherInfos.books}</ThemedText>
-
-                {isEditable && (
-                  <Ionicons
-                    name="arrow-down"
-                    size={25}
-                    style={{ margin: 0 }}
-                    onPress={() =>
-                      setTeacherInfos((teacherInfos) => ({
-                        ...teacherInfos,
-                        books:
-                          teacherInfos.books === 0
-                            ? teacherInfos.books
-                            : teacherInfos.books - 1,
-                      }))
-                    }
-                    disabled={teacherInfos.books === 0}
-                    color={teacherInfos.books === 0 ? "lightgrey" : "black"}
-                  />
-                )}
-              </ThemedView>
-            </ThemedView>
-            <ThemedView
-              py="xs"
-              px="s"
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
-              borderRadius={25}
-              borderWidth={1}
-              borderColor="lightgrey"
-            >
-              <ThemedView flexDirection="row" alignItems="center">
-                <Ionicons name="cash-outline" size={25} style={{ margin: 0 }} />
-                <ThemedText fontSize={16} fontWeight="bold" ml="s">
-                  Oferta
-                </ThemedText>
-              </ThemedView>
-              <FakeCurrencyInput
-                editable={isEditable}
-                value={teacherInfos.offer}
-                placeholder="R$0,00"
-                prefix="R$"
-                delimiter="."
-                separator=","
-                precision={2}
-                minValue={0}
-                onChangeValue={(value) =>
-                  setTeacherInfos((teacherInfos) => ({
-                    ...teacherInfos,
-                    offer: value ? value : 0,
-                  }))
-                }
-                style={{
-                  textAlignVertical: "center",
-                  padding: 0,
-                  margin: 0,
-                  fontWeight: "bold",
-                  fontSize: 20,
-                }}
-              />
-            </ThemedView>
-          </ThemedView>
+          </CustomCard.Root>
         </ScrollView>
       </ThemedView>
     </ThemedView>
