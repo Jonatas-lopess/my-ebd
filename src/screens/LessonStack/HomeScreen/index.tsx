@@ -4,7 +4,7 @@ import ThemedView from "@components/ThemedView";
 import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
 import { FlatList } from "react-native";
-import InfoCard from "@components/InfoCard";
+import { InfoCard } from "@components/InfoCard";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@providers/AuthProvider";
 import { StackHeader } from "@components/StackHeader";
@@ -37,21 +37,29 @@ export default function HomeScreen() {
       title: "Aula 1",
       date: "10/01/2023",
       total: 32,
-      presents: 20,
+      reports: {
+        pending: 0,
+        presents: 20,
+      },
     },
     {
       id: "aDe2",
       title: "Aula 2",
       date: "10/01/2023",
       total: 32,
-      presents: 20,
+      reports: {
+        pending: 0,
+        presents: 20,
+      },
     },
     {
       id: "aDe3",
       title: "Aula 3",
       date: "10/01/2023",
       total: 32,
-      presents: 20,
+      reports: {
+        pending: 2,
+      },
     },
   ];
 
@@ -97,13 +105,7 @@ export default function HomeScreen() {
         <FlatList
           data={DATA_LESSONS}
           renderItem={({ item }) => (
-            <InfoCard
-              title={`${item.title} - ${item.date}`}
-              detail={
-                item.presents
-                  ? `${((item.presents / item.total) * 100).toFixed(2)}%`
-                  : ""
-              }
+            <InfoCard.Root
               onPress={() =>
                 navigation.navigate("Inicio", {
                   screen: "LessonDetails",
@@ -111,17 +113,38 @@ export default function HomeScreen() {
                 })
               }
               onLongPress={() => user?.role === "admin" && alert("edit")}
-              info={{
-                title: "Presentes",
-                detail: item.presents ? item.presents.toString() : "-",
-              }}
-              extraInfo={{
-                title: "Ausentes",
-                detail: item.presents
-                  ? (item.total - item.presents).toString()
-                  : "-",
-              }}
-            />
+            >
+              <ThemedView flexDirection="row" alignItems="center">
+                <InfoCard.Title>{`${item.title} - ${item.date}`}</InfoCard.Title>
+                <InfoCard.Detail>
+                  {item.reports.presents
+                    ? `• ${((item.reports.presents / item.total) * 100).toFixed(
+                        2
+                      )}%`
+                    : ""}
+                </InfoCard.Detail>
+              </ThemedView>
+              {item.reports.pending !== 0 && (
+                <ThemedText style={{ color: "red" }}>
+                  2 chamadas pendentes
+                </ThemedText>
+              )}
+              <InfoCard.Content>
+                <ThemedText>
+                  Presentes:{" "}
+                  {item.reports.presents
+                    ? item.reports.presents.toString()
+                    : "-"}
+                </ThemedText>
+                <ThemedView borderLeftWidth={1} borderLeftColor="lightgrey" />
+                <ThemedText>
+                  Ausentes:{" "}
+                  {item.reports.presents
+                    ? (item.total - item.reports.presents).toString()
+                    : "-"}
+                </ThemedText>
+              </InfoCard.Content>
+            </InfoCard.Root>
           )}
           keyExtractor={(item) => item.id}
           style={{ backgroundColor: theme.colors.white }}
