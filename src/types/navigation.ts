@@ -28,6 +28,7 @@ export type TeacherRootTabProps<T extends keyof TeacherRootTabParamList> =
 export type HomeStackParamList = {
   LessonList: undefined;
   LessonDetails: { lessonId: string };
+  ClassReport: { classId: string };
 };
 
 export type HomeStackProps<T extends keyof HomeStackParamList> =

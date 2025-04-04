@@ -15,24 +15,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { FakeCurrencyInput } from "react-native-currency-input";
-
-type ClassesType = {
-  id: number;
-  name: string;
-  description?: string;
-};
-
-type TeacherCallType = {
-  id: number;
-  name: string;
-  isPresent: boolean;
-};
-
-type TeacherInfoType = {
-  bibles: number;
-  books: number;
-  offer: number;
-};
+import { TeacherCallType, TeacherInfoType, ClassesType } from "./type";
 
 export default function LessonDetails({
   route,
@@ -154,7 +137,7 @@ export default function LessonDetails({
           />
           <StackHeader.Action
             name={isEditable ? "close" : "pencil"}
-            onPress={() => setIsEditable(!isEditable)}
+            onPress={() => setIsEditable((prev) => !prev)}
             color={theme.colors.gray}
           />
         </StackHeader.Actions>
@@ -216,7 +199,14 @@ export default function LessonDetails({
               }}
               keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }) => (
-                <TouchableOpacity onPress={() => {}}>
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("Inicio", {
+                      screen: "ClassReport",
+                      params: { classId: item.id.toString() },
+                    })
+                  }
+                >
                   <ThemedView
                     padding="xs"
                     flexDirection="row"
