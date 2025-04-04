@@ -10,11 +10,7 @@ import IntervalControl, {
 import { useState } from "react";
 import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
-
-type DataType = {
-  nome: string;
-  pontos: number;
-};
+import { DataType } from "./type";
 
 export default function ClassDetails() {
   const theme = useTheme<ThemeProps>();
