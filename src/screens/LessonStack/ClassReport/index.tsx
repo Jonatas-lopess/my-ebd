@@ -104,158 +104,158 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
               )}
             />
           </CustomCard.Root>
-          <ThemedView
-            style={{ backgroundColor: "white" }}
-            padding="s"
-            borderRadius={20}
-            gap="s"
-          >
-            <ThemedText variant="h3" textAlign="center">
-              Relatório de Professores
-            </ThemedText>
-            <ThemedView
-              py="xs"
-              px="s"
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
-              borderRadius={25}
-              borderWidth={1}
-              borderColor="lightgrey"
-            >
-              <ThemedView flexDirection="row" alignItems="center">
-                <Ionicons name="bookmark" size={25} style={{ margin: 0 }} />
-                <ThemedText fontSize={16} fontWeight="bold" ml="s">
-                  Bíblias
-                </ThemedText>
+
+          <CustomCard.Root borderRadius={20}>
+            <CustomCard.Title>Relatório de Professores</CustomCard.Title>
+            <ThemedView gap="xs" mt="s">
+              <ThemedView
+                py="xs"
+                px="s"
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems="center"
+                borderRadius={25}
+                borderWidth={1}
+                borderColor="lightgrey"
+              >
+                <ThemedView flexDirection="row" alignItems="center">
+                  <Ionicons name="bookmark" size={25} style={{ margin: 0 }} />
+                  <ThemedText fontSize={16} fontWeight="bold" ml="s">
+                    Bíblias
+                  </ThemedText>
+                </ThemedView>
+                <ThemedView flexDirection="row" gap="m">
+                  {isEditable && (
+                    <Ionicons
+                      name="arrow-up"
+                      size={25}
+                      style={{ margin: 0 }}
+                      onPress={() =>
+                        setReport((prev) => ({
+                          ...prev,
+                          bibles: prev.bibles + 1,
+                        }))
+                      }
+                    />
+                  )}
+
+                  <ThemedText variant="h3">{report.bibles}</ThemedText>
+
+                  {isEditable && (
+                    <Ionicons
+                      name="arrow-down"
+                      size={25}
+                      style={{ margin: 0 }}
+                      onPress={() =>
+                        setReport((prev) => ({
+                          ...prev,
+                          bibles:
+                            prev.bibles === 0 ? prev.bibles : prev.bibles - 1,
+                        }))
+                      }
+                      disabled={report.bibles === 0}
+                      color={report.bibles === 0 ? "lightgrey" : "black"}
+                    />
+                  )}
+                </ThemedView>
               </ThemedView>
-              <ThemedView flexDirection="row" gap="m">
-                {isEditable && (
+
+              <ThemedView
+                py="xs"
+                px="s"
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems="center"
+                borderRadius={25}
+                borderWidth={1}
+                borderColor="lightgrey"
+              >
+                <ThemedView flexDirection="row" alignItems="center">
+                  <Ionicons name="book" size={25} style={{ margin: 0 }} />
+                  <ThemedText fontSize={16} fontWeight="bold" ml="s">
+                    Revistas
+                  </ThemedText>
+                </ThemedView>
+                <ThemedView flexDirection="row" gap="m">
+                  {isEditable && (
+                    <Ionicons
+                      name="arrow-up"
+                      size={25}
+                      style={{ margin: 0 }}
+                      onPress={() =>
+                        setReport((prev) => ({
+                          ...prev,
+                          books: prev.books + 1,
+                        }))
+                      }
+                    />
+                  )}
+
+                  <ThemedText variant="h3">{report.books}</ThemedText>
+
+                  {isEditable && (
+                    <Ionicons
+                      name="arrow-down"
+                      size={25}
+                      style={{ margin: 0 }}
+                      onPress={() =>
+                        setReport((prev) => ({
+                          ...prev,
+                          books: prev.books === 0 ? prev.books : prev.books - 1,
+                        }))
+                      }
+                      disabled={report.books === 0}
+                      color={report.books === 0 ? "lightgrey" : "black"}
+                    />
+                  )}
+                </ThemedView>
+              </ThemedView>
+              <ThemedView
+                py="xs"
+                px="s"
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems="center"
+                borderRadius={25}
+                borderWidth={1}
+                borderColor="lightgrey"
+              >
+                <ThemedView flexDirection="row" alignItems="center">
                   <Ionicons
-                    name="arrow-up"
+                    name="cash-outline"
                     size={25}
                     style={{ margin: 0 }}
-                    onPress={() =>
-                      setReport((prev) => ({
-                        ...prev,
-                        bibles: prev.bibles + 1,
-                      }))
-                    }
                   />
-                )}
-
-                <ThemedText variant="h3">{report.bibles}</ThemedText>
-
-                {isEditable && (
-                  <Ionicons
-                    name="arrow-down"
-                    size={25}
-                    style={{ margin: 0 }}
-                    onPress={() =>
-                      setReport((prev) => ({
-                        ...prev,
-                        bibles:
-                          prev.bibles === 0 ? prev.bibles : prev.bibles - 1,
-                      }))
-                    }
-                    disabled={report.bibles === 0}
-                    color={report.bibles === 0 ? "lightgrey" : "black"}
-                  />
-                )}
+                  <ThemedText fontSize={16} fontWeight="bold" ml="s">
+                    Oferta
+                  </ThemedText>
+                </ThemedView>
+                <FakeCurrencyInput
+                  editable={isEditable}
+                  value={report.offer}
+                  placeholder="R$0,00"
+                  prefix="R$"
+                  delimiter="."
+                  separator=","
+                  precision={2}
+                  minValue={0}
+                  onChangeValue={(value) =>
+                    setReport((prev) => ({
+                      ...prev,
+                      offer: value ? value : 0,
+                    }))
+                  }
+                  style={{
+                    textAlignVertical: "center",
+                    padding: 0,
+                    margin: 0,
+                    fontWeight: "bold",
+                    fontSize: 20,
+                  }}
+                />
               </ThemedView>
             </ThemedView>
-
-            <ThemedView
-              py="xs"
-              px="s"
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
-              borderRadius={25}
-              borderWidth={1}
-              borderColor="lightgrey"
-            >
-              <ThemedView flexDirection="row" alignItems="center">
-                <Ionicons name="book" size={25} style={{ margin: 0 }} />
-                <ThemedText fontSize={16} fontWeight="bold" ml="s">
-                  Revistas
-                </ThemedText>
-              </ThemedView>
-              <ThemedView flexDirection="row" gap="m">
-                {isEditable && (
-                  <Ionicons
-                    name="arrow-up"
-                    size={25}
-                    style={{ margin: 0 }}
-                    onPress={() =>
-                      setReport((prev) => ({
-                        ...prev,
-                        books: prev.books + 1,
-                      }))
-                    }
-                  />
-                )}
-
-                <ThemedText variant="h3">{report.books}</ThemedText>
-
-                {isEditable && (
-                  <Ionicons
-                    name="arrow-down"
-                    size={25}
-                    style={{ margin: 0 }}
-                    onPress={() =>
-                      setReport((prev) => ({
-                        ...prev,
-                        books: prev.books === 0 ? prev.books : prev.books - 1,
-                      }))
-                    }
-                    disabled={report.books === 0}
-                    color={report.books === 0 ? "lightgrey" : "black"}
-                  />
-                )}
-              </ThemedView>
-            </ThemedView>
-            <ThemedView
-              py="xs"
-              px="s"
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
-              borderRadius={25}
-              borderWidth={1}
-              borderColor="lightgrey"
-            >
-              <ThemedView flexDirection="row" alignItems="center">
-                <Ionicons name="cash-outline" size={25} style={{ margin: 0 }} />
-                <ThemedText fontSize={16} fontWeight="bold" ml="s">
-                  Oferta
-                </ThemedText>
-              </ThemedView>
-              <FakeCurrencyInput
-                editable={isEditable}
-                value={report.offer}
-                placeholder="R$0,00"
-                prefix="R$"
-                delimiter="."
-                separator=","
-                precision={2}
-                minValue={0}
-                onChangeValue={(value) =>
-                  setReport((prev) => ({
-                    ...prev,
-                    offer: value ? value : 0,
-                  }))
-                }
-                style={{
-                  textAlignVertical: "center",
-                  padding: 0,
-                  margin: 0,
-                  fontWeight: "bold",
-                  fontSize: 20,
-                }}
-              />
-            </ThemedView>
-          </ThemedView>
+          </CustomCard.Root>
         </ScrollView>
       </ThemedView>
     </ThemedView>
