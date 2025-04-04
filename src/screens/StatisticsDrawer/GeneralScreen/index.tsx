@@ -13,11 +13,7 @@ import IntervalControl, {
 import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { ThemeProps } from "@theme";
-
-type DataType = {
-  nome: string;
-  pontos: number;
-};
+import { DataType } from "@screens/ClassStack/ClassDetails/type";
 
 export default function GeneralScreen() {
   const theme = useTheme<ThemeProps>();

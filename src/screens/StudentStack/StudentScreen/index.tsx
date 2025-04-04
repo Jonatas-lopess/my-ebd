@@ -19,15 +19,7 @@ import {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import MaskInput, { Masks } from "react-native-mask-input";
-
-type Register = {
-  id: string | undefined;
-  name: string;
-  class: string | undefined;
-  isProfessor: boolean;
-  birthday?: Date;
-  phoneNumber?: string;
-};
+import { Register } from "./type";
 
 export default function StudentScreen() {
   const theme = useTheme<ThemeProps>();

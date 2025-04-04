@@ -17,19 +17,7 @@ import {
 } from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import { CustomBottomModal } from "@components/CustomBottomModal";
-
-type Lesson = {
-  id: string;
-  title: string;
-  date: string;
-  total: number;
-  presents?: number;
-};
-
-type NewLesson = {
-  lesson?: number;
-  date: Date;
-};
+import { Lesson, NewLesson } from "./type";
 
 export default function HomeScreen() {
   const theme = useTheme<ThemeProps>();

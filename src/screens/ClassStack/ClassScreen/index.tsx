@@ -14,11 +14,7 @@ import {
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useCallback, useRef, useState } from "react";
 import ThemedText from "@components/ThemedText";
-
-type NewClass = {
-  name: string;
-  type: string | undefined;
-};
+import { NewClass } from "./type";
 
 export default function ClassScreen() {
   const theme = useTheme<ThemeProps>();
