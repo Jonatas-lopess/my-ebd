@@ -3,10 +3,12 @@ import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 
 type CustomBottomModalActionProps = {
+  text?: string;
   onPress: () => void;
 };
 
 export default function CustomBottomModalAction({
+  text = "Criar",
   onPress,
 }: CustomBottomModalActionProps) {
   return (
@@ -26,7 +28,7 @@ export default function CustomBottomModalAction({
           style={{ color: "#fff" }}
           textTransform="uppercase"
         >
-          Criar
+          {text}
         </ThemedText>
       </ThemedView>
     </TouchableOpacity>

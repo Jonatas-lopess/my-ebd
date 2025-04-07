@@ -9,6 +9,7 @@ type TextButtonProps = {
   onClick?: () => void;
   variant?: "outline" | "solid";
   justifyContent?: FlexStyle["justifyContent"];
+  opacity?: number;
   disabled?: boolean;
 };
 
@@ -26,6 +27,7 @@ export default function TextButton({
   onClick = () => {},
   variant = "solid",
   justifyContent = "center",
+  opacity = 1,
   disabled = false,
 }: TextButtonProps) {
   const theme = useTheme<ThemeProps>();
@@ -44,6 +46,7 @@ export default function TextButton({
         paddingHorizontal="s"
         flexDirection="row"
         justifyContent={justifyContent}
+        opacity={opacity}
         alignItems="center"
         borderRadius={25}
         {...(variant === "solid" ? solidStyles : outlineStyles)}
