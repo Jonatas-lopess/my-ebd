@@ -4,15 +4,15 @@ export type ClassesType = {
   description?: string;
 };
 
-export type TeacherCallType = {
+export type ListItemType = {
   id: number;
   name: string;
   isPresent: boolean;
-  report?: TeacherInfoType;
+  report?: InfoType;
 };
 
-export type TeacherInfoType = {
-  bibles: number;
-  books: number;
+export type InfoType = {
+  bibles: boolean;
+  books: boolean;
   offer: number;
 };
