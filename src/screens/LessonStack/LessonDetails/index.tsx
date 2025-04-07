@@ -6,19 +6,13 @@ import ThemedView from "@components/ThemedView";
 import { HomeStackProps } from "@custom/types/navigation";
 import { ThemeProps } from "@theme";
 import { useNavigation } from "@react-navigation/native";
-import {
-  FlatList,
-  Pressable,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
+import { FlatList, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useRef, useState } from "react";
 import { FakeCurrencyInput } from "react-native-currency-input";
-import { TeacherCallType, TeacherInfoType, ClassesType } from "./type";
+import { ListItemType, ClassesType, InfoType } from "./type";
 import { CustomCard } from "@components/CustomCard";
 import TextButton from "@components/TextButton";
-import NumberPick from "@components/NumberPick";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { CustomBottomModal } from "@components/CustomBottomModal";
 
@@ -29,21 +23,21 @@ export default function LessonDetails({
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
   const [isEditable, setIsEditable] = useState(false);
-  const [teacherInfos, setTeacherInfos] = useState<TeacherInfoType>({
-    bibles: 0,
-    books: 0,
+  const [teacherInfos, setTeacherInfos] = useState<InfoType>({
+    bibles: false,
+    books: false,
     offer: 0,
   });
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
-  const TEACHERS: TeacherCallType[] = [
+  const TEACHERS: ListItemType[] = [
     {
       id: 1,
       name: "João",
       isPresent: true,
       report: {
-        bibles: 0,
-        books: 0,
+        bibles: true,
+        books: true,
         offer: 0,
       },
     },
@@ -52,8 +46,8 @@ export default function LessonDetails({
       name: "Maria",
       isPresent: true,
       report: {
-        bibles: 0,
-        books: 0,
+        bibles: false,
+        books: false,
         offer: 0,
       },
     },
@@ -62,8 +56,8 @@ export default function LessonDetails({
       name: "Pedro",
       isPresent: false,
       report: {
-        bibles: 0,
-        books: 0,
+        bibles: true,
+        books: false,
         offer: 0,
       },
     },
@@ -256,41 +250,52 @@ export default function LessonDetails({
 
       <CustomBottomModal.Root ref={bottomSheetRef}>
         <CustomBottomModal.Content title="Professor">
-          <TextButton justifyContent="space-between" variant="outline" disabled>
+          <TextButton
+            justifyContent="space-between"
+            variant="outline"
+            onClick={() =>
+              setTeacherInfos((prev) => ({
+                ...prev,
+                bibles: !prev.bibles,
+              }))
+            }
+          >
             <ThemedView flexDirection="row" alignItems="center">
               <Ionicons name="bookmark" size={25} style={{ margin: 0 }} />
               <ThemedText fontSize={16} fontWeight="bold" ml="s">
-                Bíblias
+                Bíblia
               </ThemedText>
             </ThemedView>
-            <NumberPick
-              value={teacherInfos.bibles}
-              onChange={(value) =>
-                setTeacherInfos((teacherInfos) => ({
-                  ...teacherInfos,
-                  bibles: value!,
-                }))
-              }
-              minValue={0}
+
+            <Ionicons
+              name={teacherInfos.bibles ? "checkmark-circle" : "close-circle"}
+              size={28}
+              style={{ margin: 0, padding: 0 }}
+              color={teacherInfos.bibles ? "green" : "red"}
             />
           </TextButton>
 
-          <TextButton justifyContent="space-between" variant="outline" disabled>
+          <TextButton
+            justifyContent="space-between"
+            variant="outline"
+            onClick={() =>
+              setTeacherInfos((prev) => ({
+                ...prev,
+                books: !prev.books,
+              }))
+            }
+          >
             <ThemedView flexDirection="row" alignItems="center">
               <Ionicons name="book" size={25} style={{ margin: 0 }} />
               <ThemedText fontSize={16} fontWeight="bold" ml="s">
-                Revistas
+                Revista
               </ThemedText>
             </ThemedView>
-            <NumberPick
-              value={teacherInfos.books}
-              onChange={(value) =>
-                setTeacherInfos((teacherInfos) => ({
-                  ...teacherInfos,
-                  books: value!,
-                }))
-              }
-              minValue={0}
+            <Ionicons
+              name={teacherInfos.books ? "checkmark-circle" : "close-circle"}
+              size={28}
+              style={{ margin: 0, padding: 0 }}
+              color={teacherInfos.books ? "green" : "red"}
             />
           </TextButton>
           <TextButton justifyContent="space-between" variant="outline" disabled>
