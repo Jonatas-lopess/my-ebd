@@ -52,8 +52,7 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
 
   const handleOpenBottomSheet = useCallback(
     (id: number) => {
-      setTempItem(findItem(id));
-      console.log(tempItem);
+      setTempItem(JSON.parse(JSON.stringify(findItem(id))));
       bottomSheetRef.current?.present();
     },
     [tempItem]
@@ -63,7 +62,7 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
     setTempItem({});
   }
 
-  function handleSaveReportChanges() {
+  const handleSaveReportChanges = useCallback(() => {
     const newValue = classReport.map((item) =>
       item.id === tempItem.id
         ? { ...item, report: tempItem.report, isPresent: true }
@@ -72,7 +71,7 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
 
     setReport(newValue);
     bottomSheetRef.current?.close();
-  }
+  }, [classReport]);
 
   function findItem(id: number) {
     const item = classReport.find((item) => item.id === id);
@@ -90,10 +89,10 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
 
     newValue[option] = !newValue[option];
 
-    setTempItem({
-      id: tempItem.id,
+    setTempItem((prev) => ({
+      ...prev,
       report: newValue,
-    });
+    }));
   }
 
   function handleChangeOffer(value: number | null) {
