@@ -21,7 +21,16 @@ export default function SettingsScreen() {
 
       <ThemedView flex={1} py="s" gap="s" backgroundColor="white">
         <SettingsOptions.Group>
-          <SettingsOptions.Card title="Pontuação" icon="trophy-outline" />
+          <SettingsOptions.Card
+            title="Pontuação"
+            icon="trophy-outline"
+            onPress={() =>
+              navigation.navigate("Geral", {
+                screen: "Settings",
+                params: { screen: "ScoreOptions" },
+              })
+            }
+          />
           <SettingsOptions.Card
             title="Notificações"
             icon="notifications-outline"
