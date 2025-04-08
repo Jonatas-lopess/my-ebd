@@ -77,6 +77,7 @@ export type SettingsStackParamList = {
   AdminAccess: undefined;
   ManageBranch: undefined;
   ManageHeadquarter: undefined;
+  ScoreOptions: undefined;
 };
 
 declare global {

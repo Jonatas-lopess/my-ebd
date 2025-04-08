@@ -8,6 +8,7 @@ import TeacherAccess from "./TeacherAccess";
 import AdminAccess from "./AdminAccess";
 import ManageBranch from "./ManageBranch";
 import ManageHeadquarter from "./ManageHeadquarter";
+import ScoreOptions from "./ScoreOptions";
 
 const StackConfig = createNativeStackNavigator<SettingsStackParamList>({
   initialRouteName: "SettingsList",
@@ -18,6 +19,7 @@ const StackConfig = createNativeStackNavigator<SettingsStackParamList>({
     AdminAccess: AdminAccess,
     ManageBranch: ManageBranch,
     ManageHeadquarter: ManageHeadquarter,
+    ScoreOptions: ScoreOptions,
   },
   screenOptions: {
     headerShown: false,
