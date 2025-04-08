@@ -23,14 +23,9 @@ export default function LessonDetails({
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
   const [isEditable, setIsEditable] = useState(false);
-  const [teacherInfos, setTeacherInfos] = useState<InfoType>({
-    bibles: false,
-    books: false,
-    offer: 0,
-  });
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
-  const TEACHERS: ListItemType[] = [
+  const list: ListItemType[] = [
     {
       id: 1,
       name: "João",
@@ -43,7 +38,7 @@ export default function LessonDetails({
     },
     {
       id: 2,
-      name: "Maria",
+      name: "Ana",
       isPresent: true,
       report: {
         bibles: false,
@@ -63,7 +58,12 @@ export default function LessonDetails({
     },
   ];
 
-  const TURMAS: ClassesType[] = [
+  const [teachersList, setTeachersList] = useState<ListItemType[]>(list);
+  const [tempItem, setTempItem] = useState<
+    Partial<Omit<ListItemType, "name" | "isPresent">>
+  >({});
+
+  const classes: ClassesType[] = [
     {
       id: 1,
       name: "Jovem",
@@ -89,9 +89,65 @@ export default function LessonDetails({
     },
   ];
 
-  const handleOpenBottomSheet = useCallback(() => {
-    bottomSheetRef.current?.present();
-  }, []);
+  const handleOpenBottomSheet = useCallback(
+    (id: number) => {
+      setTempItem(JSON.parse(JSON.stringify(findItem(id))));
+      bottomSheetRef.current?.present();
+    },
+    [tempItem]
+  );
+
+  function onSheetDismiss() {
+    setTempItem({});
+  }
+
+  const handleSaveReportChanges = useCallback(() => {
+    const newValue = teachersList.map((item) =>
+      item.id === tempItem.id
+        ? { ...item, report: tempItem.report, isPresent: true }
+        : item
+    );
+
+    setTeachersList(newValue);
+    bottomSheetRef.current?.close();
+  }, [teachersList]);
+
+  function findItem(id: number) {
+    const item = teachersList.find((item) => item.id === id);
+
+    if (typeof item === "undefined") throw new Error("Item not found");
+    return item;
+  }
+
+  function handleToggleScoreOption(option: "bibles" | "books") {
+    const newValue = tempItem.report ?? {
+      bibles: false,
+      books: false,
+      offer: 0,
+    };
+
+    newValue[option] = !newValue[option];
+
+    setTempItem((prev) => ({
+      ...prev,
+      report: newValue,
+    }));
+  }
+
+  function handleChangeOffer(value: number | null) {
+    const newValue = tempItem.report ?? {
+      bibles: false,
+      books: false,
+      offer: 0,
+    };
+
+    newValue.offer = value ?? 0;
+
+    setTempItem({
+      id: tempItem.id,
+      report: newValue,
+    });
+  }
 
   return (
     <>
@@ -160,7 +216,7 @@ export default function LessonDetails({
                 classe.
               </CustomCard.Detail>
               <FlatList
-                data={TURMAS}
+                data={classes}
                 scrollEnabled={false}
                 contentContainerStyle={{
                   gap: theme.spacing.s,
@@ -214,7 +270,7 @@ export default function LessonDetails({
                 Clique sobre os nomes para confirmar a presença.
               </CustomCard.Detail>
               <FlatList
-                data={TEACHERS}
+                data={teachersList}
                 scrollEnabled={false}
                 contentContainerStyle={{
                   gap: theme.spacing.s,
@@ -222,9 +278,14 @@ export default function LessonDetails({
                 }}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
-                  <TextButton variant="outline" onClick={handleOpenBottomSheet}>
+                  <TextButton
+                    variant="outline"
+                    disabled={!isEditable}
+                    onClick={() => handleOpenBottomSheet(item.id)}
+                  >
                     <ThemedView
                       flex={1}
+                      minHeight={35}
                       opacity={item.isPresent ? 1 : 0.3}
                       flexDirection="row"
                       justifyContent="space-between"
@@ -233,12 +294,14 @@ export default function LessonDetails({
                       <ThemedText fontSize={16} fontWeight="bold" ml="s">
                         {item.name}
                       </ThemedText>
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={35}
-                        style={{ margin: 0 }}
-                        color="green"
-                      />
+                      {item.isPresent && (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={35}
+                          style={{ margin: 0 }}
+                          color="green"
+                        />
+                      )}
                     </ThemedView>
                   </TextButton>
                 )}
@@ -248,17 +311,14 @@ export default function LessonDetails({
         </ThemedView>
       </ThemedView>
 
-      <CustomBottomModal.Root ref={bottomSheetRef}>
-        <CustomBottomModal.Content title="Professor">
+      <CustomBottomModal.Root ref={bottomSheetRef} onDismiss={onSheetDismiss}>
+        <CustomBottomModal.Content
+          title={tempItem.id ? findItem(tempItem.id).name : ""}
+        >
           <TextButton
             justifyContent="space-between"
             variant="outline"
-            onClick={() =>
-              setTeacherInfos((prev) => ({
-                ...prev,
-                bibles: !prev.bibles,
-              }))
-            }
+            onClick={() => handleToggleScoreOption("bibles")}
           >
             <ThemedView flexDirection="row" alignItems="center">
               <Ionicons name="bookmark" size={25} style={{ margin: 0 }} />
@@ -268,22 +328,19 @@ export default function LessonDetails({
             </ThemedView>
 
             <Ionicons
-              name={teacherInfos.bibles ? "checkmark-circle" : "close-circle"}
+              name={
+                tempItem.report?.bibles ? "checkmark-circle" : "close-circle"
+              }
               size={28}
               style={{ margin: 0, padding: 0 }}
-              color={teacherInfos.bibles ? "green" : "red"}
+              color={tempItem.report?.bibles ? "green" : "red"}
             />
           </TextButton>
 
           <TextButton
             justifyContent="space-between"
             variant="outline"
-            onClick={() =>
-              setTeacherInfos((prev) => ({
-                ...prev,
-                books: !prev.books,
-              }))
-            }
+            onClick={() => handleToggleScoreOption("books")}
           >
             <ThemedView flexDirection="row" alignItems="center">
               <Ionicons name="book" size={25} style={{ margin: 0 }} />
@@ -292,10 +349,12 @@ export default function LessonDetails({
               </ThemedText>
             </ThemedView>
             <Ionicons
-              name={teacherInfos.books ? "checkmark-circle" : "close-circle"}
+              name={
+                tempItem.report?.books ? "checkmark-circle" : "close-circle"
+              }
               size={28}
               style={{ margin: 0, padding: 0 }}
-              color={teacherInfos.books ? "green" : "red"}
+              color={tempItem.report?.books ? "green" : "red"}
             />
           </TextButton>
           <TextButton justifyContent="space-between" variant="outline" disabled>
@@ -306,19 +365,14 @@ export default function LessonDetails({
               </ThemedText>
             </ThemedView>
             <FakeCurrencyInput
-              value={teacherInfos.offer}
+              value={tempItem.report?.offer ?? 0}
               placeholder="R$0,00"
               prefix="R$"
               delimiter="."
               separator=","
               precision={2}
               minValue={0}
-              onChangeValue={(value) =>
-                setTeacherInfos((teacherInfos) => ({
-                  ...teacherInfos,
-                  offer: value ? value : 0,
-                }))
-              }
+              onChangeValue={(value) => handleChangeOffer(value)}
               style={{
                 textAlignVertical: "center",
                 padding: 0,
@@ -329,7 +383,10 @@ export default function LessonDetails({
             />
           </TextButton>
         </CustomBottomModal.Content>
-        <CustomBottomModal.Action onPress={() => {}} />
+        <CustomBottomModal.Action
+          text="Confirmar"
+          onPress={handleSaveReportChanges}
+        />
       </CustomBottomModal.Root>
     </>
   );
