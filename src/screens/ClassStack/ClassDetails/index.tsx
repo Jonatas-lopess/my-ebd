@@ -26,6 +26,8 @@ export default function ClassDetails() {
     { nome: "João", pontos: 11 },
   ];
 
+  const sortedData = DATA.sort((a, b) => b.pontos - a.pontos);
+
   const handleCardPress = (newInterval: IntervalOptionTypes) => {
     setInterval(newInterval);
   };
@@ -114,7 +116,7 @@ export default function ClassDetails() {
           </ThemedText>
 
           <FlatList
-            data={DATA}
+            data={sortedData}
             renderItem={({ item, index }) => handleRenderItem(item, index)}
             scrollEnabled={false}
             contentContainerStyle={{
