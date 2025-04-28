@@ -1,47 +1,39 @@
-import { AuthState, User } from "../providers/AuthProvider";
+import { User } from "../providers/AuthProvider";
+import config from "config";
 
-async function signIn(newUser: User): Promise<AuthState> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        user: newUser,
-        token: "token",
-      });
-    }, 1000);
-  });
+export default class AuthService {
+  static async signIn(newUser: User) {
+    const response = await fetch(`${config.apiBaseUrl}/auth/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newUser),
+    });
+
+    if (!response.ok) {
+      return Promise.reject(response.statusText);
+    }
+
+    return await response.json();
+  }
+
+  static async logIn(email: string, password: string) {
+    const response = await fetch(`${config.apiBaseUrl}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
+
+    if (!response.ok) {
+      return Promise.reject(response.statusText);
+    }
+
+    return await response.json();
+  }
 }
-
-async function logIn(email: string, password: string): Promise<AuthState> {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (email === "user1") {
-        resolve({
-          user: {
-            name: "John Doe",
-            email: "john.doe@example.com",
-            role: "admin",
-          },
-          token: "token",
-        });
-      }
-
-      if (email === "user2") {
-        resolve({
-          user: {
-            name: "Brad Pitt",
-            email: "brad.pit@example.com",
-            role: "teacher",
-          },
-          token: "token",
-        });
-      }
-
-      reject(new Error("Invalid email or password"));
-    }, 1000);
-  });
-}
-
-export const AuthService = {
-  signIn,
-  logIn,
-};

@@ -6,10 +6,10 @@ import ThemedText from "@components/ThemedText";
 export default function LoginScreen() {
   const { onLogIn } = useAuth();
 
-  function handleLogin(role: "admin" | "teacher") {
+  async function handleLogin(role: "admin" | "teacher") {
     const email = role === "admin" ? "user1" : "user2";
 
-    onLogIn(email, "password");
+    await onLogIn(email, "password");
   }
 
   return (
