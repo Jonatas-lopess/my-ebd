@@ -1,6 +1,7 @@
 import { createContext, useContext, useState } from "react";
-import { AuthService } from "@services/AuthService";
-import { Alert } from "react-native";
+import AuthService from "@services/AuthService";
+import { useQuery } from "@tanstack/react-query";
+import StorageService from "@services/StorageService";
 
 export type User = {
   name: string;
@@ -16,8 +17,8 @@ export type AuthState = {
 type AuthContextProps = {
   authState?: AuthState;
   loading: boolean;
-  onSignIn: (newUser: User) => Promise<AuthState>;
-  onLogIn: (email: string, password: string) => void;
+  onSignIn: (newUser: User) => Promise<void>;
+  onLogIn: (email: string, password: string) => Promise<void>;
   onLogOut: () => Promise<void>;
 };
 
@@ -31,23 +32,32 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   const [authState, setAuth] = useState<AuthState>();
   const [loading, setLoading] = useState(false);
 
-  async function onSignIn(newUser: User): Promise<AuthState> {
-    const response = await AuthService.signIn(newUser);
-    setAuth(response);
+  async function onSignIn(newUser: User) {
+    const response = useQuery({
+      queryKey: ["signin"],
+      queryFn: () => {
+        return AuthService.signIn(newUser);
+      },
+    });
 
-    return response;
+    console.log("response:", response.data ?? response.error);
   }
 
   async function onLogIn(email: string, password: string) {
-    try {
-      const auth = await AuthService.logIn(email, password);
-      setAuth(auth);
-    } catch (error) {
-      Alert.alert("Error", (error as Error).message);
-    }
+    const auth = useQuery({
+      queryKey: ["login"],
+      queryFn: () => {
+        return AuthService.logIn(email, password);
+      },
+    });
+
+    console.log("auth:", auth.data ?? auth.error);
+
+    StorageService.setItem("token", auth.data);
   }
 
-  async function onLogOut(): Promise<void> {
+  async function onLogOut() {
+    await StorageService.removeItem("token");
     setAuth(undefined);
   }
 
