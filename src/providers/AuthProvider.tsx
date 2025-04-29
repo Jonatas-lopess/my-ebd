@@ -34,7 +34,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
   async function onSignIn(newUser: User) {
     const response = useQuery({
-      queryKey: ["signin"],
+      queryKey: ["signin", newUser],
       queryFn: () => {
         return AuthService.signIn(newUser);
       },
@@ -45,7 +45,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
   async function onLogIn(email: string, password: string) {
     const auth = useQuery({
-      queryKey: ["login"],
+      queryKey: ["login", email, password],
       queryFn: () => {
         return AuthService.logIn(email, password);
       },
