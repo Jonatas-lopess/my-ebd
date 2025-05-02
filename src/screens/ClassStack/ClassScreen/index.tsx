@@ -14,6 +14,9 @@ import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useCallback, useRef, useState } from "react";
 import ThemedText from "@components/ThemedText";
 import { NewClass } from "./type";
+import { useAuth } from "@providers/AuthProvider";
+import { useQuery } from "@tanstack/react-query";
+import config from "config";
 
 export default function ClassScreen() {
   const theme = useTheme<ThemeProps>();
@@ -24,11 +27,28 @@ export default function ClassScreen() {
     name: "",
     type: undefined,
   });
+  const { authState } = useAuth();
 
-  const DATA_CLASS = [
-    { id: 1, name: "Josué", students: 10, type: "Jovens" },
-    { id: 2, name: "Abraão", students: 14, type: "Adultos" },
-  ];
+  const {
+    data: DATA_CLASS,
+    error,
+    isPending,
+    isError,
+  } = useQuery({
+    queryKey: ["class", authState?.token],
+    queryFn: async () => {
+      const res = await fetch(config.apiBaseUrl + "/classes", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${authState?.token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      return res.json();
+    },
+    enabled: !!authState?.token,
+  });
 
   const handleBottomSheet = useCallback((e: BottomSheetEventType) => {
     if (e.type === "open") bottomSheetRef.current?.present();
@@ -63,37 +83,52 @@ export default function ClassScreen() {
           </StackHeader.Actions>
         </StackHeader.Root>
 
-        <FlatList
-          data={DATA_CLASS}
-          renderItem={({ item }) => (
-            <InfoCard.Root
-              onPress={() =>
-                navigation.navigate("Turmas", {
-                  screen: "ClassDetails",
-                  params: { classId: item.id.toString() },
-                })
-              }
-              onLongPress={() => {}}
-            >
-              <ThemedView flexDirection="row" alignItems="center" gap="xs">
-                <InfoCard.Title>{item.name}</InfoCard.Title>
-                <InfoCard.Detail>• {item.type}</InfoCard.Detail>
-              </ThemedView>
-              <InfoCard.Content>
-                <ThemedText>Alunos: {item.students.toString()}</ThemedText>
-                <ThemedView borderLeftWidth={1} borderLeftColor="lightgrey" />
-                <ThemedText>Media: 100%</ThemedText>
-              </InfoCard.Content>
-            </InfoCard.Root>
-          )}
-          keyExtractor={(item) => item.id.toString()}
-          style={{ backgroundColor: theme.colors.white }}
-          contentContainerStyle={{
-            gap: theme.spacing.s,
-            marginTop: theme.spacing.s,
-            paddingHorizontal: theme.spacing.s,
-          }}
-        />
+        {isPending && (
+          <ThemedView flex={1} justifyContent="center" alignItems="center">
+            <ThemedText>Carregando...</ThemedText>
+          </ThemedView>
+        )}
+        {isError && (
+          <ThemedView flex={1} justifyContent="center" alignItems="center">
+            <ThemedText>Erro ao carregar as turmas: {error.message}</ThemedText>
+          </ThemedView>
+        )}
+        {DATA_CLASS && (
+          <FlatList
+            data={DATA_CLASS}
+            renderItem={({ item }) => (
+              <InfoCard.Root
+                onPress={() =>
+                  navigation.navigate("Turmas", {
+                    screen: "ClassDetails",
+                    params: { classId: item._id.toString() },
+                  })
+                }
+                onLongPress={() => {}}
+              >
+                <ThemedView flexDirection="row" alignItems="center" gap="xs">
+                  <InfoCard.Title>{item.name}</InfoCard.Title>
+                  <InfoCard.Detail>• {item.group}</InfoCard.Detail>
+                </ThemedView>
+                <InfoCard.Content>
+                  <ThemedText>
+                    Alunos: {item.students?.toString() ?? "-"}
+                  </ThemedText>
+                  <ThemedView borderLeftWidth={1} borderLeftColor="lightgrey" />
+                  <ThemedText>Media: 100%</ThemedText>
+                </InfoCard.Content>
+              </InfoCard.Root>
+            )}
+            keyExtractor={(item) => item._id.toString()}
+            style={{ backgroundColor: theme.colors.white }}
+            contentContainerStyle={{
+              gap: theme.spacing.s,
+              marginTop: theme.spacing.s,
+              paddingHorizontal: theme.spacing.s,
+            }}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
       </ThemedView>
 
       <CustomBottomModal.Root
