@@ -1,5 +1,5 @@
 const config = {
-  apiBaseUrl: "http://localhost:3000/api",
+  apiBaseUrl: "https://ebd-next-zeta.vercel.app/api",
 };
 
 export default config;

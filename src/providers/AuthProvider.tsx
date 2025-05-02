@@ -1,6 +1,5 @@
 import { createContext, useContext, useState } from "react";
 import AuthService from "@services/AuthService";
-import { useQuery } from "@tanstack/react-query";
 import StorageService from "@services/StorageService";
 
 export type User = {
@@ -16,10 +15,9 @@ export type AuthState = {
 
 type AuthContextProps = {
   authState?: AuthState;
-  loading: boolean;
   onSignIn: (newUser: User) => Promise<void>;
   onLogIn: (email: string, password: string) => Promise<void>;
-  onLogOut: () => Promise<void>;
+  onLogOut: () => void;
 };
 
 type AuthProviderProps = {
@@ -30,41 +28,55 @@ const AuthContext = createContext<AuthContextProps>({} as AuthContextProps);
 
 export default function AuthProvider({ children }: AuthProviderProps) {
   const [authState, setAuth] = useState<AuthState>();
-  const [loading, setLoading] = useState(false);
 
   async function onSignIn(newUser: User) {
-    const response = useQuery({
-      queryKey: ["signin", newUser],
-      queryFn: () => {
-        return AuthService.signIn(newUser);
-      },
-    });
+    try {
+      const { data, status } = await AuthService.signIn(newUser);
 
-    console.log("response:", response.data ?? response.error);
+      if (status !== 201) {
+        throw new Error(`${status} - ${data.message}`);
+      }
+
+      setAuth({
+        token: "",
+        user: newUser,
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   async function onLogIn(email: string, password: string) {
-    const auth = useQuery({
-      queryKey: ["login", email, password],
-      queryFn: () => {
-        return AuthService.logIn(email, password);
-      },
-    });
+    try {
+      const { data, status } = await AuthService.logIn(email, password);
 
-    console.log("auth:", auth.data ?? auth.error);
+      if (status !== 200) {
+        throw new Error(`${status} - ${data.message}`);
+      }
 
-    StorageService.setItem("token", auth.data);
+      StorageService.setItem("token", data.token);
+      setAuth({
+        token: data.token,
+        user: { name: "John Doe", email, role: "admin" },
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  async function onLogOut() {
-    await StorageService.removeItem("token");
-    setAuth(undefined);
+  function onLogOut() {
+    try {
+      StorageService.removeItem("token").catch((error) => {
+        throw new Error("Error removing token from storage: " + error);
+      });
+      setAuth(undefined);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   return (
-    <AuthContext.Provider
-      value={{ authState, loading, onSignIn, onLogIn, onLogOut }}
-    >
+    <AuthContext.Provider value={{ authState, onSignIn, onLogIn, onLogOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -6,8 +6,7 @@ export default class StorageService {
   }
 
   static getItem(key: string) {
-    const data = SecureStore.getItem(key);
-    return data ? JSON.parse(data) : null;
+    return SecureStore.getItem(key);
   }
 
   static async removeItem(key: string) {

@@ -1,25 +1,33 @@
 import { User } from "../providers/AuthProvider";
 import config from "config";
 
+type ApiResponse = {
+  status: number;
+  data: any;
+};
+
 export default class AuthService {
-  static async signIn(newUser: User) {
-    const response = await fetch(`${config.apiBaseUrl}/auth/signup`, {
+  static async signIn(newUser: User): Promise<ApiResponse> {
+    return fetch(`${config.apiBaseUrl}/auth/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(newUser),
+    }).then(async (response) => {
+      return {
+        status: response.status,
+        data: await response.json(),
+      };
     });
-
-    if (!response.ok) {
-      return Promise.reject(response.statusText);
-    }
-
-    return await response.json();
   }
 
-  static async logIn(email: string, password: string) {
-    const response = await fetch(`${config.apiBaseUrl}/auth/login`, {
+  static async logIn(email: string, password: string): Promise<ApiResponse> {
+    if (!email || !password) {
+      throw new Error("Email and password are required.");
+    }
+
+    return fetch(`${config.apiBaseUrl}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -28,12 +36,11 @@ export default class AuthService {
         email,
         password,
       }),
+    }).then(async (response) => {
+      return {
+        status: response.status,
+        data: await response.json(),
+      };
     });
-
-    if (!response.ok) {
-      return Promise.reject(response.statusText);
-    }
-
-    return await response.json();
   }
 }
