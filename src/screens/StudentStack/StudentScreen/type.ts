@@ -1,5 +1,5 @@
 export type Register = {
-  id: string | undefined;
+  _id: string | undefined;
   name: string;
   class: string | undefined;
   isProfessor: boolean;

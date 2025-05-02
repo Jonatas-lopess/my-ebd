@@ -19,6 +19,9 @@ import {
 } from "@react-native-community/datetimepicker";
 import MaskInput, { Masks } from "react-native-mask-input";
 import { Register } from "./type";
+import { useAuth } from "@providers/AuthProvider";
+import config from "config";
+import { useQuery } from "@tanstack/react-query";
 
 export default function StudentScreen() {
   const theme = useTheme<ThemeProps>();
@@ -28,33 +31,38 @@ export default function StudentScreen() {
   const [birthdayFilter, setBirthdayFilter] = useState(false);
   const [nameFilter, setNameFilter] = useState("");
   const [newRegister, setNewRegister] = useState<Register>({
-    id: undefined,
+    _id: undefined,
     name: "",
     phoneNumber: "",
     class: undefined,
     isProfessor: false,
   });
+  const { authState } = useAuth();
+
+  const { data, error, isError, isPending } = useQuery({
+    queryKey: ["register", authState?.token],
+    queryFn: async (): Promise<Register[]> => {
+      const res = await fetch(config.apiBaseUrl + "/registers", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${authState?.token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      return res.json();
+    },
+    enabled: !!authState?.token,
+  });
 
   const TODAY = new Date();
-
-  const DATA: Register[] = [
-    { id: "eqEQ213", name: "João", isProfessor: false, class: "1A" },
-    { id: "eqEQ210", name: "Maria", isProfessor: false, class: "1A" },
-    {
-      id: "eqEQ221",
-      name: "Pedro",
-      birthday: TODAY,
-      isProfessor: false,
-      class: "1A",
-    },
-  ];
 
   const matchMounth = (birthday: Date) => {
     const month = birthday.getMonth() + 1;
     return month === new Date().getMonth() + 1;
   };
 
-  const DATA_FILTERED = DATA.filter((item) => {
+  const DATA_FILTERED = data?.filter((item) => {
     if (birthdayFilter) return item.birthday && matchMounth(item.birthday);
     if (nameFilter) {
       return item.name.toLowerCase().includes(nameFilter.toLowerCase());
@@ -66,7 +74,7 @@ export default function StudentScreen() {
     if (e.type === "open") bottomSheetRef.current?.present();
     if (e.type === "close") {
       setNewRegister({
-        id: undefined,
+        _id: undefined,
         name: "",
         class: undefined,
         isProfessor: false,
@@ -135,56 +143,80 @@ export default function StudentScreen() {
           }}
         />
 
-        <FlatList
-          data={DATA_FILTERED}
-          renderItem={({ item }) => (
-            <Pressable
-              onPress={() =>
-                navigation.navigate("Cadastros", {
-                  screen: "RegisterHistory",
-                  params: { studentId: item.id! },
-                })
-              }
-            >
-              <ThemedView
-                py="s"
-                px="m"
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
-                borderRadius={20}
-                style={{ backgroundColor: "#fff" }}
+        {isPending && (
+          <ThemedView
+            flex={1}
+            justifyContent="center"
+            alignItems="center"
+            style={{ backgroundColor: "#fff" }}
+          >
+            <ThemedText>Carregando...</ThemedText>
+          </ThemedView>
+        )}
+        {isError && (
+          <ThemedView
+            flex={1}
+            justifyContent="center"
+            alignItems="center"
+            style={{ backgroundColor: "#fff" }}
+          >
+            <ThemedText>
+              Erro ao carregar os cadastros: {error.message}
+            </ThemedText>
+          </ThemedView>
+        )}
+        {DATA_FILTERED && (
+          <FlatList
+            data={DATA_FILTERED}
+            renderItem={({ item }) => (
+              <Pressable
+                onPress={() =>
+                  navigation.navigate("Cadastros", {
+                    screen: "RegisterHistory",
+                    params: { studentId: item._id! },
+                  })
+                }
               >
-                <ThemedText fontSize={16}>{item.name}</ThemedText>
-                {item.birthday && matchMounth(item.birthday!) && (
-                  <ThemedView flexDirection="row" alignItems="center" gap="s">
-                    <ThemedText color="secondary">
-                      {item.birthday.toLocaleDateString("pt-BR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                      })}
-                    </ThemedText>
-                    <FontAwesome
-                      name="birthday-cake"
-                      color={theme.colors.secondary}
-                      size={18}
-                    />
-                  </ThemedView>
-                )}
-              </ThemedView>
-            </Pressable>
-          )}
-          keyExtractor={(item) => item.id!}
-          style={{
-            backgroundColor: theme.colors.white,
-            height: "100%",
-          }}
-          contentContainerStyle={{
-            gap: theme.spacing.s,
-            marginTop: theme.spacing.s,
-            paddingHorizontal: theme.spacing.s,
-          }}
-        ></FlatList>
+                <ThemedView
+                  py="s"
+                  px="m"
+                  flexDirection="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  borderRadius={20}
+                  style={{ backgroundColor: "#fff" }}
+                >
+                  <ThemedText fontSize={16}>{item.name}</ThemedText>
+                  {item.birthday && matchMounth(item.birthday!) && (
+                    <ThemedView flexDirection="row" alignItems="center" gap="s">
+                      <ThemedText color="secondary">
+                        {item.birthday.toLocaleDateString("pt-BR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                        })}
+                      </ThemedText>
+                      <FontAwesome
+                        name="birthday-cake"
+                        color={theme.colors.secondary}
+                        size={18}
+                      />
+                    </ThemedView>
+                  )}
+                </ThemedView>
+              </Pressable>
+            )}
+            keyExtractor={(item) => item._id!}
+            style={{
+              backgroundColor: theme.colors.white,
+              height: "100%",
+            }}
+            contentContainerStyle={{
+              gap: theme.spacing.s,
+              marginTop: theme.spacing.s,
+              paddingHorizontal: theme.spacing.s,
+            }}
+          />
+        )}
       </ThemedView>
 
       <CustomBottomModal.Root
