@@ -21,23 +21,25 @@ import MaskInput, { Masks } from "react-native-mask-input";
 import { Register } from "./type";
 import { useAuth } from "@providers/AuthProvider";
 import config from "config";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function StudentScreen() {
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const optionsSheetRef = useRef<BottomSheetModal>(null);
+  const queryClient = useQueryClient();
   const [birthdayFilter, setBirthdayFilter] = useState(false);
   const [nameFilter, setNameFilter] = useState("");
-  const [newRegister, setNewRegister] = useState<Register>({
+  const [newRegister, setNewRegister] = useState<Partial<Register>>({
     _id: undefined,
     name: "",
-    phoneNumber: "",
+    phone: "",
     class: undefined,
     isProfessor: false,
   });
   const { authState } = useAuth();
+  const TODAY = new Date();
 
   const { data, error, isError, isPending } = useQuery({
     queryKey: ["register", authState?.token],
@@ -55,33 +57,68 @@ export default function StudentScreen() {
     enabled: !!authState?.token,
   });
 
-  const TODAY = new Date();
+  const mutation = useMutation({
+    mutationFn: async (newData: Partial<Register>) => {
+      const registerData = {
+        name: "Teste aluno",
+        class: {
+          id: "67ffb25e9f8621cad42ac5b5",
+          name: "Josué",
+        },
+      };
 
-  const matchMounth = (birthday: Date) => {
-    const month = birthday.getMonth() + 1;
-    return month === new Date().getMonth() + 1;
+      const res = await fetch(config.apiBaseUrl + "/registers", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${authState?.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(registerData),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message, { cause: data.error });
+
+      return data;
+    },
+    onSuccess: (data) => {
+      //queryClient.invalidateQueries({ queryKey: ["register"] });
+      console.log("New register added:", data);
+      cleanUp();
+    },
+    onError: (error) => {
+      console.log(error.message, error.cause);
+    },
+  });
+
+  const matchMounth = (anniversary: Date) => {
+    const month = anniversary.getMonth() + 1;
+    return month === TODAY.getMonth() + 1;
   };
 
   const DATA_FILTERED = data?.filter((item) => {
-    if (birthdayFilter) return item.birthday && matchMounth(item.birthday);
-    if (nameFilter) {
+    if (birthdayFilter)
+      return item.anniversary && matchMounth(item.anniversary);
+    if (nameFilter)
       return item.name.toLowerCase().includes(nameFilter.toLowerCase());
-    }
+
     return true;
   });
+
+  function cleanUp() {
+    optionsSheetRef.current?.dismiss();
+    setNewRegister({
+      class: undefined,
+      isProfessor: false,
+      anniversary: undefined,
+      phone: undefined,
+    });
+  }
 
   const handleBottomSheet = useCallback((e: BottomSheetEventType) => {
     if (e.type === "open") bottomSheetRef.current?.present();
     if (e.type === "close") {
-      setNewRegister({
-        _id: undefined,
-        name: "",
-        class: undefined,
-        isProfessor: false,
-        birthday: undefined,
-        phoneNumber: undefined,
-      });
-      optionsSheetRef.current?.dismiss();
+      cleanUp();
     }
   }, []);
 
@@ -102,7 +139,7 @@ export default function StudentScreen() {
     setNewRegister((oldRegister) => {
       return {
         ...oldRegister,
-        birthday: selectedDate || oldRegister.birthday,
+        anniversary: selectedDate || oldRegister.anniversary,
       };
     });
 
@@ -187,10 +224,10 @@ export default function StudentScreen() {
                   style={{ backgroundColor: "#fff" }}
                 >
                   <ThemedText fontSize={16}>{item.name}</ThemedText>
-                  {item.birthday && matchMounth(item.birthday!) && (
+                  {item.anniversary && matchMounth(item.anniversary!) && (
                     <ThemedView flexDirection="row" alignItems="center" gap="s">
                       <ThemedText color="secondary">
-                        {item.birthday.toLocaleDateString("pt-BR", {
+                        {item.anniversary.toLocaleDateString("pt-BR", {
                           day: "2-digit",
                           month: "2-digit",
                         })}
@@ -205,7 +242,7 @@ export default function StudentScreen() {
                 </ThemedView>
               </Pressable>
             )}
-            keyExtractor={(item) => item._id!}
+            keyExtractor={(item, index) => item._id ?? index.toString()}
             style={{
               backgroundColor: theme.colors.white,
               height: "100%",
@@ -258,12 +295,12 @@ export default function StudentScreen() {
           </ThemedText>
           <ThemedView flexDirection="row" gap="s">
             <MaskInput
-              value={newRegister.phoneNumber}
+              value={newRegister.phone}
               placeholder="Número de Celular"
               onChangeText={(value) =>
                 setNewRegister((prev) => ({
                   ...prev,
-                  phoneNumber: value,
+                  phone: value,
                 }))
               }
               mask={Masks.BRL_PHONE}
@@ -293,10 +330,12 @@ export default function StudentScreen() {
                 borderRadius={25}
               >
                 <ThemedText
-                  style={{ color: newRegister.birthday ? "black" : "#a0a0a0" }}
+                  style={{
+                    color: newRegister.anniversary ? "black" : "#a0a0a0",
+                  }}
                 >
-                  {newRegister.birthday
-                    ? newRegister.birthday.toLocaleDateString("pt-BR")
+                  {newRegister.anniversary
+                    ? newRegister.anniversary.toLocaleDateString("pt-BR")
                     : "Data de Nascimento"}
                 </ThemedText>
               </ThemedView>
@@ -327,7 +366,9 @@ export default function StudentScreen() {
             </ThemedView>
           </Pressable>
         </CustomBottomModal.Content>
-        <CustomBottomModal.Action onPress={() => {}} />
+        <CustomBottomModal.Action
+          onPress={() => mutation.mutate(newRegister)}
+        />
       </CustomBottomModal.Root>
 
       <CustomBottomModal.Root ref={optionsSheetRef} stackBehavior="push">

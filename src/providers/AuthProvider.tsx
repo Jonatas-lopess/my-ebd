@@ -51,7 +51,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       const { data, status } = await AuthService.logIn(email, password);
 
       if (status !== 200) {
-        throw new Error(`${status} - ${data.message}`);
+        throw new Error(`${status} - ${data.message}`, { cause: data.error });
       }
 
       StorageService.setItem("token", data.token);
@@ -71,7 +71,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       });
       setAuth(undefined);
     } catch (error) {
-      console.error(error);
+      console.error(error, (error as Error).cause);
     }
   }
 

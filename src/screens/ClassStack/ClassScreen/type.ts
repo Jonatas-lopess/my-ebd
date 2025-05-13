@@ -1,4 +1,5 @@
 export type NewClass = {
   name: string;
-  type: string | undefined;
+  group?: string;
+  flag?: string;
 };

@@ -15,7 +15,7 @@ import { useCallback, useRef, useState } from "react";
 import ThemedText from "@components/ThemedText";
 import { NewClass } from "./type";
 import { useAuth } from "@providers/AuthProvider";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import config from "config";
 
 export default function ClassScreen() {
@@ -23,9 +23,11 @@ export default function ClassScreen() {
   const navigation = useNavigation();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const optionsSheetRef = useRef<BottomSheetModal>(null);
+  const queryClient = useQueryClient();
   const [newClass, setNewClass] = useState<NewClass>({
     name: "",
-    type: undefined,
+    group: undefined,
+    flag: "6823a5469dc1ccabbcd0659c",
   });
   const { authState } = useAuth();
 
@@ -50,15 +52,40 @@ export default function ClassScreen() {
     enabled: !!authState?.token,
   });
 
+  const mutation = useMutation({
+    mutationFn: async (newData: NewClass) => {
+      const res = await fetch(config.apiBaseUrl + "/classes", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${authState?.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newData),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message, { cause: data.error });
+
+      return data;
+    },
+    onSuccess: () => {
+      bottomSheetRef.current?.dismiss();
+      queryClient.invalidateQueries({ queryKey: ["class"] });
+    },
+    onError: (error) => {
+      console.error(error.message, error.cause);
+    },
+  });
+
   const handleBottomSheet = useCallback((e: BottomSheetEventType) => {
     if (e.type === "open") bottomSheetRef.current?.present();
-    if (e.type === "close") setNewClass({ name: "", type: undefined });
+    if (e.type === "close") setNewClass({ name: "", group: undefined });
   }, []);
 
   const handleOptionsSheet = useCallback((e: BottomSheetEventType) => {
     if (e.type === "open") optionsSheetRef.current?.present();
     if (e.type === "set") {
-      setNewClass((prev) => ({ ...prev, type: e.value }));
+      setNewClass((prev) => ({ ...prev, group: e.value }));
       optionsSheetRef.current?.dismiss();
     }
     if (e.type === "close") optionsSheetRef.current?.dismiss();
@@ -161,14 +188,14 @@ export default function ClassScreen() {
               borderRadius={25}
             >
               <ThemedText
-                style={{ color: newClass.type ? "black" : "#a0a0a0" }}
+                style={{ color: newClass.group ? "black" : "#a0a0a0" }}
               >
-                {newClass.type ? newClass.type : "Faixa Etária"}
+                {newClass.group ? newClass.group : "Faixa Etária"}
               </ThemedText>
             </ThemedView>
           </TouchableOpacity>
         </CustomBottomModal.Content>
-        <CustomBottomModal.Action onPress={() => {}} />
+        <CustomBottomModal.Action onPress={() => mutation.mutate(newClass)} />
       </CustomBottomModal.Root>
 
       <CustomBottomModal.Root ref={optionsSheetRef} stackBehavior="push">
