@@ -5,7 +5,13 @@ import ThemedView from "@components/ThemedView";
 import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useCallback, useRef, useState } from "react";
-import { FlatList, Pressable, TextInput, TouchableOpacity } from "react-native";
+import {
+  Alert,
+  FlatList,
+  Pressable,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackHeader } from "@components/StackHeader";
 import {
@@ -54,16 +60,32 @@ export default function StudentScreen() {
 
       return res.json();
     },
-    enabled: !!authState?.token,
+  });
+
+  const { data: data_classes, isError: isErrorClass } = useQuery({
+    queryKey: ["class", authState?.token],
+    queryFn: async () => {
+      const res = await fetch(config.apiBaseUrl + "/classes", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${authState?.token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      return res.json();
+    },
   });
 
   const mutation = useMutation({
     mutationFn: async (newData: Partial<Register>) => {
       const registerData = {
-        name: "Teste aluno",
+        name: newData.name,
+        ...(newData.anniversary && { anniversary: newData.anniversary }),
+        ...(newData.phone && { phone: newData.phone }),
         class: {
-          id: "67ffb25e9f8621cad42ac5b5",
-          name: "Josué",
+          id: newData.class?.id,
+          name: newData.class?.name,
         },
       };
 
@@ -81,15 +103,20 @@ export default function StudentScreen() {
 
       return data;
     },
-    onSuccess: (data) => {
-      //queryClient.invalidateQueries({ queryKey: ["register"] });
-      console.log("New register added:", data);
+    onSuccess: () => {
       cleanUp();
+      return queryClient.invalidateQueries({ queryKey: ["register"] });
     },
     onError: (error) => {
+      Alert.alert(
+        "Algo deu errado!",
+        `Erro ao criar o registro. Confira sua conexão de internet e tente novamente.`
+      );
       console.log(error.message, error.cause);
     },
   });
+
+  const { isPending: isPendingMutate, variables, mutate } = mutation;
 
   const matchMounth = (anniversary: Date) => {
     const month = anniversary.getMonth() + 1;
@@ -110,8 +137,8 @@ export default function StudentScreen() {
     setNewRegister({
       class: undefined,
       isProfessor: false,
-      anniversary: undefined,
-      phone: undefined,
+      name: "",
+      phone: "",
     });
   }
 
@@ -125,7 +152,10 @@ export default function StudentScreen() {
   const handleOptionsSheet = useCallback((e: BottomSheetEventType) => {
     if (e.type === "open") optionsSheetRef.current?.present();
     if (e.type === "set") {
-      setNewRegister((prev) => ({ ...prev, class: e.value }));
+      setNewRegister((prev) => ({
+        ...prev,
+        class: { id: e.value._id, name: e.value.name },
+      }));
       optionsSheetRef.current?.dismiss();
     }
     if (e.type === "close") optionsSheetRef.current?.dismiss();
@@ -142,6 +172,15 @@ export default function StudentScreen() {
         anniversary: selectedDate || oldRegister.anniversary,
       };
     });
+
+  function handleCreateNewRegister() {
+    if (!newRegister.name || !newRegister.class) {
+      return Alert.alert("Atenção", "Preencha todos os campos obrigatórios.");
+    }
+
+    mutate(newRegister);
+    cleanUp();
+  }
 
   return (
     <>
@@ -242,6 +281,20 @@ export default function StudentScreen() {
                 </ThemedView>
               </Pressable>
             )}
+            ListFooterComponent={() =>
+              isPendingMutate && (
+                <ThemedView
+                  flexDirection="row"
+                  justifyContent="center"
+                  alignItems="center"
+                  gap="s"
+                >
+                  <ThemedText>
+                    Adicionando o aluno {variables.name}...
+                  </ThemedText>
+                </ThemedView>
+              )
+            }
             keyExtractor={(item, index) => item._id ?? index.toString()}
             style={{
               backgroundColor: theme.colors.white,
@@ -285,7 +338,7 @@ export default function StudentScreen() {
               <ThemedText
                 style={{ color: newRegister.class ? "black" : "#a0a0a0" }}
               >
-                {newRegister.class ? newRegister.class : "Turma"}
+                {newRegister.class ? newRegister.class.name : "Turma"}
               </ThemedText>
             </ThemedView>
           </TouchableOpacity>
@@ -366,15 +419,13 @@ export default function StudentScreen() {
             </ThemedView>
           </Pressable>
         </CustomBottomModal.Content>
-        <CustomBottomModal.Action
-          onPress={() => mutation.mutate(newRegister)}
-        />
+        <CustomBottomModal.Action onPress={handleCreateNewRegister} />
       </CustomBottomModal.Root>
 
       <CustomBottomModal.Root ref={optionsSheetRef} stackBehavior="push">
         <CustomBottomModal.Content title="Turmas">
           <FlatList
-            data={["Josué", "Abraão"]}
+            data={data_classes}
             contentContainerStyle={{ gap: theme.spacing.s }}
             renderItem={({ item }) => (
               <TouchableOpacity
@@ -387,10 +438,21 @@ export default function StudentScreen() {
                   borderColor="lightgrey"
                   borderRadius={25}
                 >
-                  <ThemedText>{item}</ThemedText>
+                  <ThemedText>{item.name}</ThemedText>
                 </ThemedView>
               </TouchableOpacity>
             )}
+            ListEmptyComponent={() =>
+              isErrorClass ? (
+                <ThemedText color="gray" textAlign="center">
+                  Erro ao carregar as turmas.
+                </ThemedText>
+              ) : (
+                <ThemedText textAlign="center" color="gray">
+                  Nenhuma turma encontrada.
+                </ThemedText>
+              )
+            }
           />
         </CustomBottomModal.Content>
       </CustomBottomModal.Root>

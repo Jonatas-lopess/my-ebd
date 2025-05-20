@@ -1,4 +1,4 @@
-import { FlatList, TextInput, TouchableOpacity } from "react-native";
+import { Alert, FlatList, TextInput, TouchableOpacity } from "react-native";
 import ThemedView from "@components/ThemedView";
 import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import { ThemeProps } from "@theme";
@@ -24,11 +24,12 @@ export default function ClassScreen() {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const optionsSheetRef = useRef<BottomSheetModal>(null);
   const queryClient = useQueryClient();
-  const [newClass, setNewClass] = useState<NewClass>({
+  const EMPTYCLASSDATA: NewClass = {
     name: "",
     group: undefined,
     flag: "6823a5469dc1ccabbcd0659c",
-  });
+  };
+  const [newClass, setNewClass] = useState(EMPTYCLASSDATA);
   const { authState } = useAuth();
 
   const {
@@ -49,7 +50,6 @@ export default function ClassScreen() {
 
       return res.json();
     },
-    enabled: !!authState?.token,
   });
 
   const mutation = useMutation({
@@ -70,16 +70,22 @@ export default function ClassScreen() {
     },
     onSuccess: () => {
       bottomSheetRef.current?.dismiss();
-      queryClient.invalidateQueries({ queryKey: ["class"] });
+      return queryClient.invalidateQueries({ queryKey: ["class"] });
     },
-    onError: (error) => {
-      console.error(error.message, error.cause);
+    onError: (error, variables) => {
+      Alert.alert(
+        "Algo deu errado!",
+        `Erro ao criar a turma ${variables.name}. Confira sua conexão de internet e tente novamente.`
+      );
+      console.log(error.message, error.cause);
     },
   });
 
+  const { isPending: isPendingMutate, variables, mutate } = mutation;
+
   const handleBottomSheet = useCallback((e: BottomSheetEventType) => {
     if (e.type === "open") bottomSheetRef.current?.present();
-    if (e.type === "close") setNewClass({ name: "", group: undefined });
+    if (e.type === "close") setNewClass(EMPTYCLASSDATA);
   }, []);
 
   const handleOptionsSheet = useCallback((e: BottomSheetEventType) => {
@@ -90,6 +96,16 @@ export default function ClassScreen() {
     }
     if (e.type === "close") optionsSheetRef.current?.dismiss();
   }, []);
+
+  function handleCreateNewClass() {
+    if (!newClass.name || !newClass.group) {
+      return Alert.alert("Alerta", "Preencha todos os campos.");
+    }
+
+    mutate(newClass);
+    setNewClass(EMPTYCLASSDATA);
+    bottomSheetRef.current?.dismiss();
+  }
 
   return (
     <>
@@ -146,6 +162,20 @@ export default function ClassScreen() {
                 </InfoCard.Content>
               </InfoCard.Root>
             )}
+            ListFooterComponent={() =>
+              isPendingMutate && (
+                <ThemedView
+                  flexDirection="row"
+                  justifyContent="center"
+                  alignItems="center"
+                  gap="s"
+                >
+                  <ThemedText>
+                    Adicionando a turma {variables.name}...
+                  </ThemedText>
+                </ThemedView>
+              )
+            }
             keyExtractor={(item) => item._id.toString()}
             style={{ backgroundColor: theme.colors.white }}
             contentContainerStyle={{
@@ -195,7 +225,7 @@ export default function ClassScreen() {
             </ThemedView>
           </TouchableOpacity>
         </CustomBottomModal.Content>
-        <CustomBottomModal.Action onPress={() => mutation.mutate(newClass)} />
+        <CustomBottomModal.Action onPress={handleCreateNewClass} />
       </CustomBottomModal.Root>
 
       <CustomBottomModal.Root ref={optionsSheetRef} stackBehavior="push">
