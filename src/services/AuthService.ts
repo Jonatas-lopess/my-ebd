@@ -43,4 +43,19 @@ export default class AuthService {
       };
     });
   }
+
+  static async getUser(token: string): Promise<ApiResponse> {
+    return fetch(`${config.apiBaseUrl}/user`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }).then(async (response) => {
+      return {
+        status: response.status,
+        data: await response.json(),
+      };
+    });
+  }
 }

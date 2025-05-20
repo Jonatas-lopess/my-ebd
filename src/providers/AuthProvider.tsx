@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import AuthService from "@services/AuthService";
 import StorageService from "@services/StorageService";
 
@@ -9,12 +9,13 @@ export type User = {
 };
 
 export type AuthState = {
-  user: User;
-  token: string;
+  user?: User;
+  token?: string;
+  isLoading: boolean;
 };
 
 type AuthContextProps = {
-  authState?: AuthState;
+  authState: AuthState;
   onSignIn: (newUser: User) => Promise<void>;
   onLogIn: (email: string, password: string) => Promise<void>;
   onLogOut: () => void;
@@ -27,7 +28,50 @@ type AuthProviderProps = {
 const AuthContext = createContext<AuthContextProps>({} as AuthContextProps);
 
 export default function AuthProvider({ children }: AuthProviderProps) {
-  const [authState, setAuth] = useState<AuthState>();
+  const [authState, setAuth] = useState<AuthState>({
+    user: undefined,
+    token: undefined,
+    isLoading: true,
+  });
+
+  useEffect(() => {
+    async function fetchUser() {
+      const token = await StorageService.getItem("token");
+
+      if (token === null) {
+        setAuth({
+          user: undefined,
+          token: undefined,
+          isLoading: false,
+        });
+
+        return console.log("Exception: No token found when fetching user.");
+      }
+
+      const { data, status } = await AuthService.getUser(token);
+
+      if (status !== 200) {
+        setAuth({
+          user: undefined,
+          token: undefined,
+          isLoading: false,
+        });
+        StorageService.removeItem("token");
+
+        throw new Error(`${status} - ${data.message}`, { cause: data.error });
+      }
+
+      return setAuth({
+        token: token,
+        user: data.user,
+        isLoading: false,
+      });
+    }
+
+    fetchUser().catch((error) => {
+      console.log("Error fetching user:", error, error.cause);
+    });
+  }, []);
 
   async function onSignIn(newUser: User) {
     try {
@@ -38,8 +82,9 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       }
 
       setAuth({
-        token: "",
+        token: data.token,
         user: newUser,
+        isLoading: false,
       });
     } catch (error) {
       console.error(error);
@@ -57,7 +102,8 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       StorageService.setItem("token", data.token);
       setAuth({
         token: data.token,
-        user: { name: "John Doe", email, role: "admin" },
+        user: data.user ?? { name: "", email: "", role: "admin" },
+        isLoading: false,
       });
     } catch (error) {
       console.error(error);
@@ -66,10 +112,13 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
   function onLogOut() {
     try {
-      StorageService.removeItem("token").catch((error) => {
-        throw new Error("Error removing token from storage: " + error);
+      setAuth({
+        token: undefined,
+        user: undefined,
+        isLoading: false,
       });
-      setAuth(undefined);
+
+      return StorageService.removeItem("token");
     } catch (error) {
       console.error(error, (error as Error).cause);
     }
