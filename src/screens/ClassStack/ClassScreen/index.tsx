@@ -38,7 +38,7 @@ export default function ClassScreen() {
     isPending,
     isError,
   } = useQuery({
-    queryKey: ["class", authState?.token],
+    queryKey: ["class", "altclass", authState?.token],
     queryFn: async () => {
       const res = await fetch(config.apiBaseUrl + "/classes", {
         method: "GET",
@@ -147,7 +147,7 @@ export default function ClassScreen() {
                     params: { classId: item._id.toString() },
                   })
                 }
-                onLongPress={() => {}}
+                onLongPress={() => console.log(item)}
               >
                 <ThemedView flexDirection="row" alignItems="center" gap="xs">
                   <InfoCard.Title>{item.name}</InfoCard.Title>
@@ -155,7 +155,7 @@ export default function ClassScreen() {
                 </ThemedView>
                 <InfoCard.Content>
                   <ThemedText>
-                    Alunos: {item.students?.toString() ?? "-"}
+                    Alunos: {item.students.length.toString()}
                   </ThemedText>
                   <ThemedView borderLeftWidth={1} borderLeftColor="lightgrey" />
                   <ThemedText>Media: 100%</ThemedText>
@@ -197,7 +197,7 @@ export default function ClassScreen() {
           subtitle="Preencha o nome e a faixa etária da turma. As categorias servem apenas para ordenar as turmas no aplicativo."
         >
           <TextInput
-            placeholder="Nome"
+            placeholder="Nome*"
             onChangeText={(text) =>
               setNewClass((prev) => ({ ...prev, name: text }))
             }

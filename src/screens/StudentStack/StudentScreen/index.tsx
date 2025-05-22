@@ -38,7 +38,6 @@ export default function StudentScreen() {
   const [birthdayFilter, setBirthdayFilter] = useState(false);
   const [nameFilter, setNameFilter] = useState("");
   const [newRegister, setNewRegister] = useState<Partial<Register>>({
-    _id: undefined,
     name: "",
     phone: "",
     class: undefined,
@@ -63,7 +62,7 @@ export default function StudentScreen() {
   });
 
   const { data: data_classes, isError: isErrorClass } = useQuery({
-    queryKey: ["class", authState?.token],
+    queryKey: ["altclass", authState?.token],
     queryFn: async () => {
       const res = await fetch(config.apiBaseUrl + "/classes", {
         method: "GET",
@@ -87,6 +86,7 @@ export default function StudentScreen() {
           id: newData.class?.id,
           name: newData.class?.name,
         },
+        ...(newData.isProfessor && { user: "6823a5469dc1ccabbcd0659c" }),
       };
 
       const res = await fetch(config.apiBaseUrl + "/registers", {
@@ -105,7 +105,8 @@ export default function StudentScreen() {
     },
     onSuccess: () => {
       cleanUp();
-      return queryClient.invalidateQueries({ queryKey: ["register"] });
+      queryClient.invalidateQueries({ queryKey: ["register"] });
+      return queryClient.invalidateQueries({ queryKey: ["class"] });
     },
     onError: (error) => {
       Alert.alert(
@@ -123,7 +124,7 @@ export default function StudentScreen() {
     return month === TODAY.getMonth() + 1;
   };
 
-  const DATA_FILTERED = data?.filter((item) => {
+  const filteredData = data?.filter((item) => {
     if (birthdayFilter)
       return item.anniversary && matchMounth(item.anniversary);
     if (nameFilter)
@@ -154,7 +155,7 @@ export default function StudentScreen() {
     if (e.type === "set") {
       setNewRegister((prev) => ({
         ...prev,
-        class: { id: e.value._id, name: e.value.name },
+        class: { id: e.value._id, name: e.value.name, group: e.value.group },
       }));
       optionsSheetRef.current?.dismiss();
     }
@@ -220,30 +221,20 @@ export default function StudentScreen() {
         />
 
         {isPending && (
-          <ThemedView
-            flex={1}
-            justifyContent="center"
-            alignItems="center"
-            style={{ backgroundColor: "#fff" }}
-          >
+          <ThemedView flex={1} justifyContent="center" alignItems="center">
             <ThemedText>Carregando...</ThemedText>
           </ThemedView>
         )}
         {isError && (
-          <ThemedView
-            flex={1}
-            justifyContent="center"
-            alignItems="center"
-            style={{ backgroundColor: "#fff" }}
-          >
+          <ThemedView flex={1} justifyContent="center" alignItems="center">
             <ThemedText>
               Erro ao carregar os cadastros: {error.message}
             </ThemedText>
           </ThemedView>
         )}
-        {DATA_FILTERED && (
+        {filteredData && (
           <FlatList
-            data={DATA_FILTERED}
+            data={filteredData}
             renderItem={({ item }) => (
               <Pressable
                 onPress={() =>
@@ -263,7 +254,7 @@ export default function StudentScreen() {
                   style={{ backgroundColor: "#fff" }}
                 >
                   <ThemedText fontSize={16}>{item.name}</ThemedText>
-                  {item.anniversary && matchMounth(item.anniversary!) && (
+                  {item.anniversary && matchMounth(item.anniversary) && (
                     <ThemedView flexDirection="row" alignItems="center" gap="s">
                       <ThemedText color="secondary">
                         {item.anniversary.toLocaleDateString("pt-BR", {
@@ -315,7 +306,7 @@ export default function StudentScreen() {
       >
         <CustomBottomModal.Content title="Novo Cadastro">
           <TextInput
-            placeholder="Nome"
+            placeholder="Nome*"
             onChangeText={(text) =>
               setNewRegister((prev) => ({ ...prev, name: text }))
             }
@@ -338,7 +329,7 @@ export default function StudentScreen() {
               <ThemedText
                 style={{ color: newRegister.class ? "black" : "#a0a0a0" }}
               >
-                {newRegister.class ? newRegister.class.name : "Turma"}
+                {newRegister.class ? newRegister.class.name : "Turma*"}
               </ThemedText>
             </ThemedView>
           </TouchableOpacity>

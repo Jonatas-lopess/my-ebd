@@ -11,39 +11,59 @@ import { useCallback, useState } from "react";
 import IntervalControl, {
   IntervalOptionTypes,
 } from "@components/IntervalControl";
+import { useQuery } from "@tanstack/react-query";
+import config from "config";
+import { useAuth } from "@providers/AuthProvider";
+import { Rollcall } from "@screens/LessonStack/type";
+
+type GroupedRollcall = {
+  mounth: number;
+  data: Rollcall[];
+};
 
 export default function HistoryScreen({
   route,
 }: StudentStackProps<"RegisterHistory">) {
   const { studentId } = route.params;
+  const { authState } = useAuth();
   const navigation = useNavigation();
   const theme = useTheme<ThemeProps>();
   const [interval, setInterval] =
     useState<IntervalOptionTypes>("Últimas 13 aulas");
 
-  const DATA_HISTORY = [
-    {
-      mounth: 3,
-      data: [
-        { date: 25, lesson: 4, isPresent: true },
-        { date: 11, lesson: 3, isPresent: false },
-      ],
+  const { data, isPending, isError, error } = useQuery({
+    queryKey: ["rollcalls", studentId],
+    queryFn: async (): Promise<Rollcall[]> => {
+      const response = await fetch(
+        `${config.apiBaseUrl}/rollcalls/register/${studentId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authState.token}`,
+          },
+        }
+      );
+
+      return response.json();
     },
-    {
-      mounth: 2,
-      data: [
-        { date: 25, lesson: 4, isPresent: true },
-        { date: 11, lesson: 3, isPresent: false },
-      ],
-    },
-    {
-      mounth: 1,
-      data: [
-        { date: 14, lesson: 2, isPresent: false },
-        { date: 7, lesson: 1, isPresent: true },
-      ],
-    },
-  ];
+  });
+
+  const groupedData = data?.reduce((acc: GroupedRollcall[], item) => {
+    const key = item.date.getMonth() + 1;
+    const groupIndex = acc.findIndex((i: any) => i.mounth === key);
+
+    if (groupIndex === -1) {
+      acc.push({
+        mounth: key,
+        data: [item],
+      });
+    } else {
+      acc[groupIndex].data.push(item);
+    }
+
+    return acc;
+  }, []);
 
   const MOUNTHS = [
     "Janeiro",
@@ -60,17 +80,21 @@ export default function HistoryScreen({
     "Dezembro",
   ];
 
-  const PRESENCE = DATA_HISTORY.reduce(
-    (acc, item) =>
-      acc + item.data.reduce((acc, item) => acc + (item.isPresent ? 1 : 0), 0),
-    0
-  );
+  const presence =
+    groupedData?.reduce(
+      (acc, item) =>
+        acc +
+        item.data.reduce((acc, item) => acc + (item.isPresent ? 1 : 0), 0),
+      0
+    ) ?? 0;
 
-  const ABSCENCE = DATA_HISTORY.reduce(
-    (acc, item) =>
-      acc + item.data.reduce((acc, item) => acc + (item.isPresent ? 0 : 1), 0),
-    0
-  );
+  const abscence =
+    groupedData?.reduce(
+      (acc, item) =>
+        acc +
+        item.data.reduce((acc, item) => acc + (item.isPresent ? 0 : 1), 0),
+      0
+    ) ?? 0;
 
   const handleCardPress = useCallback((newInterval: IntervalOptionTypes) => {
     setInterval(newInterval);
@@ -121,7 +145,7 @@ export default function HistoryScreen({
         >
           <ThemedView alignItems="center">
             <ThemedText variant="h2" color="white">
-              {PRESENCE}
+              {presence}
             </ThemedText>
             <ThemedText variant="body" color="white">
               Presenças
@@ -130,7 +154,7 @@ export default function HistoryScreen({
 
           <ThemedView alignItems="center">
             <ThemedText variant="h2" color="white">
-              {ABSCENCE}
+              {abscence}
             </ThemedText>
             <ThemedText variant="body" color="white">
               Ausências
@@ -148,7 +172,7 @@ export default function HistoryScreen({
 
           <ThemedView alignItems="center">
             <ThemedText variant="h2" color="white">
-              {`${(PRESENCE / (PRESENCE + ABSCENCE)) * 100}%`}
+              {`${(presence / (presence + abscence)) * 100}%`}
             </ThemedText>
             <ThemedText variant="body" color="white">
               Aproveitamento
@@ -172,61 +196,75 @@ export default function HistoryScreen({
             </ThemedText>
           </ThemedView>
 
-          <SectionList
-            scrollEnabled={false}
-            contentContainerStyle={{
-              gap: theme.spacing.xs,
-              paddingHorizontal: 5,
-            }}
-            style={{ marginVertical: theme.spacing.s }}
-            sections={DATA_HISTORY}
-            renderItem={({ item }) => (
-              <ThemedView
-                flexDirection="row"
-                borderRadius={20}
-                borderWidth={1}
-                borderColor="gray"
-                justifyContent="space-between"
-              >
-                <ThemedView flexDirection="row" alignItems="center" gap="s">
+          {isPending && (
+            <ThemedView flex={1} justifyContent="center" alignItems="center">
+              <ThemedText>Carregando...</ThemedText>
+            </ThemedView>
+          )}
+          {isError && (
+            <ThemedView flex={1} justifyContent="center" alignItems="center">
+              <ThemedText>
+                Erro ao carregar histótico de aulas: {error.message}
+              </ThemedText>
+            </ThemedView>
+          )}
+          {groupedData && (
+            <SectionList
+              scrollEnabled={false}
+              contentContainerStyle={{
+                gap: theme.spacing.xs,
+                paddingHorizontal: 5,
+              }}
+              style={{ marginVertical: theme.spacing.s }}
+              sections={groupedData}
+              renderItem={({ item }) => (
+                <ThemedView
+                  flexDirection="row"
+                  borderRadius={20}
+                  borderWidth={1}
+                  borderColor="gray"
+                  justifyContent="space-between"
+                >
+                  <ThemedView flexDirection="row" alignItems="center" gap="s">
+                    <ThemedText
+                      p="xs"
+                      textAlign="center"
+                      textAlignVertical="center"
+                      style={{
+                        aspectRatio: 1,
+                        width: 30,
+                        backgroundColor: theme.colors.lightgrey,
+                        borderRadius: 50,
+                      }}
+                    >
+                      {item.date.getDay()}
+                    </ThemedText>
+                    <ThemedText>{`Lição ${item.number}`}</ThemedText>
+                  </ThemedView>
+                  <Ionicons
+                    name={item.isPresent ? "checkmark-circle" : "close-circle"}
+                    size={30}
+                    style={{ margin: 0 }}
+                    color={item.isPresent ? "green" : "red"}
+                  />
+                </ThemedView>
+              )}
+              renderSectionHeader={({ section: { mounth } }) => (
+                <ThemedView alignItems="center">
                   <ThemedText
-                    p="xs"
-                    textAlign="center"
-                    textAlignVertical="center"
+                    px="m"
+                    py="xs"
                     style={{
-                      aspectRatio: 1,
-                      width: 30,
                       backgroundColor: theme.colors.lightgrey,
-                      borderRadius: 50,
+                      borderRadius: 20,
                     }}
                   >
-                    {item.date}
+                    {MOUNTHS[mounth - 1]}
                   </ThemedText>
-                  <ThemedText>{`Lição ${item.lesson}`}</ThemedText>
                 </ThemedView>
-                <Ionicons
-                  name={item.isPresent ? "checkmark-circle" : "close-circle"}
-                  size={30}
-                  style={{ margin: 0 }}
-                  color={item.isPresent ? "green" : "red"}
-                />
-              </ThemedView>
-            )}
-            renderSectionHeader={({ section: { mounth } }) => (
-              <ThemedView alignItems="center">
-                <ThemedText
-                  px="m"
-                  py="xs"
-                  style={{
-                    backgroundColor: theme.colors.lightgrey,
-                    borderRadius: 20,
-                  }}
-                >
-                  {MOUNTHS[mounth - 1]}
-                </ThemedText>
-              </ThemedView>
-            )}
-          />
+              )}
+            />
+          )}
         </ThemedView>
       </ScrollView>
     </ThemedView>

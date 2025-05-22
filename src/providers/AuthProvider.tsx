@@ -3,9 +3,17 @@ import AuthService from "@services/AuthService";
 import StorageService from "@services/StorageService";
 
 export type User = {
-  name: string;
+  name?: string;
   email: string;
   role: "admin" | "teacher";
+  plan: string;
+  register?: {
+    _id: string;
+    name: string;
+    class: string;
+    phone: string;
+    anniversary: string;
+  };
 };
 
 export type AuthState = {
