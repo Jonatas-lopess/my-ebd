@@ -124,14 +124,15 @@ export default function StudentScreen() {
     return month === TODAY.getMonth() + 1;
   };
 
-  const filteredData = data?.filter((item) => {
-    if (birthdayFilter)
-      return item.anniversary && matchMounth(item.anniversary);
-    if (nameFilter)
-      return item.name.toLowerCase().includes(nameFilter.toLowerCase());
+  const filteredData =
+    data?.filter((item) => {
+      if (birthdayFilter)
+        return item.anniversary && matchMounth(item.anniversary);
+      if (nameFilter)
+        return item.name.toLowerCase().includes(nameFilter.toLowerCase());
 
-    return true;
-  });
+      return true;
+    }) ?? undefined;
 
   function cleanUp() {
     optionsSheetRef.current?.dismiss();

@@ -50,16 +50,20 @@ export default function HistoryScreen({
   });
 
   const groupedData = data?.reduce((acc: GroupedRollcall[], item) => {
-    const key = item.date.getMonth() + 1;
+    const modItem = {
+      ...item,
+      date: new Date(item.date),
+    };
+    const key = modItem.date.getMonth() + 1;
     const groupIndex = acc.findIndex((i: any) => i.mounth === key);
 
     if (groupIndex === -1) {
       acc.push({
         mounth: key,
-        data: [item],
+        data: [modItem],
       });
     } else {
-      acc[groupIndex].data.push(item);
+      acc[groupIndex].data.push(modItem);
     }
 
     return acc;
@@ -80,21 +84,17 @@ export default function HistoryScreen({
     "Dezembro",
   ];
 
-  const presence =
-    groupedData?.reduce(
-      (acc, item) =>
-        acc +
-        item.data.reduce((acc, item) => acc + (item.isPresent ? 1 : 0), 0),
-      0
-    ) ?? 0;
+  const presence = groupedData?.reduce(
+    (acc, item) =>
+      acc + item.data.reduce((acc, item) => acc + (item.isPresent ? 1 : 0), 0),
+    0
+  );
 
-  const abscence =
-    groupedData?.reduce(
-      (acc, item) =>
-        acc +
-        item.data.reduce((acc, item) => acc + (item.isPresent ? 0 : 1), 0),
-      0
-    ) ?? 0;
+  const abscence = groupedData?.reduce(
+    (acc, item) =>
+      acc + item.data.reduce((acc, item) => acc + (item.isPresent ? 0 : 1), 0),
+    0
+  );
 
   const handleCardPress = useCallback((newInterval: IntervalOptionTypes) => {
     setInterval(newInterval);
@@ -172,7 +172,11 @@ export default function HistoryScreen({
 
           <ThemedView alignItems="center">
             <ThemedText variant="h2" color="white">
-              {`${(presence / (presence + abscence)) * 100}%`}
+              {`${
+                presence && abscence
+                  ? (presence / (presence + abscence)) * 100
+                  : 0
+              }%`}
             </ThemedText>
             <ThemedText variant="body" color="white">
               Aproveitamento
