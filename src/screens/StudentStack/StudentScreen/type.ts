@@ -3,6 +3,6 @@ export type Register = {
   name: string;
   class: { id: string; name: string; group?: string } | undefined;
   isProfessor: boolean;
-  anniversary?: Date;
+  aniversary?: string;
   phone?: string;
 };

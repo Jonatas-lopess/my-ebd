@@ -38,7 +38,7 @@ export default function ClassScreen() {
     isPending,
     isError,
   } = useQuery({
-    queryKey: ["class", "altclass"],
+    queryKey: ["altclass"],
     queryFn: async () => {
       const res = await fetch(config.apiBaseUrl + "/classes", {
         method: "GET",
@@ -70,7 +70,7 @@ export default function ClassScreen() {
     },
     onSuccess: () => {
       bottomSheetRef.current?.dismiss();
-      return queryClient.invalidateQueries({ queryKey: ["class"] });
+      return queryClient.invalidateQueries({ queryKey: ["altclass"] });
     },
     onError: (error, variables) => {
       Alert.alert(

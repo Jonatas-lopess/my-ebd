@@ -9,7 +9,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@providers/AuthProvider";
 import { StackHeader } from "@components/StackHeader";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   DateTimePickerAndroid,
   DateTimePickerEvent,
@@ -34,7 +34,7 @@ export default function HomeScreen() {
     date: today.toLocaleDateString("pt-BR"),
   });
 
-  const { data, status, isPending, isError, error } = useQuery({
+  const { data, isPending, isError, error } = useQuery({
     queryKey: ["lessons"],
     queryFn: async (): Promise<Lesson[]> => {
       const response = await fetch(config.apiBaseUrl + "/lessons", {
@@ -81,10 +81,9 @@ export default function HomeScreen() {
     },
   });
 
-  const handleOpenBottomSheet = useCallback(() => {
-    console.log(status);
-    if (status !== "pending") bottomSheetRef.current?.present();
-  }, []);
+  const handleOpenBottomSheet = () => {
+    if (isPending === false) bottomSheetRef.current?.present();
+  };
 
   const handleNewLessonDateChange = (
     e: DateTimePickerEvent,
@@ -255,15 +254,13 @@ export default function HomeScreen() {
                   size={25}
                   style={{ margin: 0 }}
                   onPress={() =>
-                    setNewLesson((oldLesson) => {
-                      return {
-                        ...oldLesson,
-                        lesson:
-                          oldLesson.number === undefined
-                            ? defaultLessonNumber! + 1
-                            : oldLesson.number + 1,
-                      };
-                    })
+                    setNewLesson((prev) => ({
+                      ...prev,
+                      number:
+                        prev.number === undefined
+                          ? defaultLessonNumber! + 1
+                          : prev.number + 1,
+                    }))
                   }
                 />
                 <ThemedText fontSize={16} fontWeight="600">
@@ -278,16 +275,17 @@ export default function HomeScreen() {
                       (newLesson.number === undefined &&
                         defaultLessonNumber === 1) ||
                       newLesson.number === 1
-                    )
-                      return void setNewLesson((oldLesson) => {
-                        return {
-                          ...oldLesson,
-                          lesson:
-                            oldLesson.number === undefined
-                              ? defaultLessonNumber! - 1
-                              : oldLesson.number - 1,
-                        };
-                      });
+                    ) {
+                      return;
+                    }
+
+                    setNewLesson((prev) => ({
+                      ...prev,
+                      number:
+                        prev.number === undefined
+                          ? defaultLessonNumber! - 1
+                          : prev.number - 1,
+                    }));
                   }}
                   color={
                     (newLesson.number === undefined &&

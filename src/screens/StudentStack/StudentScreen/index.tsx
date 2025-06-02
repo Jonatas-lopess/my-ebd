@@ -80,7 +80,7 @@ export default function StudentScreen() {
     mutationFn: async (newData: Partial<Register>) => {
       const registerData = {
         name: newData.name,
-        ...(newData.anniversary && { anniversary: newData.anniversary }),
+        ...(newData.aniversary && { aniversary: newData.aniversary }),
         ...(newData.phone && { phone: newData.phone }),
         class: {
           id: newData.class?.id,
@@ -105,8 +105,7 @@ export default function StudentScreen() {
     },
     onSuccess: () => {
       cleanUp();
-      queryClient.invalidateQueries({ queryKey: ["register"] });
-      return queryClient.invalidateQueries({ queryKey: ["class"] });
+      return queryClient.invalidateQueries({ queryKey: ["register"] });
     },
     onError: (error) => {
       Alert.alert(
@@ -119,15 +118,15 @@ export default function StudentScreen() {
 
   const { isPending: isPendingMutate, variables, mutate } = mutation;
 
-  const matchMounth = (anniversary: Date) => {
-    const month = anniversary.getMonth() + 1;
+  const matchMounth = (aniversary: Date) => {
+    const month = aniversary.getMonth() + 1;
     return month === TODAY.getMonth() + 1;
   };
 
   const filteredData = data
     ? data.filter((item) => {
         if (birthdayFilter)
-          return item.anniversary && matchMounth(item.anniversary);
+          return item.aniversary && matchMounth(new Date(item.aniversary));
         if (nameFilter)
           return item.name.toLowerCase().includes(nameFilter.toLowerCase());
 
@@ -172,7 +171,7 @@ export default function StudentScreen() {
     setNewRegister((oldRegister) => {
       return {
         ...oldRegister,
-        anniversary: selectedDate || oldRegister.anniversary,
+        aniversary: selectedDate?.toISOString() ?? oldRegister.aniversary,
       };
     });
 
@@ -237,43 +236,53 @@ export default function StudentScreen() {
         {filteredData && (
           <FlatList
             data={filteredData}
-            renderItem={({ item }) => (
-              <Pressable
-                onPress={() =>
-                  navigation.navigate("Cadastros", {
-                    screen: "RegisterHistory",
-                    params: { studentId: item._id! },
-                  })
-                }
-              >
-                <ThemedView
-                  py="s"
-                  px="m"
-                  flexDirection="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  borderRadius={20}
-                  style={{ backgroundColor: "#fff" }}
+            renderItem={({ item }) => {
+              const dateFormatAniversary =
+                item.aniversary && new Date(item.aniversary);
+
+              return (
+                <Pressable
+                  onPress={() =>
+                    navigation.navigate("Cadastros", {
+                      screen: "RegisterHistory",
+                      params: { studentId: item._id! },
+                    })
+                  }
                 >
-                  <ThemedText fontSize={16}>{item.name}</ThemedText>
-                  {item.anniversary && matchMounth(item.anniversary) && (
-                    <ThemedView flexDirection="row" alignItems="center" gap="s">
-                      <ThemedText color="secondary">
-                        {item.anniversary.toLocaleDateString("pt-BR", {
-                          day: "2-digit",
-                          month: "2-digit",
-                        })}
-                      </ThemedText>
-                      <FontAwesome
-                        name="birthday-cake"
-                        color={theme.colors.secondary}
-                        size={18}
-                      />
-                    </ThemedView>
-                  )}
-                </ThemedView>
-              </Pressable>
-            )}
+                  <ThemedView
+                    py="s"
+                    px="m"
+                    flexDirection="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    borderRadius={20}
+                    style={{ backgroundColor: "#fff" }}
+                  >
+                    <ThemedText fontSize={16}>{item.name}</ThemedText>
+                    {dateFormatAniversary &&
+                      matchMounth(dateFormatAniversary) && (
+                        <ThemedView
+                          flexDirection="row"
+                          alignItems="center"
+                          gap="s"
+                        >
+                          <ThemedText color="secondary">
+                            {dateFormatAniversary.toLocaleDateString("pt-BR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                            })}
+                          </ThemedText>
+                          <FontAwesome
+                            name="birthday-cake"
+                            color={theme.colors.secondary}
+                            size={18}
+                          />
+                        </ThemedView>
+                      )}
+                  </ThemedView>
+                </Pressable>
+              );
+            }}
             ListFooterComponent={() =>
               isPendingMutate && (
                 <ThemedView
@@ -377,11 +386,13 @@ export default function StudentScreen() {
               >
                 <ThemedText
                   style={{
-                    color: newRegister.anniversary ? "black" : "#a0a0a0",
+                    color: newRegister.aniversary ? "black" : "#a0a0a0",
                   }}
                 >
-                  {newRegister.anniversary
-                    ? newRegister.anniversary.toLocaleDateString("pt-BR")
+                  {newRegister.aniversary
+                    ? new Date(newRegister.aniversary).toLocaleDateString(
+                        "pt-BR"
+                      )
                     : "Data de Nascimento"}
                 </ThemedText>
               </ThemedView>
