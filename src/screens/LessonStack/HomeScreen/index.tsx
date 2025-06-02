@@ -3,67 +3,87 @@ import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
-import { FlatList } from "react-native";
+import { Alert, FlatList } from "react-native";
 import { InfoCard } from "@components/InfoCard";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@providers/AuthProvider";
 import { StackHeader } from "@components/StackHeader";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   DateTimePickerAndroid,
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import { CustomBottomModal } from "@components/CustomBottomModal";
-import { Lesson, NewLesson } from "./type";
+import { Lesson } from "./type";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import config from "config";
 
 export default function HomeScreen() {
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
-  const { user } = useAuth().authState!;
+  const queryClient = useQueryClient();
+  const { user, token } = useAuth().authState;
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
   const today = new Date();
-  const [newLesson, setNewLesson] = useState<NewLesson>({
-    lesson: undefined,
-    date: today,
+  const [newLesson, setNewLesson] = useState<Lesson>({
+    flag: user?.plan ?? "",
+    number: undefined,
+    date: today.toLocaleDateString("pt-BR"),
   });
 
-  const DATA_LESSONS: Lesson[] = [
-    {
-      id: "aDe1",
-      title: "Aula 1",
-      date: "10/01/2023",
-      total: 32,
-      reports: {
-        pending: 0,
-        presents: 20,
-      },
+  const { data, status, isPending, isError, error } = useQuery({
+    queryKey: ["lessons"],
+    queryFn: async (): Promise<Lesson[]> => {
+      const response = await fetch(config.apiBaseUrl + "/lessons", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return await response.json();
     },
-    {
-      id: "aDe2",
-      title: "Aula 2",
-      date: "10/01/2023",
-      total: 32,
-      reports: {
-        pending: 0,
-        presents: 20,
-      },
+  });
+
+  const defaultLessonNumber = data && data.length + 1;
+
+  const { mutate } = useMutation({
+    mutationFn: async (newLesson: Lesson) => {
+      const response = await fetch(config.apiBaseUrl + "/lessons", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newLesson),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message, { cause: data });
+
+      return data;
     },
-    {
-      id: "aDe3",
-      title: "Aula 3",
-      date: "10/01/2023",
-      total: 32,
-      reports: {
-        pending: 2,
-      },
+    onSuccess: () => {
+      bottomSheetRef.current?.dismiss();
+      return queryClient.invalidateQueries({ queryKey: ["lessons"] });
     },
-  ];
+    onError: (error) => {
+      Alert.alert(
+        "Algo deu errado!",
+        "Não foi possível criar a aula. Tente novamente mais tarde."
+      );
+
+      console.error(error.message, error.cause);
+    },
+  });
 
   const handleOpenBottomSheet = useCallback(() => {
-    bottomSheetRef.current?.present();
+    console.log(status);
+    if (status !== "pending") bottomSheetRef.current?.present();
   }, []);
 
   const handleNewLessonDateChange = (
@@ -74,11 +94,24 @@ export default function HomeScreen() {
     setNewLesson((oldLesson) => {
       return {
         ...oldLesson,
-        date: selectedDate || oldLesson.date,
+        date: selectedDate?.toLocaleDateString("pt-BR") ?? oldLesson.date,
       };
     });
 
-  const handleCreateNewLesson = () => {};
+  const handleCreateNewLesson = () => {
+    const body = {
+      ...newLesson,
+      lesson: newLesson.number ?? defaultLessonNumber,
+    };
+
+    mutate(body);
+    setNewLesson({
+      flag: "6823a5469dc1ccabbcd0659c",
+      number: undefined,
+      date: today.toLocaleDateString("pt-BR"),
+    });
+    bottomSheetRef.current?.dismiss();
+  };
 
   return (
     <>
@@ -101,58 +134,74 @@ export default function HomeScreen() {
           </StackHeader.Actions>
         </StackHeader.Root>
 
-        <FlatList
-          data={DATA_LESSONS}
-          renderItem={({ item }) => (
-            <InfoCard.Root
-              onPress={() =>
-                navigation.navigate("Inicio", {
-                  screen: "LessonDetails",
-                  params: { lessonId: item.id },
-                })
-              }
-              onLongPress={() => user?.role === "admin" && alert("edit")}
-            >
-              <ThemedView flexDirection="row" alignItems="center">
-                <InfoCard.Title>{`${item.title} - ${item.date}`}</InfoCard.Title>
-                <InfoCard.Detail>
-                  {item.reports.presents
-                    ? `• ${((item.reports.presents / item.total) * 100).toFixed(
-                        2
-                      )}%`
-                    : ""}
-                </InfoCard.Detail>
-              </ThemedView>
-              {item.reports.pending !== 0 && (
-                <ThemedText style={{ color: "red" }}>
-                  2 chamadas pendentes
-                </ThemedText>
-              )}
-              <InfoCard.Content>
-                <ThemedText>
-                  Presentes:{" "}
-                  {item.reports.presents
-                    ? item.reports.presents.toString()
-                    : "-"}
-                </ThemedText>
-                <ThemedView borderLeftWidth={1} borderLeftColor="lightgrey" />
-                <ThemedText>
-                  Ausentes:{" "}
-                  {item.reports.presents
-                    ? (item.total - item.reports.presents).toString()
-                    : "-"}
-                </ThemedText>
-              </InfoCard.Content>
-            </InfoCard.Root>
-          )}
-          keyExtractor={(item) => item.id}
-          style={{ backgroundColor: theme.colors.white }}
-          contentContainerStyle={{
-            gap: theme.spacing.s,
-            paddingVertical: theme.spacing.s,
-            paddingHorizontal: theme.spacing.s,
-          }}
-        />
+        {isPending && (
+          <ThemedView flex={1} justifyContent="center" alignItems="center">
+            <ThemedText>Carregando...</ThemedText>
+          </ThemedView>
+        )}
+
+        {isError && (
+          <ThemedView flex={1} justifyContent="center" alignItems="center">
+            <ThemedText>Erro ao carregar as lições: {error.message}</ThemedText>
+          </ThemedView>
+        )}
+        {data && (
+          <FlatList
+            data={data}
+            renderItem={({ item }) => {
+              const rollcallDone = item.rollcalls?.reduce(
+                (acc, val): number => acc + (val.isDone ? 1 : 0),
+                0
+              );
+
+              return (
+                <InfoCard.Root
+                  onPress={() =>
+                    navigation.navigate("Inicio", {
+                      screen: "LessonDetails",
+                      params: { lessonId: item._id! },
+                    })
+                  }
+                  onLongPress={() => user?.role === "admin" && alert("edit")}
+                >
+                  <ThemedView flexDirection="row" alignItems="center">
+                    <InfoCard.Title>{`${
+                      item.title ? item.title : item.number
+                    } - ${item.date}`}</InfoCard.Title>
+                    <InfoCard.Detail>
+                      {rollcallDone !== undefined
+                        ? `• ${(
+                            (rollcallDone / item.rollcalls!.length) *
+                            100
+                          ).toFixed(2)}%`
+                        : ""}
+                    </InfoCard.Detail>
+                  </ThemedView>
+                  {item.rollcalls && rollcallDone !== item.rollcalls.length && (
+                    <ThemedText style={{ color: "red" }}>
+                      {item.rollcalls.length - rollcallDone!} chamadas pendentes
+                    </ThemedText>
+                  )}
+                  <InfoCard.Content>
+                    <ThemedText>Presentes: -</ThemedText>
+                    <ThemedView
+                      borderLeftWidth={1}
+                      borderLeftColor="lightgrey"
+                    />
+                    <ThemedText>Ausentes: -</ThemedText>
+                  </InfoCard.Content>
+                </InfoCard.Root>
+              );
+            }}
+            keyExtractor={(item) => item._id!}
+            style={{ backgroundColor: theme.colors.white }}
+            contentContainerStyle={{
+              gap: theme.spacing.s,
+              paddingVertical: theme.spacing.s,
+              paddingHorizontal: theme.spacing.s,
+            }}
+          />
+        )}
 
         <CustomBottomModal.Root ref={bottomSheetRef}>
           <CustomBottomModal.Content
@@ -184,7 +233,7 @@ export default function HomeScreen() {
                 fontSize={16}
                 fontWeight="600"
               >
-                {newLesson.date.toLocaleDateString("pt-BR")}
+                {newLesson.date}
               </ThemedText>
             </ThemedView>
             <ThemedView
@@ -209,15 +258,16 @@ export default function HomeScreen() {
                     setNewLesson((oldLesson) => {
                       return {
                         ...oldLesson,
-                        lesson: oldLesson.lesson
-                          ? oldLesson.lesson + 1
-                          : DATA_LESSONS.length + 2,
+                        lesson:
+                          oldLesson.number === undefined
+                            ? defaultLessonNumber! + 1
+                            : oldLesson.number + 1,
                       };
                     })
                   }
                 />
                 <ThemedText fontSize={16} fontWeight="600">
-                  {newLesson.lesson || DATA_LESSONS.length + 1}
+                  {newLesson.number ?? defaultLessonNumber}
                 </ThemedText>
                 <Ionicons
                   name="arrow-down"
@@ -225,19 +275,24 @@ export default function HomeScreen() {
                   style={{ margin: 0 }}
                   onPress={() => {
                     if (
-                      newLesson.lesson !== DATA_LESSONS.length + 1 ||
-                      undefined
-                    ) {
-                      setNewLesson((oldLesson) => {
+                      (newLesson.number === undefined &&
+                        defaultLessonNumber === 1) ||
+                      newLesson.number === 1
+                    )
+                      return void setNewLesson((oldLesson) => {
                         return {
                           ...oldLesson,
-                          lesson: oldLesson.lesson! - 1,
+                          lesson:
+                            oldLesson.number === undefined
+                              ? defaultLessonNumber! - 1
+                              : oldLesson.number - 1,
                         };
                       });
-                    }
                   }}
                   color={
-                    newLesson.lesson === (DATA_LESSONS.length + 1 || undefined)
+                    (newLesson.number === undefined &&
+                      defaultLessonNumber === 1) ||
+                    newLesson.number === 1
                       ? theme.colors.lightgrey
                       : "black"
                   }

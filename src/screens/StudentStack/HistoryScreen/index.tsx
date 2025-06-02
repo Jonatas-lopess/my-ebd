@@ -25,7 +25,7 @@ export default function HistoryScreen({
   route,
 }: StudentStackProps<"RegisterHistory">) {
   const { studentId } = route.params;
-  const { authState } = useAuth();
+  const { token } = useAuth().authState;
   const navigation = useNavigation();
   const theme = useTheme<ThemeProps>();
   const [interval, setInterval] =
@@ -40,7 +40,7 @@ export default function HistoryScreen({
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${authState.token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -145,7 +145,7 @@ export default function HistoryScreen({
         >
           <ThemedView alignItems="center">
             <ThemedText variant="h2" color="white">
-              {presence}
+              {presence ?? 0}
             </ThemedText>
             <ThemedText variant="body" color="white">
               Presenças
@@ -154,7 +154,7 @@ export default function HistoryScreen({
 
           <ThemedView alignItems="center">
             <ThemedText variant="h2" color="white">
-              {abscence}
+              {abscence ?? 0}
             </ThemedText>
             <ThemedText variant="body" color="white">
               Ausências
@@ -220,7 +220,7 @@ export default function HistoryScreen({
                 paddingHorizontal: 5,
               }}
               style={{ marginVertical: theme.spacing.s }}
-              sections={groupedData}
+              sections={groupedData.sort((a, b) => b.mounth - a.mounth)}
               renderItem={({ item }) => (
                 <ThemedView
                   flexDirection="row"
@@ -241,7 +241,7 @@ export default function HistoryScreen({
                         borderRadius: 50,
                       }}
                     >
-                      {item.date.getDay()}
+                      {item.date.getDate()}
                     </ThemedText>
                     <ThemedText>{`Lição ${item.number}`}</ThemedText>
                   </ThemedView>

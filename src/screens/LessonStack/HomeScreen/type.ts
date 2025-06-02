@@ -1,15 +1,11 @@
 export type Lesson = {
-  id: string;
-  title: string;
+  _id?: string;
+  title?: string;
+  flag: string;
+  number: number | undefined;
   date: string;
-  reports: {
-    pending: number;
-    presents?: number;
-  };
-  total: number;
-};
-
-export type NewLesson = {
-  lesson?: number;
-  date: Date;
+  rollcalls?: {
+    classId: string;
+    isDone: boolean;
+  }[];
 };

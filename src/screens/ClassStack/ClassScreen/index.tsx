@@ -24,13 +24,13 @@ export default function ClassScreen() {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const optionsSheetRef = useRef<BottomSheetModal>(null);
   const queryClient = useQueryClient();
+  const { token, user } = useAuth().authState;
   const EMPTYCLASSDATA: NewClass = {
     name: "",
     group: undefined,
-    flag: "6823a5469dc1ccabbcd0659c",
+    flag: user?.plan,
   };
   const [newClass, setNewClass] = useState(EMPTYCLASSDATA);
-  const { authState } = useAuth();
 
   const {
     data: DATA_CLASS,
@@ -38,12 +38,12 @@ export default function ClassScreen() {
     isPending,
     isError,
   } = useQuery({
-    queryKey: ["class", "altclass", authState?.token],
+    queryKey: ["class", "altclass"],
     queryFn: async () => {
       const res = await fetch(config.apiBaseUrl + "/classes", {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${authState?.token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -57,7 +57,7 @@ export default function ClassScreen() {
       const res = await fetch(config.apiBaseUrl + "/classes", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${authState?.token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(newData),

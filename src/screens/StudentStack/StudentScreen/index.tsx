@@ -43,16 +43,16 @@ export default function StudentScreen() {
     class: undefined,
     isProfessor: false,
   });
-  const { authState } = useAuth();
+  const { token } = useAuth().authState;
   const TODAY = new Date();
 
   const { data, error, isError, isPending } = useQuery({
-    queryKey: ["register", authState?.token],
+    queryKey: ["register"],
     queryFn: async (): Promise<Register[]> => {
       const res = await fetch(config.apiBaseUrl + "/registers", {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${authState?.token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -62,12 +62,12 @@ export default function StudentScreen() {
   });
 
   const { data: data_classes, isError: isErrorClass } = useQuery({
-    queryKey: ["altclass", authState?.token],
+    queryKey: ["altclass"],
     queryFn: async () => {
       const res = await fetch(config.apiBaseUrl + "/classes", {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${authState?.token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -92,7 +92,7 @@ export default function StudentScreen() {
       const res = await fetch(config.apiBaseUrl + "/registers", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${authState?.token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(registerData),
@@ -124,15 +124,16 @@ export default function StudentScreen() {
     return month === TODAY.getMonth() + 1;
   };
 
-  const filteredData =
-    data?.filter((item) => {
-      if (birthdayFilter)
-        return item.anniversary && matchMounth(item.anniversary);
-      if (nameFilter)
-        return item.name.toLowerCase().includes(nameFilter.toLowerCase());
+  const filteredData = data
+    ? data.filter((item) => {
+        if (birthdayFilter)
+          return item.anniversary && matchMounth(item.anniversary);
+        if (nameFilter)
+          return item.name.toLowerCase().includes(nameFilter.toLowerCase());
 
-      return true;
-    }) ?? undefined;
+        return true;
+      })
+    : undefined;
 
   function cleanUp() {
     optionsSheetRef.current?.dismiss();
@@ -186,7 +187,7 @@ export default function StudentScreen() {
 
   return (
     <>
-      <ThemedView flex={1} style={{ backgroundColor: "#fff" }}>
+      <ThemedView flex={1} style={{ backgroundColor: "white" }}>
         <FocusAwareStatusBar style="dark" translucent />
 
         <StackHeader.Root>

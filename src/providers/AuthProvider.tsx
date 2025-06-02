@@ -110,7 +110,12 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       StorageService.setItem("token", data.token);
       setAuth({
         token: data.token,
-        user: data.user ?? { name: "", email: "", role: "admin" },
+        user: data.user ?? {
+          name: "",
+          email: "",
+          role: "admin",
+          plan: "6823a5469dc1ccabbcd0659c",
+        },
         isLoading: false,
       });
     } catch (error) {

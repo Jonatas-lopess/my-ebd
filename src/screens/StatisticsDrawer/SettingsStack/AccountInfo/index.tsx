@@ -9,7 +9,7 @@ import { Alert, TouchableOpacity } from "react-native";
 
 export default function AccountInfo() {
   const navigation = useNavigation();
-  const { user } = useAuth().authState!;
+  const { user } = useAuth().authState;
 
   return (
     <>
@@ -29,7 +29,7 @@ export default function AccountInfo() {
           <CustomCard.Detail>
             Seu nome pode ser visto pelos administradores da escola.
           </CustomCard.Detail>
-          <CustomCard.Pressable text={user.name} onPress={() => {}} />
+          <CustomCard.Pressable text={user?.name ?? ""} onPress={() => {}} />
         </CustomCard.Root>
 
         <CustomCard.Root>
@@ -37,7 +37,7 @@ export default function AccountInfo() {
           <CustomCard.Detail>
             O email de acesso é usado para fazer o acesso a conta.
           </CustomCard.Detail>
-          <CustomCard.Pressable text={user.email} onPress={() => {}} />
+          <CustomCard.Pressable text={user?.email ?? ""} onPress={() => {}} />
         </CustomCard.Root>
 
         <CustomCard.Root>
