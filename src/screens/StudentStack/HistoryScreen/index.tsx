@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import config from "config";
 import { useAuth } from "@providers/AuthProvider";
 import { Rollcall } from "@screens/LessonStack/type";
+import { Register } from "../StudentScreen/type";
 
 type GroupedRollcall = {
   mounth: number;
@@ -30,6 +31,24 @@ export default function HistoryScreen({
   const theme = useTheme<ThemeProps>();
   const [interval, setInterval] =
     useState<IntervalOptionTypes>("Últimas 13 aulas");
+
+  const { data: info } = useQuery({
+    queryKey: ["register_info", studentId],
+    queryFn: async (): Promise<Register> => {
+      const response = await fetch(
+        `${config.apiBaseUrl}/registers/${studentId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      return response.json();
+    },
+  });
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ["rollcalls", studentId],
@@ -126,10 +145,10 @@ export default function HistoryScreen({
       <ScrollView nestedScrollEnabled contentContainerStyle={{ flexGrow: 1 }}>
         <ThemedView flexDirection="column" alignItems="center" mt="m">
           <ThemedText variant="h1" color="white">
-            João
+            {info?.name ?? "Nome do Aluno"}
           </ThemedText>
           <ThemedText variant="body" color="white">
-            Classe Jovem
+            Classe {info?.class?.name ?? ""}
           </ThemedText>
         </ThemedView>
 
@@ -163,7 +182,7 @@ export default function HistoryScreen({
 
           <ThemedView alignItems="center">
             <ThemedText variant="h2" color="white">
-              22
+              0
             </ThemedText>
             <ThemedText variant="body" color="white">
               Pontos

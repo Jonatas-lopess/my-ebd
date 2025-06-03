@@ -51,7 +51,11 @@ export default function HomeScreen() {
 
   const defaultLessonNumber = data && data.length + 1;
 
-  const { mutate } = useMutation({
+  const {
+    mutate,
+    isPending: isPendingMutate,
+    variables,
+  } = useMutation({
     mutationFn: async (newLesson: Lesson) => {
       const response = await fetch(config.apiBaseUrl + "/lessons", {
         method: "POST",
@@ -77,7 +81,7 @@ export default function HomeScreen() {
         "Não foi possível criar a aula. Tente novamente mais tarde."
       );
 
-      console.error(error.message, error.cause);
+      console.log(error.message, error.cause);
     },
   });
 
@@ -100,12 +104,12 @@ export default function HomeScreen() {
   const handleCreateNewLesson = () => {
     const body = {
       ...newLesson,
-      lesson: newLesson.number ?? defaultLessonNumber,
+      number: newLesson.number ?? defaultLessonNumber,
     };
 
     mutate(body);
     setNewLesson({
-      flag: "6823a5469dc1ccabbcd0659c",
+      flag: user?.plan ?? "",
       number: undefined,
       date: today.toLocaleDateString("pt-BR"),
     });
@@ -192,6 +196,20 @@ export default function HomeScreen() {
                 </InfoCard.Root>
               );
             }}
+            ListFooterComponent={() =>
+              isPendingMutate && (
+                <ThemedView
+                  flexDirection="row"
+                  justifyContent="center"
+                  alignItems="center"
+                  gap="s"
+                >
+                  <ThemedText>
+                    Adicionando a lição {variables.number}...
+                  </ThemedText>
+                </ThemedView>
+              )
+            }
             keyExtractor={(item) => item._id!}
             style={{ backgroundColor: theme.colors.white }}
             contentContainerStyle={{
