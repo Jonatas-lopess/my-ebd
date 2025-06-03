@@ -3,7 +3,7 @@ export type Lesson = {
   title?: string;
   flag: string;
   number: number | undefined;
-  date: string;
+  date: Date | string;
   rollcalls?: {
     classId: string;
     isDone: boolean;

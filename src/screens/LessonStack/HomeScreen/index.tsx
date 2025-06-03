@@ -31,7 +31,7 @@ export default function HomeScreen() {
   const [newLesson, setNewLesson] = useState<Lesson>({
     flag: user?.plan ?? "",
     number: undefined,
-    date: today.toLocaleDateString("pt-BR"),
+    date: today,
   });
 
   const { data, isPending, isError, error } = useQuery({
@@ -97,7 +97,7 @@ export default function HomeScreen() {
     setNewLesson((oldLesson) => {
       return {
         ...oldLesson,
-        date: selectedDate?.toLocaleDateString("pt-BR") ?? oldLesson.date,
+        date: selectedDate ?? oldLesson.date,
       };
     });
 
@@ -111,9 +111,19 @@ export default function HomeScreen() {
     setNewLesson({
       flag: user?.plan ?? "",
       number: undefined,
-      date: today.toLocaleDateString("pt-BR"),
+      date: today,
     });
     bottomSheetRef.current?.dismiss();
+  };
+
+  const formattedDateFromISO = (isoDateString: string): string => {
+    const date = new Date(isoDateString);
+
+    return `${date.getUTCDate().toString().padStart(2, "0")}/${(
+      date.getUTCMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}/${date.getUTCFullYear()}`;
   };
 
   return (
@@ -165,12 +175,16 @@ export default function HomeScreen() {
                       params: { lessonId: item._id! },
                     })
                   }
-                  onLongPress={() => user?.role === "admin" && alert("edit")}
+                  onLongPress={() =>
+                    user?.role === "admin" && console.log("log")
+                  }
                 >
                   <ThemedView flexDirection="row" alignItems="center">
                     <InfoCard.Title>{`${
                       item.title ? item.title : item.number
-                    } - ${item.date}`}</InfoCard.Title>
+                    } - ${formattedDateFromISO(
+                      item.date as string
+                    )}`}</InfoCard.Title>
                     <InfoCard.Detail>
                       {rollcallDone !== undefined
                         ? `• ${(
@@ -250,7 +264,11 @@ export default function HomeScreen() {
                 fontSize={16}
                 fontWeight="600"
               >
-                {newLesson.date}
+                {newLesson.date.toLocaleString("pt-BR", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })}
               </ThemedText>
             </ThemedView>
             <ThemedView
