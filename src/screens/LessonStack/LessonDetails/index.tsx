@@ -10,11 +10,14 @@ import { FlatList, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useRef, useState } from "react";
 import { FakeCurrencyInput } from "react-native-currency-input";
-import { ListItemType, ClassesType, InfoType } from "./type";
+import { ListItemType, ClassesType } from "./type";
 import { CustomCard } from "@components/CustomCard";
 import TextButton from "@components/TextButton";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { CustomBottomModal } from "@components/CustomBottomModal";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@providers/AuthProvider";
+import config from "config";
 
 export default function LessonDetails({
   route,
@@ -24,70 +27,80 @@ export default function LessonDetails({
   const navigation = useNavigation();
   const [isEditable, setIsEditable] = useState(false);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const { token } = useAuth().authState;
 
-  const list: ListItemType[] = [
-    {
-      id: 1,
-      name: "João",
-      isPresent: true,
-      report: {
-        bibles: true,
-        books: true,
-        offer: 0,
-      },
+  const { data: lessonInfo, isSuccess } = useQuery({
+    queryKey: ["lessonInfo", lessonId],
+    queryFn: async () => {
+      const response = await fetch(config.apiBaseUrl + `/lessons/${lessonId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return await response.json();
     },
-    {
-      id: 2,
-      name: "Ana",
-      isPresent: true,
+  });
+
+  const { data, isPending, isError, error } = useQuery({
+    queryKey: ["teachersList", lessonId],
+    queryFn: async () => {
+      const response = await fetch(config.apiBaseUrl + `/registers/`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ user: { $exists: true } }),
+      });
+
+      return await response.json();
+    },
+  });
+
+  function generateList(data: any[]): ListItemType[] {
+    if (!data) return [];
+
+    return data.map((item) => ({
+      id: item._id,
+      name: item.name,
+      isPresent: false,
       report: {
         bibles: false,
         books: false,
         offer: 0,
       },
-    },
-    {
-      id: 3,
-      name: "Pedro",
-      isPresent: false,
-      report: {
-        bibles: true,
-        books: false,
-        offer: 0,
-      },
-    },
-  ];
+    }));
+  }
 
-  const [teachersList, setTeachersList] = useState<ListItemType[]>(list);
+  const [teachersList, setTeachersList] = useState<ListItemType[]>(
+    generateList(data)
+  );
   const [tempItem, setTempItem] = useState<
     Partial<Omit<ListItemType, "name" | "isPresent">>
   >({});
 
-  const classes: ClassesType[] = [
-    {
-      id: 1,
-      name: "Jovem",
-      description: "Classe Jovem",
+  const {
+    data: classes,
+    isPending: isPendingClasses,
+    isError: isErrorClasses,
+    error: errorClasses,
+  } = useQuery({
+    queryKey: ["classes"],
+    queryFn: async () => {
+      const response = await fetch(config.apiBaseUrl + "/classes", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return await response.json();
     },
-    {
-      id: 2,
-      name: "Homem",
-      description: "Classe Jovem",
-    },
-    {
-      id: 3,
-      name: "Criança",
-    },
-    {
-      id: 4,
-      name: "Adolescente",
-      description: "Classe Jovem",
-    },
-    {
-      id: 5,
-      name: "Mulher",
-    },
-  ];
+  });
 
   const handleOpenBottomSheet = useCallback(
     (id: number) => {
@@ -161,7 +174,9 @@ export default function LessonDetails({
               onPress={() => navigation.goBack()}
               color={theme.colors.gray}
             />
-            <StackHeader.Title>{lessonId}</StackHeader.Title>
+            <StackHeader.Title>
+              {isSuccess && (lessonInfo.title ?? lessonInfo.number.toString())}
+            </StackHeader.Title>
           </StackHeader.Content>
           <StackHeader.Actions>
             <StackHeader.Action
@@ -215,53 +230,79 @@ export default function LessonDetails({
                 Aqui você acompanha o relatório das chamadas feitas em cada
                 classe.
               </CustomCard.Detail>
-              <FlatList
-                data={classes}
-                scrollEnabled={false}
-                contentContainerStyle={{
-                  gap: theme.spacing.s,
-                  marginTop: theme.spacing.s,
-                }}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    onPress={() =>
-                      navigation.navigate("Inicio", {
-                        screen: "ClassReport",
-                        params: { classId: item.id.toString() },
-                      })
-                    }
-                  >
-                    <ThemedView
-                      padding="xs"
-                      flexDirection="row"
-                      justifyContent="space-between"
-                      alignItems="center"
-                      borderRadius={25}
-                      borderWidth={1}
-                      borderLeftWidth={6}
-                      style={{
-                        borderLeftColor: item.description ? "green" : "orange",
-                      }}
-                      borderRightColor="lightgrey"
-                      borderBottomColor="lightgrey"
-                      borderTopColor="lightgrey"
+              {isPendingClasses && (
+                <ThemedView
+                  flex={1}
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <ThemedText>Carregando...</ThemedText>
+                </ThemedView>
+              )}
+              {isErrorClasses && (
+                <ThemedView
+                  flex={1}
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <ThemedText>
+                    Erro ao carregar as classes: {errorClasses.message}
+                  </ThemedText>
+                </ThemedView>
+              )}
+              {classes && (
+                <FlatList
+                  data={classes}
+                  scrollEnabled={false}
+                  contentContainerStyle={{
+                    gap: theme.spacing.s,
+                    marginTop: theme.spacing.s,
+                  }}
+                  keyExtractor={(item) => item._id}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate("Inicio", {
+                          screen: "ClassReport",
+                          params: { classId: item._id },
+                        })
+                      }
                     >
-                      <ThemedText fontSize={16} fontWeight="bold" ml="s">
-                        {item.name}
-                      </ThemedText>
-                      <Ionicons
-                        name={
-                          item.description ? "checkmark-circle" : "alert-circle"
-                        }
-                        size={35}
-                        style={{ margin: 0 }}
-                        color={item.description ? "green" : "orange"}
-                      />
-                    </ThemedView>
-                  </TouchableOpacity>
-                )}
-              />
+                      <ThemedView
+                        padding="xs"
+                        flexDirection="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        borderRadius={25}
+                        borderWidth={1}
+                        borderLeftWidth={6}
+                        style={{
+                          borderLeftColor: item.description
+                            ? "green"
+                            : "orange",
+                        }}
+                        borderRightColor="lightgrey"
+                        borderBottomColor="lightgrey"
+                        borderTopColor="lightgrey"
+                      >
+                        <ThemedText fontSize={16} fontWeight="bold" ml="s">
+                          {item.name}
+                        </ThemedText>
+                        <Ionicons
+                          name={
+                            item.description
+                              ? "checkmark-circle"
+                              : "alert-circle"
+                          }
+                          size={35}
+                          style={{ margin: 0 }}
+                          color={item.description ? "green" : "orange"}
+                        />
+                      </ThemedView>
+                    </TouchableOpacity>
+                  )}
+                />
+              )}
             </CustomCard.Root>
 
             <CustomCard.Root borderRadius={20}>
@@ -269,43 +310,65 @@ export default function LessonDetails({
               <CustomCard.Detail>
                 Clique sobre os nomes para confirmar a presença.
               </CustomCard.Detail>
-              <FlatList
-                data={teachersList}
-                scrollEnabled={false}
-                contentContainerStyle={{
-                  gap: theme.spacing.s,
-                  marginTop: theme.spacing.s,
-                }}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                  <TextButton
-                    variant="outline"
-                    disabled={!isEditable}
-                    onClick={() => handleOpenBottomSheet(item.id)}
-                  >
-                    <ThemedView
-                      flex={1}
-                      minHeight={35}
-                      opacity={item.isPresent ? 1 : 0.3}
-                      flexDirection="row"
-                      justifyContent="space-between"
-                      alignItems="center"
+              {isPending && (
+                <ThemedView
+                  flex={1}
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <ThemedText>Carregando...</ThemedText>
+                </ThemedView>
+              )}
+              {isError && (
+                <ThemedView
+                  flex={1}
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <ThemedText>
+                    Erro ao carregar os professores: {error.message}
+                  </ThemedText>
+                </ThemedView>
+              )}
+              {data && (
+                <FlatList
+                  data={teachersList}
+                  scrollEnabled={false}
+                  contentContainerStyle={{
+                    gap: theme.spacing.s,
+                    marginTop: theme.spacing.s,
+                  }}
+                  keyExtractor={(item) => item.id.toString()}
+                  renderItem={({ item }) => (
+                    <TextButton
+                      variant="outline"
+                      disabled={!isEditable}
+                      onClick={() => handleOpenBottomSheet(item.id)}
                     >
-                      <ThemedText fontSize={16} fontWeight="bold" ml="s">
-                        {item.name}
-                      </ThemedText>
-                      {item.isPresent && (
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={35}
-                          style={{ margin: 0 }}
-                          color="green"
-                        />
-                      )}
-                    </ThemedView>
-                  </TextButton>
-                )}
-              />
+                      <ThemedView
+                        flex={1}
+                        minHeight={35}
+                        opacity={item.isPresent ? 1 : 0.3}
+                        flexDirection="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                      >
+                        <ThemedText fontSize={16} fontWeight="bold" ml="s">
+                          {item.name}
+                        </ThemedText>
+                        {item.isPresent && (
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={35}
+                            style={{ margin: 0 }}
+                            color="green"
+                          />
+                        )}
+                      </ThemedView>
+                    </TextButton>
+                  )}
+                />
+              )}
             </CustomCard.Root>
           </ScrollView>
         </ThemedView>
