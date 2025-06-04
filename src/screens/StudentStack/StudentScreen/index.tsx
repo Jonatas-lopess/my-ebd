@@ -24,7 +24,7 @@ import {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import MaskInput, { Masks } from "react-native-mask-input";
-import { Register } from "./type";
+import { RegisterFromApp, RegisterFromApi } from "./type";
 import { useAuth } from "@providers/AuthProvider";
 import config from "config";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -37,18 +37,17 @@ export default function StudentScreen() {
   const queryClient = useQueryClient();
   const [birthdayFilter, setBirthdayFilter] = useState(false);
   const [nameFilter, setNameFilter] = useState("");
-  const [newRegister, setNewRegister] = useState<Partial<Register>>({
+  const [newRegister, setNewRegister] = useState<RegisterFromApp>({
     name: "",
-    phone: "",
-    class: undefined,
-    isProfessor: false,
+    isTeacher: false,
+    class: { id: "", name: "" },
   });
   const { token } = useAuth().authState;
   const TODAY = new Date();
 
   const { data, error, isError, isPending } = useQuery({
     queryKey: ["register"],
-    queryFn: async (): Promise<Register[]> => {
+    queryFn: async (): Promise<RegisterFromApi[]> => {
       const res = await fetch(config.apiBaseUrl + "/registers", {
         method: "GET",
         headers: {
@@ -77,25 +76,14 @@ export default function StudentScreen() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (newData: Partial<Register>) => {
-      const registerData = {
-        name: newData.name,
-        ...(newData.aniversary && { aniversary: newData.aniversary }),
-        ...(newData.phone && { phone: newData.phone }),
-        class: {
-          id: newData.class?.id,
-          name: newData.class?.name,
-        },
-        ...(newData.isProfessor && { user: "6823a5469dc1ccabbcd0659c" }),
-      };
-
+    mutationFn: async (newData: RegisterFromApp) => {
       const res = await fetch(config.apiBaseUrl + "/registers", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(registerData),
+        body: JSON.stringify(newData),
       });
 
       const data = await res.json();
@@ -136,12 +124,7 @@ export default function StudentScreen() {
 
   function cleanUp() {
     optionsSheetRef.current?.dismiss();
-    setNewRegister({
-      class: undefined,
-      isProfessor: false,
-      name: "",
-      phone: "",
-    });
+    setNewRegister({ name: "", class: { id: "", name: "" }, isTeacher: false });
   }
 
   const handleBottomSheet = useCallback((e: BottomSheetEventType) => {
@@ -168,15 +151,15 @@ export default function StudentScreen() {
     selectedDate?: Date
   ) =>
     e.type === "set" &&
-    setNewRegister((oldRegister) => {
+    setNewRegister((prev) => {
       return {
-        ...oldRegister,
-        aniversary: selectedDate?.toISOString() ?? oldRegister.aniversary,
+        ...prev,
+        aniversary: selectedDate?.toISOString() ?? prev.aniversary,
       };
     });
 
   function handleCreateNewRegister() {
-    if (!newRegister.name || !newRegister.class) {
+    if (!newRegister.name || !newRegister.class.id) {
       return Alert.alert("Atenção", "Preencha todos os campos obrigatórios.");
     }
 
@@ -245,7 +228,7 @@ export default function StudentScreen() {
                   onPress={() =>
                     navigation.navigate("Cadastros", {
                       screen: "RegisterHistory",
-                      params: { studentId: item._id! },
+                      params: { studentId: item._id },
                     })
                   }
                 >
@@ -317,6 +300,7 @@ export default function StudentScreen() {
       >
         <CustomBottomModal.Content title="Novo Cadastro">
           <TextInput
+            value={newRegister.name}
             placeholder="Nome*"
             onChangeText={(text) =>
               setNewRegister((prev) => ({ ...prev, name: text }))
@@ -403,20 +387,20 @@ export default function StudentScreen() {
             onPress={() =>
               setNewRegister((prev) => ({
                 ...prev,
-                isProfessor: !prev.isProfessor,
+                isTeacher: !prev.isTeacher,
               }))
             }
           >
             <ThemedView
               backgroundColor={
-                newRegister.isProfessor ? "secondary" : "lightgrey"
+                newRegister.isTeacher ? "secondary" : "lightgrey"
               }
               borderRadius={25}
               py="s"
             >
               <ThemedText
                 textAlign="center"
-                color={newRegister.isProfessor ? "white" : "gray"}
+                color={newRegister.isTeacher ? "white" : "gray"}
               >
                 Criar como Professor
               </ThemedText>
