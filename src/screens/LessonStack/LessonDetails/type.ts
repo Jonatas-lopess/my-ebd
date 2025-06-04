@@ -5,7 +5,7 @@ export type ClassesType = {
 };
 
 export type ListItemType = {
-  id: number;
+  id: string;
   name: string;
   isPresent: boolean;
   report?: InfoType;

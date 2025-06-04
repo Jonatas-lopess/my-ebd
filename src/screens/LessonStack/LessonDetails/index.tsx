@@ -6,11 +6,11 @@ import ThemedView from "@components/ThemedView";
 import { HomeStackProps } from "@custom/types/navigation";
 import { ThemeProps } from "@theme";
 import { useNavigation } from "@react-navigation/native";
-import { FlatList, ScrollView, TouchableOpacity } from "react-native";
+import { Alert, FlatList, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useRef, useState } from "react";
 import { FakeCurrencyInput } from "react-native-currency-input";
-import { ListItemType, ClassesType } from "./type";
+import { ListItemType } from "./type";
 import { CustomCard } from "@components/CustomCard";
 import TextButton from "@components/TextButton";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -18,6 +18,7 @@ import { CustomBottomModal } from "@components/CustomBottomModal";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@providers/AuthProvider";
 import config from "config";
+import { RegisterFromApi } from "@screens/StudentStack/StudentScreen/type";
 
 export default function LessonDetails({
   route,
@@ -45,42 +46,50 @@ export default function LessonDetails({
   });
 
   const { data, isPending, isError, error } = useQuery({
-    queryKey: ["teachersList", lessonId],
-    queryFn: async () => {
-      const response = await fetch(config.apiBaseUrl + `/registers/`, {
+    queryKey: ["register"],
+    queryFn: async (): Promise<RegisterFromApi[]> => {
+      const response = await fetch(config.apiBaseUrl + "/registers", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ user: { $exists: true } }),
+        //body: JSON.stringify({ user: { $exists: true } }),
       });
 
       return await response.json();
     },
   });
 
-  function generateList(data: any[]): ListItemType[] {
+  function generateList(data: RegisterFromApi[] | undefined): ListItemType[] {
     if (!data) return [];
 
-    return data.map((item) => ({
-      id: item._id,
-      name: item.name,
-      isPresent: false,
-      report: {
-        bibles: false,
-        books: false,
-        offer: 0,
-      },
-    }));
+    const list: ListItemType[] = [];
+
+    data.forEach((item) => {
+      if (
+        item.user &&
+        lessonInfo.rollcalls.find((r: any) => r.classId === item.class.id)
+      )
+        list.push({
+          id: item._id,
+          name: item.name,
+          isPresent: false,
+          report: {
+            bibles: false,
+            books: false,
+            offer: 0,
+          },
+        });
+    });
+
+    return list;
   }
 
   const [teachersList, setTeachersList] = useState<ListItemType[]>(
     generateList(data)
   );
-  const [tempItem, setTempItem] = useState<
-    Partial<Omit<ListItemType, "name" | "isPresent">>
-  >({});
+  const [tempItem, setTempItem] = useState<Partial<ListItemType>>({});
 
   const {
     data: classes,
@@ -103,8 +112,15 @@ export default function LessonDetails({
   });
 
   const handleOpenBottomSheet = useCallback(
-    (id: number) => {
-      setTempItem(JSON.parse(JSON.stringify(findItem(id))));
+    (id: string) => {
+      const item = teachersList.find((item) => item.id === id);
+      if (item === undefined)
+        return Alert.alert(
+          "Error",
+          "Item não encontrado por conta de divergência de dados."
+        );
+
+      setTempItem(item);
       bottomSheetRef.current?.present();
     },
     [tempItem]
@@ -124,43 +140,6 @@ export default function LessonDetails({
     setTeachersList(newValue);
     bottomSheetRef.current?.close();
   }, [teachersList]);
-
-  function findItem(id: number) {
-    const item = teachersList.find((item) => item.id === id);
-
-    if (typeof item === "undefined") throw new Error("Item not found");
-    return item;
-  }
-
-  function handleToggleScoreOption(option: "bibles" | "books") {
-    const newValue = tempItem.report ?? {
-      bibles: false,
-      books: false,
-      offer: 0,
-    };
-
-    newValue[option] = !newValue[option];
-
-    setTempItem((prev) => ({
-      ...prev,
-      report: newValue,
-    }));
-  }
-
-  function handleChangeOffer(value: number | null) {
-    const newValue = tempItem.report ?? {
-      bibles: false,
-      books: false,
-      offer: 0,
-    };
-
-    newValue.offer = value ?? 0;
-
-    setTempItem({
-      id: tempItem.id,
-      report: newValue,
-    });
-  }
 
   return (
     <>
@@ -375,13 +354,16 @@ export default function LessonDetails({
       </ThemedView>
 
       <CustomBottomModal.Root ref={bottomSheetRef} onDismiss={onSheetDismiss}>
-        <CustomBottomModal.Content
-          title={tempItem.id ? findItem(tempItem.id).name : ""}
-        >
+        <CustomBottomModal.Content title={tempItem.name ?? ""}>
           <TextButton
             justifyContent="space-between"
             variant="outline"
-            onClick={() => handleToggleScoreOption("bibles")}
+            onClick={() =>
+              setTempItem((prev) => {
+                prev.report!.bibles = !prev.report!.bibles;
+                return prev;
+              })
+            }
           >
             <ThemedView flexDirection="row" alignItems="center">
               <Ionicons name="bookmark" size={25} style={{ margin: 0 }} />
@@ -403,7 +385,12 @@ export default function LessonDetails({
           <TextButton
             justifyContent="space-between"
             variant="outline"
-            onClick={() => handleToggleScoreOption("books")}
+            onClick={() =>
+              setTempItem((prev) => {
+                prev.report!.bibles = !prev.report!.books;
+                return prev;
+              })
+            }
           >
             <ThemedView flexDirection="row" alignItems="center">
               <Ionicons name="book" size={25} style={{ margin: 0 }} />
@@ -435,7 +422,12 @@ export default function LessonDetails({
               separator=","
               precision={2}
               minValue={0}
-              onChangeValue={(value) => handleChangeOffer(value)}
+              onChangeValue={(value) =>
+                setTempItem((prev) => {
+                  prev.report!.offer = value ?? 0;
+                  return prev;
+                })
+              }
               style={{
                 textAlignVertical: "center",
                 padding: 0,
