@@ -15,10 +15,11 @@ import { CustomCard } from "@components/CustomCard";
 import TextButton from "@components/TextButton";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { CustomBottomModal } from "@components/CustomBottomModal";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@providers/AuthProvider";
 import config from "config";
 import { RegisterFromApi } from "@screens/StudentStack/StudentScreen/type";
+import { Lesson } from "../HomeScreen/type";
 
 export default function LessonDetails({
   route,
@@ -27,12 +28,13 @@ export default function LessonDetails({
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
   const [isEditable, setIsEditable] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const { token } = useAuth().authState;
 
   const { data: lessonInfo, isSuccess } = useQuery({
     queryKey: ["lessonInfo", lessonId],
-    queryFn: async () => {
+    queryFn: async (): Promise<Lesson> => {
       const response = await fetch(config.apiBaseUrl + `/lessons/${lessonId}`, {
         method: "GET",
         headers: {
@@ -61,6 +63,28 @@ export default function LessonDetails({
     },
   });
 
+  const { mutate } = useMutation({
+    mutationFn: async (data: ListItemType[]) => {
+      const res = await fetch(config.apiBaseUrl + "/admin/save-report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      const resJson = await res.json();
+      if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
+    },
+    onSuccess: () => setIsLocked(true),
+    onError: (error) => {
+      console.log(error.message, error.cause);
+    },
+  });
+
   function generateList(data: RegisterFromApi[] | undefined): ListItemType[] {
     if (!data) return [];
 
@@ -69,7 +93,7 @@ export default function LessonDetails({
     data.forEach((item) => {
       if (
         item.user &&
-        lessonInfo.rollcalls.find((r: any) => r.classId === item.class.id)
+        lessonInfo?.rollcalls?.find((r) => r.classId === item.class.id)
       )
         list.push({
           id: item._id,
@@ -141,6 +165,23 @@ export default function LessonDetails({
     bottomSheetRef.current?.close();
   }, [teachersList]);
 
+  function saveReport() {
+    if (isLocked) return;
+
+    Alert.alert("Atenção", "Tem certeza que deseja finalizar o registro?", [
+      {
+        text: "Cancelar",
+        style: "cancel",
+      },
+      {
+        text: "Sim",
+        onPress: () => {
+          mutate(teachersList);
+        },
+      },
+    ]);
+  }
+
   return (
     <>
       <ThemedView flex={1} style={{ backgroundColor: "white" }}>
@@ -154,13 +195,13 @@ export default function LessonDetails({
               color={theme.colors.gray}
             />
             <StackHeader.Title>
-              {isSuccess && (lessonInfo.title ?? lessonInfo.number.toString())}
+              {isSuccess && (lessonInfo.title ?? lessonInfo.number!.toString())}
             </StackHeader.Title>
           </StackHeader.Content>
           <StackHeader.Actions>
             <StackHeader.Action
-              name="lock-open"
-              onPress={() => {}}
+              name={isLocked ? "lock" : "lock-open"}
+              onPress={saveReport}
               color={theme.colors.gray}
             />
             <StackHeader.Action

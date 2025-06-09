@@ -15,7 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import config from "config";
 import { useAuth } from "@providers/AuthProvider";
 import { Rollcall } from "@screens/LessonStack/type";
-import { Register } from "../StudentScreen/type";
+import Register from "../StudentScreen/type";
 
 type GroupedRollcall = {
   mounth: number;
@@ -74,7 +74,7 @@ export default function HistoryScreen({
       date: new Date(item.date),
     };
     const key = modItem.date.getMonth() + 1;
-    const groupIndex = acc.findIndex((i: any) => i.mounth === key);
+    const groupIndex = acc.findIndex((i) => i.mounth === key);
 
     if (groupIndex === -1) {
       acc.push({
