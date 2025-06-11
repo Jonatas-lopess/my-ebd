@@ -1,5 +1,6 @@
-export type ScoreOptionsType = {
+export type Score = {
   title: string;
-  type: "boolean" | "monetary";
-  value: number;
+  type: "BooleanScore" | "NumberScore";
+  flag: string;
+  weight: number;
 };

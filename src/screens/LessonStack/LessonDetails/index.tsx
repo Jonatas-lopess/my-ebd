@@ -9,7 +9,6 @@ import { useNavigation } from "@react-navigation/native";
 import { Alert, FlatList, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useRef, useState } from "react";
-import { FakeCurrencyInput } from "react-native-currency-input";
 import { ListItemType } from "./type";
 import { CustomCard } from "@components/CustomCard";
 import TextButton from "@components/TextButton";
@@ -20,6 +19,7 @@ import { useAuth } from "@providers/AuthProvider";
 import config from "config";
 import { RegisterFromApi } from "@screens/StudentStack/StudentScreen/type";
 import { Lesson } from "../HomeScreen/type";
+import ScoreOption from "@components/ScoreOption";
 
 export default function LessonDetails({
   route,
@@ -350,7 +350,7 @@ export default function LessonDetails({
                   </ThemedText>
                 </ThemedView>
               )}
-              {data && (
+              {teachersList && (
                 <FlatList
                   data={teachersList}
                   scrollEnabled={false}
@@ -396,88 +396,41 @@ export default function LessonDetails({
 
       <CustomBottomModal.Root ref={bottomSheetRef} onDismiss={onSheetDismiss}>
         <CustomBottomModal.Content title={tempItem.name ?? ""}>
-          <TextButton
-            justifyContent="space-between"
-            variant="outline"
-            onClick={() =>
-              setTempItem((prev) => {
-                prev.report!.bibles = !prev.report!.bibles;
-                return prev;
-              })
-            }
-          >
-            <ThemedView flexDirection="row" alignItems="center">
-              <Ionicons name="bookmark" size={25} style={{ margin: 0 }} />
-              <ThemedText fontSize={16} fontWeight="bold" ml="s">
-                Bíblia
-              </ThemedText>
-            </ThemedView>
+          <ScoreOption
+            type="BooleanScore"
+            icon="bookmark-outline"
+            title="Bíblia"
+            value={tempItem.report?.bibles ?? false}
+            onClick={() => {
+              const newState = { ...tempItem };
+              newState.report!.bibles = !newState.report!.bibles;
+              setTempItem(newState);
+            }}
+          />
 
-            <Ionicons
-              name={
-                tempItem.report?.bibles ? "checkmark-circle" : "close-circle"
-              }
-              size={28}
-              style={{ margin: 0, padding: 0 }}
-              color={tempItem.report?.bibles ? "green" : "red"}
-            />
-          </TextButton>
+          <ScoreOption
+            type="BooleanScore"
+            icon="book-outline"
+            title="Revista"
+            value={tempItem.report?.books ?? false}
+            onClick={() => {
+              const newState = { ...tempItem };
+              newState.report!.books = !newState.report!.books;
+              setTempItem(newState);
+            }}
+          />
 
-          <TextButton
-            justifyContent="space-between"
-            variant="outline"
-            onClick={() =>
-              setTempItem((prev) => {
-                prev.report!.bibles = !prev.report!.books;
-                return prev;
-              })
-            }
-          >
-            <ThemedView flexDirection="row" alignItems="center">
-              <Ionicons name="book" size={25} style={{ margin: 0 }} />
-              <ThemedText fontSize={16} fontWeight="bold" ml="s">
-                Revista
-              </ThemedText>
-            </ThemedView>
-            <Ionicons
-              name={
-                tempItem.report?.books ? "checkmark-circle" : "close-circle"
-              }
-              size={28}
-              style={{ margin: 0, padding: 0 }}
-              color={tempItem.report?.books ? "green" : "red"}
-            />
-          </TextButton>
-          <TextButton justifyContent="space-between" variant="outline" disabled>
-            <ThemedView flexDirection="row" alignItems="center">
-              <Ionicons name="cash-outline" size={25} style={{ margin: 0 }} />
-              <ThemedText fontSize={16} fontWeight="bold" ml="s">
-                Oferta
-              </ThemedText>
-            </ThemedView>
-            <FakeCurrencyInput
-              value={tempItem.report?.offer ?? 0}
-              placeholder="R$0,00"
-              prefix="R$"
-              delimiter="."
-              separator=","
-              precision={2}
-              minValue={0}
-              onChangeValue={(value) =>
-                setTempItem((prev) => {
-                  prev.report!.offer = value ?? 0;
-                  return prev;
-                })
-              }
-              style={{
-                textAlignVertical: "center",
-                padding: 0,
-                margin: 0,
-                fontWeight: "bold",
-                fontSize: 20,
-              }}
-            />
-          </TextButton>
+          <ScoreOption
+            type="NumberScore"
+            icon="cash-outline"
+            title="Oferta"
+            value={tempItem.report?.offer ?? 0}
+            onChange={(value) => {
+              const newState = { ...tempItem };
+              newState.report!.offer = value!;
+              setTempItem(newState);
+            }}
+          />
         </CustomBottomModal.Content>
         <CustomBottomModal.Action
           text="Confirmar"

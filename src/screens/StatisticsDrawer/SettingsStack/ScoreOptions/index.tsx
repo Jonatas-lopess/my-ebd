@@ -15,33 +15,33 @@ import {
 } from "@components/CustomBottomModal";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useCallback, useRef, useState } from "react";
-import { ScoreOptionsType } from "./type";
+import { Score } from "./type";
+import { useQuery } from "@tanstack/react-query";
+import config from "config";
+import { useAuth } from "@providers/AuthProvider";
 
 export default function ScoreOptions() {
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
+  const { token } = useAuth().authState;
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const optionsSheetRef = useRef<BottomSheetModal>(null);
-  const [tempScore, setTempScore] = useState<Partial<ScoreOptionsType>>({});
+  const [tempScore, setTempScore] = useState<Partial<Score>>({});
 
-  const data: ScoreOptionsType[] = [
-    {
-      title: "Bíblia",
-      type: "boolean",
-      value: 10,
+  const { data } = useQuery({
+    queryKey: ["scores"],
+    queryFn: async (): Promise<Score[]> => {
+      const response = await fetch(config.apiBaseUrl + "/scores", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return await response.json();
     },
-    {
-      title: "Revista",
-      type: "boolean",
-      value: 10,
-    },
-    {
-      title: "Oferta",
-      type: "monetary",
-      value: 10,
-    },
-  ];
-  const [scoreList, setScore] = useState<ScoreOptionsType[]>(data);
+  });
 
   const handleOpenBottomSheet = useCallback(() => {
     bottomSheetRef.current?.present();
@@ -54,7 +54,7 @@ export default function ScoreOptions() {
   }, [tempScore]);
 
   function createNewScore() {
-    setScore((prev) => [...prev, JSON.parse(JSON.stringify(tempScore))]);
+    //setScore((prev) => [...prev, JSON.parse(JSON.stringify(tempScore))]);
 
     handleCloseBottomSheet();
   }
@@ -64,7 +64,7 @@ export default function ScoreOptions() {
     if (e.type === "set") {
       setTempScore((prev) => ({
         ...prev,
-        type: e.value as "boolean" | "monetary",
+        type: e.value as Score["type"],
       }));
       optionsSheetRef.current?.dismiss();
     }
@@ -98,7 +98,7 @@ export default function ScoreOptions() {
             campo para editar, caso deseje.
           </CustomCard.Detail>
           <FlatList
-            data={scoreList}
+            data={data}
             contentContainerStyle={{ gap: theme.spacing.xs }}
             renderItem={({ item }) => (
               <TextButton
@@ -109,7 +109,7 @@ export default function ScoreOptions() {
                 <ThemedText fontSize={16}>{item.title}</ThemedText>
                 <ThemedView gap="xs" flexDirection="row" alignItems="center">
                   <CustomIcon name="star" color="#ffd700" size={20} />
-                  <ThemedText>{item.value}</ThemedText>
+                  <ThemedText>{item.weight}</ThemedText>
                 </ThemedView>
               </TextButton>
             )}
@@ -157,7 +157,7 @@ export default function ScoreOptions() {
             placeholder="Valor"
             keyboardType="numeric"
             onChangeText={(text) =>
-              setTempScore((prev) => ({ ...prev, value: Number(text) }))
+              setTempScore((prev) => ({ ...prev, weight: Number(text) }))
             }
             style={{
               borderWidth: 1,
@@ -173,7 +173,7 @@ export default function ScoreOptions() {
       <CustomBottomModal.Root ref={optionsSheetRef} stackBehavior="push">
         <CustomBottomModal.Content title="Tipos de Pontuação">
           <FlatList
-            data={["boolean", "monetary"]}
+            data={["BooleanScore", "NumberScore"]}
             contentContainerStyle={{ gap: theme.spacing.s }}
             renderItem={({ item }) => (
               <TouchableOpacity
