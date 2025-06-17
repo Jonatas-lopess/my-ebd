@@ -1,6 +1,7 @@
 import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { useAuth } from "@providers/AuthProvider";
+import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -11,6 +12,7 @@ import {
 
 export default function RegisterScreen() {
   const { onSignIn } = useAuth();
+  const navigation = useNavigation();
   const [registerForm, setRegisterForm] = useState({
     email: "",
     password: "",
@@ -132,8 +134,16 @@ export default function RegisterScreen() {
         {registerForm.isLoading ? (
           <ActivityIndicator color="lightgray" />
         ) : (
-          <ThemedText color="white">Login</ThemedText>
+          <ThemedText color="white">Sign Up</ThemedText>
         )}
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+        <ThemedText color="lightBlue">
+          Already have an account?{" "}
+          <ThemedText color="primary" fontWeight="bold">
+            Sign In
+          </ThemedText>
+        </ThemedText>
       </TouchableOpacity>
     </ThemedView>
   );

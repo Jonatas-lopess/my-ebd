@@ -9,9 +9,11 @@ import ThemedView from "@components/ThemedView";
 import { useAuth } from "@providers/AuthProvider";
 import ThemedText from "@components/ThemedText";
 import { useRef, useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 
 export default function LoginScreen() {
   const { onLogIn } = useAuth();
+  const navigation = useNavigation();
   const [loginForm, setLoginForm] = useState({
     email: "",
     password: "",
@@ -108,6 +110,12 @@ export default function LoginScreen() {
           <ThemedText color="white">Login</ThemedText>
         )}
       </TouchableOpacity>
+      <ThemedText color="gray" mt="m" textAlign="center" fontSize={16}>
+        Don&apos;t have an account?{" "}
+        <ThemedText color="lightBlue" onPress={() => navigation.goBack()}>
+          Sign up
+        </ThemedText>
+      </ThemedText>
     </ThemedView>
   );
 }

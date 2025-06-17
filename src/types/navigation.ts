@@ -81,9 +81,11 @@ export type SettingsStackParamList = {
 };
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace ReactNavigation {
     interface RootParamList
       extends AdminRootTabParamList,
-        TeacherRootTabParamList {}
+        TeacherRootTabParamList,
+        LoginStackParamList {}
   }
 }
