@@ -7,6 +7,7 @@ export type User = {
   email: string;
   role: "admin" | "teacher";
   plan: string;
+  password?: string;
   register?: {
     _id: string;
     name: string;
@@ -24,7 +25,7 @@ export type AuthState = {
 
 type AuthContextProps = {
   authState: AuthState;
-  onSignIn: (newUser: User) => Promise<void>;
+  onSignIn: (newUser: Partial<User>) => Promise<void>;
   onLogIn: (email: string, password: string) => Promise<void>;
   onLogOut: () => void;
 };
@@ -81,9 +82,14 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     });
   }, []);
 
-  async function onSignIn(newUser: User) {
+  async function onSignIn(newUser: Partial<User>) {
     try {
-      const { data, status } = await AuthService.signIn(newUser);
+      const user = {
+        ...newUser,
+        plan: "6823a5469dc1ccabbcd0659c", // Default plan
+        role: "admin", // Default role
+      };
+      const { data, status } = await AuthService.signIn(user as User);
 
       if (status !== 201) {
         throw new Error(`${status} - ${data.message}`);
@@ -91,7 +97,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
       setAuth({
         token: data.token,
-        user: newUser,
+        user: user as User,
         isLoading: false,
       });
     } catch (error) {

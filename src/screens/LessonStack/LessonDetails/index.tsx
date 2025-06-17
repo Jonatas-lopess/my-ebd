@@ -424,34 +424,46 @@ export default function LessonDetails({
 
       <CustomBottomModal.Root ref={bottomSheetRef} onDismiss={onSheetDismiss}>
         <CustomBottomModal.Content title={tempItem.name ?? ""}>
-          {scoreInfo?.map((item) => (
-            <ScoreOption
-              key={item._id}
-              type={item.type}
-              icon="star"
-              title={item.title.charAt(0).toUpperCase() + item.title.slice(1)}
-              value={
-                tempItem.report?.[item.title].value ??
-                (item.type === "BooleanScore" ? false : 0)
-              }
-              {...(item.type === "BooleanScore"
-                ? {
-                    onClick: () => {
-                      const newState = { ...tempItem };
-                      newState.report![item.title].value =
-                        !newState.report![item.title].value;
-                      setTempItem(newState);
-                    },
+          {scoreInfo?.map((item) => {
+            if (item.type === "BooleanScore")
+              return (
+                <ScoreOption
+                  key={item._id}
+                  type={item.type}
+                  icon="star"
+                  title={
+                    item.title.charAt(0).toUpperCase() + item.title.slice(1)
                   }
-                : {
-                    onChange: (value) => {
-                      const newState = { ...tempItem };
-                      newState.report![item.title].value = value ?? 0;
-                      setTempItem(newState);
-                    },
-                  })}
-            />
-          ))}
+                  value={
+                    (tempItem.report?.[item.title].value as boolean) ?? false
+                  }
+                  onClick={() => {
+                    const newState = { ...tempItem };
+                    newState.report![item.title].value =
+                      !newState.report![item.title].value;
+                    setTempItem(newState);
+                  }}
+                />
+              );
+
+            if (item.type === "NumberScore")
+              return (
+                <ScoreOption
+                  key={item._id}
+                  type={item.type}
+                  icon="star"
+                  title={
+                    item.title.charAt(0).toUpperCase() + item.title.slice(1)
+                  }
+                  value={(tempItem.report?.[item.title].value as number) ?? 0}
+                  onChange={(value) => {
+                    const newState = { ...tempItem };
+                    newState.report![item.title].value = value ?? 0;
+                    setTempItem(newState);
+                  }}
+                />
+              );
+          })}
         </CustomBottomModal.Content>
         <CustomBottomModal.Action
           text="Confirmar"

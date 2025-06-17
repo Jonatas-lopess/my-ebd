@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Alert,
   Keyboard,
   TextInput,
   TouchableOpacity,
@@ -23,7 +24,7 @@ export default function LoginScreen() {
     Keyboard.dismiss();
 
     if (!loginForm.email || !loginForm.password) {
-      return alert("Please fill in all fields.");
+      return Alert.alert("Please fill in all fields.");
     }
 
     setLoginForm({ ...loginForm, isLoading: true });
