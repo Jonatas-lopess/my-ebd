@@ -20,6 +20,7 @@ import config from "config";
 import { RegisterFromApi } from "@screens/StudentStack/StudentScreen/type";
 import { Lesson } from "../HomeScreen/type";
 import ScoreOption from "@components/ScoreOption";
+import { Score } from "@screens/StatisticsDrawer/SettingsStack/ScoreOptions/type";
 
 export default function LessonDetails({
   route,
@@ -36,6 +37,21 @@ export default function LessonDetails({
     queryKey: ["lessonInfo", lessonId],
     queryFn: async (): Promise<Lesson> => {
       const response = await fetch(config.apiBaseUrl + `/lessons/${lessonId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return await response.json();
+    },
+  });
+
+  const { data: scoreInfo } = useQuery({
+    queryKey: ["scores"],
+    queryFn: async (): Promise<Score[]> => {
+      const response = await fetch(config.apiBaseUrl + "/scores", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -65,7 +81,7 @@ export default function LessonDetails({
 
   const { mutate } = useMutation({
     mutationFn: async (data: ListItemType[]) => {
-      const res = await fetch(config.apiBaseUrl + "/admin/save-report", {
+      const res = await fetch(config.apiBaseUrl + "/report", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -89,6 +105,21 @@ export default function LessonDetails({
     if (!data) return [];
 
     const list: ListItemType[] = [];
+    const report = scoreInfo?.reduce((acc, cur) => {
+      if (cur.type === "NumberScore") {
+        acc[cur.title] = {
+          id: cur._id!,
+          value: 0,
+        };
+        return acc;
+      }
+
+      acc[cur.title] = {
+        id: cur._id!,
+        value: false,
+      };
+      return acc;
+    }, {} as NonNullable<ListItemType["report"]>);
 
     data.forEach((item) => {
       if (
@@ -98,12 +129,9 @@ export default function LessonDetails({
         list.push({
           id: item._id,
           name: item.name,
+          lesson: lessonId,
           isPresent: false,
-          report: {
-            bibles: false,
-            books: false,
-            offer: 0,
-          },
+          report: report,
         });
     });
 
@@ -396,41 +424,34 @@ export default function LessonDetails({
 
       <CustomBottomModal.Root ref={bottomSheetRef} onDismiss={onSheetDismiss}>
         <CustomBottomModal.Content title={tempItem.name ?? ""}>
-          <ScoreOption
-            type="BooleanScore"
-            icon="bookmark-outline"
-            title="Bíblia"
-            value={tempItem.report?.bibles ?? false}
-            onClick={() => {
-              const newState = { ...tempItem };
-              newState.report!.bibles = !newState.report!.bibles;
-              setTempItem(newState);
-            }}
-          />
-
-          <ScoreOption
-            type="BooleanScore"
-            icon="book-outline"
-            title="Revista"
-            value={tempItem.report?.books ?? false}
-            onClick={() => {
-              const newState = { ...tempItem };
-              newState.report!.books = !newState.report!.books;
-              setTempItem(newState);
-            }}
-          />
-
-          <ScoreOption
-            type="NumberScore"
-            icon="cash-outline"
-            title="Oferta"
-            value={tempItem.report?.offer ?? 0}
-            onChange={(value) => {
-              const newState = { ...tempItem };
-              newState.report!.offer = value!;
-              setTempItem(newState);
-            }}
-          />
+          {scoreInfo?.map((item) => (
+            <ScoreOption
+              key={item._id}
+              type={item.type}
+              icon="star"
+              title={item.title.charAt(0).toUpperCase() + item.title.slice(1)}
+              value={
+                tempItem.report?.[item.title].value ??
+                (item.type === "BooleanScore" ? false : 0)
+              }
+              {...(item.type === "BooleanScore"
+                ? {
+                    onClick: () => {
+                      const newState = { ...tempItem };
+                      newState.report![item.title].value =
+                        !newState.report![item.title].value;
+                      setTempItem(newState);
+                    },
+                  }
+                : {
+                    onChange: (value) => {
+                      const newState = { ...tempItem };
+                      newState.report![item.title].value = value ?? 0;
+                      setTempItem(newState);
+                    },
+                  })}
+            />
+          ))}
         </CustomBottomModal.Content>
         <CustomBottomModal.Action
           text="Confirmar"

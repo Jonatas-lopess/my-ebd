@@ -5,7 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "@shopify/restyle";
 import { ThemeProps } from "@theme";
 import { CustomCard } from "@components/CustomCard";
-import { FlatList, TextInput, TouchableOpacity } from "react-native";
+import { Alert, FlatList, TextInput, TouchableOpacity } from "react-native";
 import TextButton from "@components/TextButton";
 import ThemedText from "@components/ThemedText";
 import CustomIcon from "@components/CustomIcon";
@@ -16,17 +16,20 @@ import {
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useCallback, useRef, useState } from "react";
 import { Score } from "./type";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import config from "config";
 import { useAuth } from "@providers/AuthProvider";
 
 export default function ScoreOptions() {
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
-  const { token } = useAuth().authState;
+  const queryClient = useQueryClient();
+  const { token, user } = useAuth().authState;
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const optionsSheetRef = useRef<BottomSheetModal>(null);
-  const [tempScore, setTempScore] = useState<Partial<Score>>({});
+  const [tempScore, setTempScore] = useState<Partial<Score>>({
+    flag: user?.plan,
+  });
 
   const { data } = useQuery({
     queryKey: ["scores"],
@@ -43,6 +46,28 @@ export default function ScoreOptions() {
     },
   });
 
+  const { mutate } = useMutation({
+    mutationFn: async (score: Score) => {
+      const response = await fetch(config.apiBaseUrl + "/scores", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(score),
+      });
+
+      return await response.json();
+    },
+    onSuccess: () => {
+      handleCloseBottomSheet();
+      return queryClient.invalidateQueries({ queryKey: ["scores"] });
+    },
+    onError: (err) => {
+      console.log(err);
+    },
+  });
+
   const handleOpenBottomSheet = useCallback(() => {
     bottomSheetRef.current?.present();
   }, []);
@@ -54,9 +79,13 @@ export default function ScoreOptions() {
   }, [tempScore]);
 
   function createNewScore() {
-    //setScore((prev) => [...prev, JSON.parse(JSON.stringify(tempScore))]);
-
-    handleCloseBottomSheet();
+    if (
+      tempScore.type === undefined ||
+      tempScore.title === undefined ||
+      tempScore.weight === undefined
+    )
+      return Alert.alert("Please fill in all fields");
+    mutate(tempScore as Score);
   }
 
   const handleOptionsSheet = useCallback((e: BottomSheetEventType) => {
