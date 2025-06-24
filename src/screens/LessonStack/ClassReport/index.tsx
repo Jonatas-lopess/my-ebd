@@ -14,12 +14,13 @@ import TextButton from "@components/TextButton";
 import { CustomBottomModal } from "@components/CustomBottomModal";
 import { ListItemType } from "../LessonDetails/type";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import config from "config";
 import { useAuth } from "@providers/AuthProvider";
 import { Rollcall } from "../type";
 import { Score } from "@screens/StatisticsDrawer/SettingsStack/ScoreOptions/type";
 import ScoreOption from "@components/ScoreOption";
+import { Lesson } from "../HomeScreen/type";
 
 export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
   const { classId, lessonId } = route.params;
@@ -44,6 +45,21 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
       );
 
       return res.json();
+    },
+  });
+
+  const { data: lessonInfo } = useQuery({
+    queryKey: ["lessonInfo", lessonId],
+    queryFn: async (): Promise<Lesson> => {
+      const response = await fetch(config.apiBaseUrl + `/lessons/${lessonId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return await response.json();
     },
   });
 
@@ -77,6 +93,35 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
       );
 
       return res.json();
+    },
+  });
+
+  const { mutate } = useMutation({
+    mutationFn: async (data: ListItemType[]) => {
+      const res = await fetch(config.apiBaseUrl + "/report", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          list: data,
+          lesson: {
+            id: lessonId,
+            number: lessonInfo?.number,
+            date: lessonInfo?.date,
+          },
+          class: classId,
+        }),
+      });
+
+      return res.json();
+    },
+    onSuccess: () => {
+      bottomSheetRef.current?.close();
+    },
+    onError: (error) => {
+      console.log(error.message, error.cause);
     },
   });
 
@@ -147,6 +192,21 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
     setReport(newValue);
     bottomSheetRef.current?.close();
   }, [classReport]);
+
+  function saveReport() {
+    Alert.alert("Atenção", "Tem certeza que deseja finalizar o registro?", [
+      {
+        text: "Cancelar",
+        style: "cancel",
+      },
+      {
+        text: "Sim",
+        onPress: () => {
+          mutate(classReport);
+        },
+      },
+    ]);
+  }
 
   return (
     <ThemedView flex={1} style={{ backgroundColor: "white" }}>
@@ -220,6 +280,33 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
                     </ThemedView>
                   </TextButton>
                 )}
+                ListFooterComponent={
+                  <ThemedView
+                    flexDirection="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    gap="s"
+                  >
+                    <TextButton
+                      variant="outline"
+                      disabled={!isEditable}
+                      onClick={saveReport}
+                    >
+                      <ThemedText fontSize={16} fontWeight="bold">
+                        Finalizar
+                      </ThemedText>
+                    </TextButton>
+                    <TextButton
+                      variant="outline"
+                      disabled={!isEditable}
+                      onClick={() => {}}
+                    >
+                      <ThemedText fontSize={16} fontWeight="bold">
+                        Resetar
+                      </ThemedText>
+                    </TextButton>
+                  </ThemedView>
+                }
               />
             )}
           </CustomCard.Root>

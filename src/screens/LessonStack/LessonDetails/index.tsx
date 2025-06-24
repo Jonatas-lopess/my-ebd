@@ -91,7 +91,11 @@ export default function LessonDetails({
         },
         body: JSON.stringify({
           list: data,
-          lesson: lessonId,
+          lesson: {
+            id: lessonId,
+            number: lessonInfo?.number,
+            date: lessonInfo?.date,
+          },
         }),
       });
 
