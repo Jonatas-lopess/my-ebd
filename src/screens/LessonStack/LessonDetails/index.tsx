@@ -64,16 +64,18 @@ export default function LessonDetails({
   });
 
   const { data, isPending, isError, error } = useQuery({
-    queryKey: ["register"],
+    queryKey: ["teacherRegister"],
     queryFn: async (): Promise<RegisterFromApi[]> => {
-      const response = await fetch(config.apiBaseUrl + "/registers", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        //body: JSON.stringify({ user: { $exists: true } }),
-      });
+      const response = await fetch(
+        config.apiBaseUrl + "/registers?hasUser=true",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       return await response.json();
     },
@@ -87,7 +89,10 @@ export default function LessonDetails({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          list: data,
+          lesson: lessonId,
+        }),
       });
 
       const resJson = await res.json();
@@ -122,15 +127,12 @@ export default function LessonDetails({
     }, {} as NonNullable<ListItemType["report"]>);
 
     data.forEach((item) => {
-      if (
-        item.user &&
-        lessonInfo?.rollcalls?.find((r) => r.classId === item.class.id)
-      )
+      if (lessonInfo?.rollcalls?.find((r) => r.classId === item.class.id))
         list.push({
           id: item._id,
           name: item.name,
-          lesson: lessonId,
-          isPresent: false,
+          class: item.class.id,
+          isPresent: false, // TODO: get from rollcall
           report: report,
         });
     });
@@ -312,7 +314,7 @@ export default function LessonDetails({
                       onPress={() =>
                         navigation.navigate("Inicio", {
                           screen: "ClassReport",
-                          params: { classId: item._id },
+                          params: { classId: item._id, lessonId },
                         })
                       }
                     >

@@ -27,7 +27,7 @@ export default function ClassDetails({
     useState<IntervalOptionTypes>("Últimas 13 aulas");
 
   const { data, error, isPending, isError } = useQuery({
-    queryKey: ["classdetails", classId],
+    queryKey: ["classDetails", classId],
     queryFn: async () => {
       const res = await fetch(config.apiBaseUrl + "/classes/" + classId, {
         method: "GET",

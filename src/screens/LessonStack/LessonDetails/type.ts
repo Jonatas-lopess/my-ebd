@@ -7,7 +7,7 @@ export type ClassesType = {
 export type ListItemType = {
   id: string;
   name: string;
-  lesson: string;
+  class: string;
   isPresent: boolean;
   report?: { [key: string]: { id: string; value: number | boolean } };
 };

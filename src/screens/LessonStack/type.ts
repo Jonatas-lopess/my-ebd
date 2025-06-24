@@ -1,8 +1,10 @@
 export type Rollcall = {
   _id: string;
-  register: string;
-  date: Date;
-  number: number;
+  register: {
+    id: string;
+    name: string;
+    class: string;
+  };
   isPresent: boolean;
   score?: {
     kind: string;

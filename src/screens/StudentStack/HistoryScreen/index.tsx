@@ -54,7 +54,7 @@ export default function HistoryScreen({
     queryKey: ["rollcalls", studentId],
     queryFn: async (): Promise<Rollcall[]> => {
       const response = await fetch(
-        `${config.apiBaseUrl}/rollcalls/register/${studentId}`,
+        `${config.apiBaseUrl}/rollcalls?register=${studentId}`,
         {
           method: "GET",
           headers: {
