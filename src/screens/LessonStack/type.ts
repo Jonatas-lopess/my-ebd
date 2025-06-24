@@ -5,6 +5,11 @@ export type Rollcall = {
     name: string;
     class: string;
   };
+  lesson: {
+    id: string;
+    number: number;
+    date: Date;
+  };
   isPresent: boolean;
   score?: {
     kind: string;

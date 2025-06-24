@@ -71,7 +71,7 @@ export default function HistoryScreen({
   const groupedData = data?.reduce((acc: GroupedRollcall[], item) => {
     const modItem = {
       ...item,
-      date: new Date(item.date),
+      date: new Date(item.lesson.date),
     };
     const key = modItem.date.getMonth() + 1;
     const groupIndex = acc.findIndex((i) => i.mounth === key);
@@ -260,9 +260,9 @@ export default function HistoryScreen({
                         borderRadius: 50,
                       }}
                     >
-                      {item.date.getDate()}
+                      {item.lesson.date.getDate()}
                     </ThemedText>
-                    <ThemedText>{`Lição ${item.number}`}</ThemedText>
+                    <ThemedText>{`Lição ${item.lesson.number}`}</ThemedText>
                   </ThemedView>
                   <Ionicons
                     name={item.isPresent ? "checkmark-circle" : "close-circle"}
