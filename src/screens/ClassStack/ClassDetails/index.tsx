@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@providers/AuthProvider";
 import config from "config";
 import { ClassStackProps } from "@custom/types/navigation";
+import { _Class } from "../ClassScreen/type";
 
 export default function ClassDetails({
   route,
@@ -28,7 +29,7 @@ export default function ClassDetails({
 
   const { data, error, isPending, isError } = useQuery({
     queryKey: ["classDetails", classId],
-    queryFn: async () => {
+    queryFn: async (): Promise<_Class> => {
       const res = await fetch(config.apiBaseUrl + "/classes/" + classId, {
         method: "GET",
         headers: {
@@ -37,12 +38,15 @@ export default function ClassDetails({
         },
       });
 
-      return res.json();
+      const resJson = await res.json();
+      if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
     },
   });
 
   const sortedData: DataType[] = (
-    data?.students.map((student: string) => ({
+    data?.students?.map((student: string) => ({
       nome: student,
       pontos: 10,
     })) ?? []

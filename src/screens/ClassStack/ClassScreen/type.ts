@@ -1,5 +1,7 @@
-export type NewClass = {
+export type _Class = {
+  _id?: string;
   name: string;
   group?: string;
-  flag?: string;
+  flag: string;
+  students?: string[];
 };

@@ -3,6 +3,7 @@ import LoginStack from "@screens/LoginStack";
 import AdminRootTabNavigator from "../AdminRootTabNavigator";
 import TeacherRootTabNavigator from "../TeacherRootTabNavigator";
 import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -14,17 +15,23 @@ SplashScreen.setOptions({
 export default function AuthController() {
   const { authState } = useAuth();
 
-  if (authState.isLoading === false) {
-    SplashScreen.hideAsync();
-  }
+  useEffect(() => {
+    if (authState.isLoading === false) {
+      SplashScreen.hideAsync();
+    }
+  }, [authState.isLoading]);
 
-  if (authState.token === undefined) {
+  if (authState.token === undefined || authState.user === undefined) {
     return <LoginStack />;
   }
 
-  if (authState.user?.role === "admin") {
+  if (authState.user.role === "admin" || authState.user.role === "owner") {
     return <AdminRootTabNavigator />;
   }
 
-  return <TeacherRootTabNavigator />;
+  if (authState.user.role === "teacher") {
+    return <TeacherRootTabNavigator />;
+  }
+
+  return <></>;
 }

@@ -7,7 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { ScrollView, SectionList } from "react-native";
 import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import IntervalControl, {
   IntervalOptionTypes,
 } from "@components/IntervalControl";
@@ -18,7 +18,7 @@ import { Rollcall } from "@screens/LessonStack/type";
 import Register from "../StudentScreen/type";
 
 type GroupedRollcall = {
-  mounth: number;
+  month: number;
   data: Rollcall[];
 };
 
@@ -46,7 +46,11 @@ export default function HistoryScreen({
         }
       );
 
-      return response.json();
+      const resJson = await response.json();
+      if (!response.ok)
+        throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
     },
   });
 
@@ -64,31 +68,61 @@ export default function HistoryScreen({
         }
       );
 
-      return response.json();
+      const resJson = await response.json();
+      if (!response.ok)
+        throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
     },
   });
 
-  const groupedData = data?.reduce((acc: GroupedRollcall[], item) => {
-    const modItem = {
-      ...item,
-      date: new Date(item.lesson.date),
-    };
-    const key = modItem.date.getMonth() + 1;
-    const groupIndex = acc.findIndex((i) => i.mounth === key);
+  let groupedData: GroupedRollcall[] | undefined;
 
-    if (groupIndex === -1) {
-      acc.push({
-        mounth: key,
-        data: [modItem],
-      });
-    } else {
-      acc[groupIndex].data.push(modItem);
-    }
+  function filterDataByInterval(
+    data: Rollcall[],
+    interval: IntervalOptionTypes
+  ) {
+    return data.filter((item) => {
+      const lessonDate = new Date(item.lesson.date);
+      const currentDate = new Date();
+      const daysDifference = Math.ceil(
+        (currentDate.getTime() - lessonDate.getTime()) / (1000 * 3600 * 24)
+      );
 
-    return acc;
-  }, []);
+      switch (interval) {
+        case "Últimas 13 aulas":
+          return daysDifference <= 90; // Approx. 3 months
+        case "1º Trimestre":
+          return lessonDate.getMonth() < 3; // January to March
+        case "2º Trimestre":
+          return lessonDate.getMonth() >= 3 && lessonDate.getMonth() < 6; // April to June
+        default:
+          return true;
+      }
+    });
+  }
 
-  const MOUNTHS = [
+  useEffect(() => {
+    if (!data) return;
+
+    const filteredData = filterDataByInterval(data, interval);
+
+    groupedData = filteredData.reduce<GroupedRollcall[]>((acc, item) => {
+      const lessonDate = new Date(item.lesson.date);
+      const month = lessonDate.getMonth() + 1;
+
+      const existingGroup = acc.find((group) => group.month === month);
+      if (existingGroup) {
+        existingGroup.data.push(item);
+      } else {
+        acc.push({ month, data: [item] });
+      }
+
+      return acc;
+    }, []);
+  }, [data, interval]);
+
+  const MONTHS = [
     "Janeiro",
     "Fevereiro",
     "Março",
@@ -225,9 +259,9 @@ export default function HistoryScreen({
             </ThemedView>
           )}
           {isError && (
-            <ThemedView flex={1} justifyContent="center" alignItems="center">
-              <ThemedText>
-                Erro ao carregar histótico de aulas: {error.message}
+            <ThemedView flex={1} mt="m">
+              <ThemedText textAlign="center">
+                Erro ao carregar histórico de aulas: {error.message}
               </ThemedText>
             </ThemedView>
           )}
@@ -239,7 +273,7 @@ export default function HistoryScreen({
                 paddingHorizontal: 5,
               }}
               style={{ marginVertical: theme.spacing.s }}
-              sections={groupedData.sort((a, b) => b.mounth - a.mounth)}
+              sections={groupedData.sort((a, b) => b.month - a.month)}
               renderItem={({ item }) => (
                 <ThemedView
                   flexDirection="row"
@@ -272,7 +306,7 @@ export default function HistoryScreen({
                   />
                 </ThemedView>
               )}
-              renderSectionHeader={({ section: { mounth } }) => (
+              renderSectionHeader={({ section: { month } }) => (
                 <ThemedView alignItems="center">
                   <ThemedText
                     px="m"
@@ -282,7 +316,7 @@ export default function HistoryScreen({
                       borderRadius: 20,
                     }}
                   >
-                    {MOUNTHS[mounth - 1]}
+                    {MONTHS[month - 1]}
                   </ThemedText>
                 </ThemedView>
               )}

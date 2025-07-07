@@ -5,7 +5,7 @@ import StorageService from "@services/StorageService";
 export type User = {
   name?: string;
   email: string;
-  role: "admin" | "teacher";
+  role: "admin" | "teacher" | "owner";
   plan: string;
   password?: string;
   register?: {

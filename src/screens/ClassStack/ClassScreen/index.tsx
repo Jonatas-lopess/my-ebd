@@ -13,7 +13,7 @@ import {
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useCallback, useRef, useState } from "react";
 import ThemedText from "@components/ThemedText";
-import { NewClass } from "./type";
+import { _Class } from "./type";
 import { useAuth } from "@providers/AuthProvider";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import config from "config";
@@ -25,10 +25,10 @@ export default function ClassScreen() {
   const optionsSheetRef = useRef<BottomSheetModal>(null);
   const queryClient = useQueryClient();
   const { token, user } = useAuth().authState;
-  const EMPTYCLASSDATA: NewClass = {
+  const EMPTYCLASSDATA: _Class = {
     name: "",
     group: undefined,
-    flag: user?.plan,
+    flag: user?.plan ?? "",
   };
   const [newClass, setNewClass] = useState(EMPTYCLASSDATA);
 
@@ -39,7 +39,7 @@ export default function ClassScreen() {
     isError,
   } = useQuery({
     queryKey: ["altclass"],
-    queryFn: async () => {
+    queryFn: async (): Promise<_Class[]> => {
       const res = await fetch(config.apiBaseUrl + "/classes", {
         method: "GET",
         headers: {
@@ -48,12 +48,15 @@ export default function ClassScreen() {
         },
       });
 
-      return res.json();
+      const resJson = await res.json();
+      if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
     },
   });
 
   const mutation = useMutation({
-    mutationFn: async (newData: NewClass) => {
+    mutationFn: async (newData: _Class) => {
       const res = await fetch(config.apiBaseUrl + "/classes", {
         method: "POST",
         headers: {
@@ -144,7 +147,7 @@ export default function ClassScreen() {
                 onPress={() =>
                   navigation.navigate("Turmas", {
                     screen: "ClassDetails",
-                    params: { classId: item._id.toString() },
+                    params: { classId: item._id!.toString() },
                   })
                 }
                 onLongPress={() => console.log(item)}
@@ -155,7 +158,7 @@ export default function ClassScreen() {
                 </ThemedView>
                 <InfoCard.Content>
                   <ThemedText>
-                    Alunos: {item.students.length.toString()}
+                    Alunos: {item.students?.length.toString()}
                   </ThemedText>
                   <ThemedView borderLeftWidth={1} borderLeftColor="lightgrey" />
                   <ThemedText>Media: 100%</ThemedText>
@@ -176,7 +179,7 @@ export default function ClassScreen() {
                 </ThemedView>
               )
             }
-            keyExtractor={(item) => item._id.toString()}
+            keyExtractor={(item) => item._id!.toString()}
             style={{ backgroundColor: theme.colors.white }}
             contentContainerStyle={{
               gap: theme.spacing.s,

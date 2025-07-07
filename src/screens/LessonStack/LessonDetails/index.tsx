@@ -8,7 +8,7 @@ import { ThemeProps } from "@theme";
 import { useNavigation } from "@react-navigation/native";
 import { Alert, FlatList, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ListItemType } from "./type";
 import { CustomCard } from "@components/CustomCard";
 import TextButton from "@components/TextButton";
@@ -21,6 +21,9 @@ import { RegisterFromApi } from "@screens/StudentStack/StudentScreen/type";
 import { Lesson } from "../HomeScreen/type";
 import ScoreOption from "@components/ScoreOption";
 import { Score } from "@screens/StatisticsDrawer/SettingsStack/ScoreOptions/type";
+import { Rollcall } from "../type";
+import { _Class } from "@screens/ClassStack/ClassScreen/type";
+import structuredClone from "@ungap/structured-clone";
 
 export default function LessonDetails({
   route,
@@ -29,7 +32,6 @@ export default function LessonDetails({
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
   const [isEditable, setIsEditable] = useState(false);
-  const [isLocked, setIsLocked] = useState(false);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const { token } = useAuth().authState;
 
@@ -44,7 +46,11 @@ export default function LessonDetails({
         },
       });
 
-      return await response.json();
+      const resJson = await response.json();
+      if (!response.ok)
+        throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
     },
   });
 
@@ -59,7 +65,11 @@ export default function LessonDetails({
         },
       });
 
-      return await response.json();
+      const resJson = await response.json();
+      if (!response.ok)
+        throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
     },
   });
 
@@ -77,7 +87,33 @@ export default function LessonDetails({
         }
       );
 
-      return await response.json();
+      const resJson = await response.json();
+      if (!response.ok)
+        throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
+    },
+  });
+
+  const { data: teacherRollcalls } = useQuery({
+    queryKey: ["teacherRollcalls", lessonId],
+    queryFn: async (): Promise<Rollcall[]> => {
+      const response = await fetch(
+        config.apiBaseUrl + `/rollcalls?lesson=${lessonId}&register=hasUser`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const resJson = await response.json();
+      if (!response.ok)
+        throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
     },
   });
 
@@ -95,6 +131,7 @@ export default function LessonDetails({
             id: lessonId,
             number: lessonInfo?.number,
             date: lessonInfo?.date,
+            isFinished: true,
           },
         }),
       });
@@ -104,50 +141,62 @@ export default function LessonDetails({
 
       return resJson;
     },
-    onSuccess: () => setIsLocked(true),
     onError: (error) => {
       console.log(error.message, error.cause);
     },
   });
 
-  function generateList(data: RegisterFromApi[] | undefined): ListItemType[] {
-    if (!data) return [];
+  const report = useMemo(() => {
+    if (!scoreInfo) return undefined;
 
-    const list: ListItemType[] = [];
-    const report = scoreInfo?.reduce((acc, cur) => {
+    return scoreInfo.reduce((acc, cur) => {
       if (cur.type === "NumberScore") {
         acc[cur.title] = {
           id: cur._id!,
           value: 0,
         };
-        return acc;
+      } else {
+        acc[cur.title] = {
+          id: cur._id!,
+          value: false,
+        };
       }
 
-      acc[cur.title] = {
-        id: cur._id!,
-        value: false,
-      };
       return acc;
     }, {} as NonNullable<ListItemType["report"]>);
+  }, [scoreInfo]);
 
-    data.forEach((item) => {
-      if (lessonInfo?.rollcalls?.find((r) => r.classId === item.class.id))
-        list.push({
-          id: item._id,
-          name: item.name,
-          class: item.class.id,
-          isPresent: false, // TODO: get from rollcall
-          report: report,
-        });
-    });
+  const generateList = useCallback(
+    (data: RegisterFromApi[] | undefined): ListItemType[] => {
+      if (!data || !report) return [];
+      const list: ListItemType[] = [];
 
-    return list;
-  }
+      data.forEach((item) => {
+        if (lessonInfo?.rollcalls?.find((r) => r.classId === item.class.id))
+          list.push({
+            id: item._id,
+            name: item.name,
+            class: item.class.id,
+            isPresent: teacherRollcalls
+              ? teacherRollcalls.find((r) => r.register.id === item._id)
+                  ?.isPresent ?? false
+              : false,
+            report: structuredClone(report),
+          });
+      });
 
-  const [teachersList, setTeachersList] = useState<ListItemType[]>(
-    generateList(data)
+      return list;
+    },
+    [lessonInfo, teacherRollcalls, report]
   );
+
+  const [teachersList, setTeachersList] = useState<ListItemType[]>([]);
   const [tempItem, setTempItem] = useState<Partial<ListItemType>>({});
+
+  useEffect(() => {
+    if (isPending || isError || !data || !scoreInfo || !lessonInfo) return;
+    setTeachersList(generateList(data));
+  }, [data, scoreInfo, lessonInfo, teacherRollcalls]);
 
   const {
     data: classes,
@@ -156,7 +205,7 @@ export default function LessonDetails({
     error: errorClasses,
   } = useQuery({
     queryKey: ["classes"],
-    queryFn: async () => {
+    queryFn: async (): Promise<_Class[]> => {
       const response = await fetch(config.apiBaseUrl + "/classes", {
         method: "GET",
         headers: {
@@ -181,7 +230,7 @@ export default function LessonDetails({
       setTempItem(item);
       bottomSheetRef.current?.present();
     },
-    [tempItem]
+    [teachersList]
   );
 
   function onSheetDismiss() {
@@ -189,18 +238,31 @@ export default function LessonDetails({
   }
 
   const handleSaveReportChanges = useCallback(() => {
-    const newValue = teachersList.map((item) =>
-      item.id === tempItem.id
-        ? { ...item, report: tempItem.report, isPresent: true }
-        : item
+    setTeachersList((prev) =>
+      prev.map((item) =>
+        item.id === tempItem.id
+          ? { ...item, report: tempItem.report, isPresent: true }
+          : item
+      )
     );
-
-    setTeachersList(newValue);
     bottomSheetRef.current?.close();
-  }, [teachersList]);
+  }, [tempItem]);
+
+  function isClassReportDone(classId: string): boolean {
+    return (
+      lessonInfo?.rollcalls?.find((r) => r.classId === classId)?.isDone ?? false
+    );
+  }
 
   function saveReport() {
-    if (isLocked) return;
+    if (lessonInfo?.isFinished) return;
+
+    if (!classes?.every((item) => isClassReportDone(item._id!))) {
+      return Alert.alert(
+        "Atenção",
+        "Não é possível executar esta ação pois existem chamadas não finalizadas."
+      );
+    }
 
     Alert.alert("Atenção", "Tem certeza que deseja finalizar o registro?", [
       {
@@ -232,18 +294,22 @@ export default function LessonDetails({
               {isSuccess && (lessonInfo.title ?? lessonInfo.number!.toString())}
             </StackHeader.Title>
           </StackHeader.Content>
-          <StackHeader.Actions>
-            <StackHeader.Action
-              name={isLocked ? "lock" : "lock-open"}
-              onPress={saveReport}
-              color={theme.colors.gray}
-            />
-            <StackHeader.Action
-              name={isEditable ? "close" : "pencil"}
-              onPress={() => setIsEditable((prev) => !prev)}
-              color={theme.colors.gray}
-            />
-          </StackHeader.Actions>
+          {isSuccess && (
+            <StackHeader.Actions>
+              <StackHeader.Action
+                name={lessonInfo.isFinished ? "lock" : "lock-open"}
+                onPress={saveReport}
+                color={theme.colors.gray}
+              />
+              {lessonInfo.isFinished === undefined && (
+                <StackHeader.Action
+                  name={isEditable ? "close" : "pencil"}
+                  onPress={() => setIsEditable((prev) => !prev)}
+                  color={theme.colors.gray}
+                />
+              )}
+            </StackHeader.Actions>
+          )}
         </StackHeader.Root>
 
         <ThemedView flex={1} backgroundColor="white">
@@ -312,13 +378,13 @@ export default function LessonDetails({
                     gap: theme.spacing.s,
                     marginTop: theme.spacing.s,
                   }}
-                  keyExtractor={(item) => item._id}
+                  keyExtractor={(item) => item._id!}
                   renderItem={({ item }) => (
                     <TouchableOpacity
                       onPress={() =>
                         navigation.navigate("Inicio", {
                           screen: "ClassReport",
-                          params: { classId: item._id, lessonId },
+                          params: { classId: item._id!, lessonId },
                         })
                       }
                     >
@@ -331,7 +397,7 @@ export default function LessonDetails({
                         borderWidth={1}
                         borderLeftWidth={6}
                         style={{
-                          borderLeftColor: item.description
+                          borderLeftColor: isClassReportDone(item._id!)
                             ? "green"
                             : "orange",
                         }}
@@ -344,13 +410,15 @@ export default function LessonDetails({
                         </ThemedText>
                         <Ionicons
                           name={
-                            item.description
+                            isClassReportDone(item._id!)
                               ? "checkmark-circle"
                               : "alert-circle"
                           }
                           size={35}
                           style={{ margin: 0 }}
-                          color={item.description ? "green" : "orange"}
+                          color={
+                            isClassReportDone(item._id!) ? "green" : "orange"
+                          }
                         />
                       </ThemedView>
                     </TouchableOpacity>

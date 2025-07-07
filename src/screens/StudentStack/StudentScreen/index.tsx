@@ -42,22 +42,49 @@ export default function StudentScreen() {
     isTeacher: false,
     class: { id: "", name: "" },
   });
-  const { token } = useAuth().authState;
+  const { token, user } = useAuth().authState;
   const TODAY = new Date();
+
+  async function getRegisters(): Promise<RegisterFromApi[]> {
+    if (user === undefined) throw new Error("User is undefined");
+
+    if (user.role === "teacher") {
+      const res = await fetch(
+        config.apiBaseUrl +
+          "/registers?hasUser=false&class=" +
+          user.register?.class,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const resJson = await res.json();
+      if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
+    }
+
+    const res = await fetch(config.apiBaseUrl + "/registers", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const resJson = await res.json();
+    if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
+
+    return resJson;
+  }
 
   const { data, error, isError, isPending } = useQuery({
     queryKey: ["register"],
-    queryFn: async (): Promise<RegisterFromApi[]> => {
-      const res = await fetch(config.apiBaseUrl + "/registers", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      return res.json();
-    },
+    queryFn: getRegisters,
   });
 
   const { data: data_classes, isError: isErrorClass } = useQuery({
@@ -71,7 +98,10 @@ export default function StudentScreen() {
         },
       });
 
-      return res.json();
+      const resJson = await res.json();
+      if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
     },
   });
 
@@ -106,7 +136,7 @@ export default function StudentScreen() {
 
   const { isPending: isPendingMutate, variables, mutate } = mutation;
 
-  const matchMounth = (aniversary: Date) => {
+  const matchMonth = (aniversary: Date) => {
     const month = aniversary.getMonth() + 1;
     return month === TODAY.getMonth() + 1;
   };
@@ -114,7 +144,7 @@ export default function StudentScreen() {
   const filteredData = data
     ? data.filter((item) => {
         if (birthdayFilter)
-          return item.aniversary && matchMounth(new Date(item.aniversary));
+          return item.aniversary && matchMonth(new Date(item.aniversary));
         if (nameFilter)
           return item.name.toLowerCase().includes(nameFilter.toLowerCase());
 
@@ -243,7 +273,7 @@ export default function StudentScreen() {
                   >
                     <ThemedText fontSize={16}>{item.name}</ThemedText>
                     {dateFormatAniversary &&
-                      matchMounth(dateFormatAniversary) && (
+                      matchMonth(dateFormatAniversary) && (
                         <ThemedView
                           flexDirection="row"
                           alignItems="center"

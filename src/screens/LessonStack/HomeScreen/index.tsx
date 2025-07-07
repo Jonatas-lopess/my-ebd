@@ -21,6 +21,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import config from "config";
 
 export default function HomeScreen() {
+  //TODO: create a teacher screen to manage lessons
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
   const queryClient = useQueryClient();

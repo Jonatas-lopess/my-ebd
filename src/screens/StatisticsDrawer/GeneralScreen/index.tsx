@@ -4,7 +4,6 @@ import { useTheme } from "@shopify/restyle";
 import { useCallback, useState } from "react";
 import { FlatList, ScrollView, SectionList } from "react-native";
 import SwitchSelector from "react-native-switch-selector";
-import ChartCard from "@components/ChartCard";
 import CustomTextCard from "@components/CustomTextCard";
 import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import IntervalControl, {
@@ -14,40 +13,39 @@ import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { ThemeProps } from "@theme";
 import { DataType } from "@screens/ClassStack/ClassDetails/type";
+import { useQuery } from "@tanstack/react-query";
+import config from "config";
+import { useAuth } from "@providers/AuthProvider";
+import { RegisterFromApi } from "@screens/StudentStack/StudentScreen/type";
 
 export default function GeneralScreen() {
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
-
+  const { token } = useAuth().authState;
   const [selectedList, setSelectedList] = useState("alunos");
   const [interval, setInterval] =
     useState<IntervalOptionTypes>("Últimas 13 aulas");
 
-  const DATA_STUDENTS: { title: string; data: DataType[] }[] = [
-    {
-      title: "Classe Homens",
-      data: [
-        { nome: "Josue", pontos: 12 },
-        { nome: "Carlos", pontos: 10 },
-      ],
-    },
-    {
-      title: "Classe Jovem",
-      data: [
-        { nome: "Amanda", pontos: 14 },
-        { nome: "Henrique", pontos: 14 },
-        { nome: "João", pontos: 11 },
-      ],
-    },
-  ];
+  /* const { data, error, isError, isPending } = useQuery({
+    queryKey: ["register"],
+    queryFn: async (): Promise<RegisterFromApi[]> => {
+      const res = await fetch(config.apiBaseUrl + "/registers", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-  const DATA_TEACHERS: DataType[] = [
-    { nome: "Marta", pontos: 12 },
-    { nome: "Zé", pontos: 10 },
-    { nome: "Amalia", pontos: 14 },
-    { nome: "Ronaldo", pontos: 14 },
-    { nome: "Diego", pontos: 11 },
-  ];
+      const resJson = await res.json();
+      if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
+    },
+  }); */
+
+  const DATA_STUDENTS: { title: string; data: DataType[] }[] = [];
+  const DATA_TEACHERS: DataType[] = [];
 
   const handleCardPress = useCallback((newInterval: IntervalOptionTypes) => {
     setInterval(newInterval);

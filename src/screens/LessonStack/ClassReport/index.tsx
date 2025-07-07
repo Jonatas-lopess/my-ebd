@@ -8,7 +8,7 @@ import { ScrollView, FlatList, Alert, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@shopify/restyle";
 import { ThemeProps } from "@theme";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import TextButton from "@components/TextButton";
 import { CustomBottomModal } from "@components/CustomBottomModal";
@@ -21,6 +21,7 @@ import { Rollcall } from "../type";
 import { Score } from "@screens/StatisticsDrawer/SettingsStack/ScoreOptions/type";
 import ScoreOption from "@components/ScoreOption";
 import { Lesson } from "../HomeScreen/type";
+import structuredClone from "@ungap/structured-clone";
 
 export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
   const { classId, lessonId } = route.params;
@@ -44,11 +45,14 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
         }
       );
 
-      return res.json();
+      const resJson = await res.json();
+      if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
     },
   });
 
-  const { data: lessonInfo } = useQuery({
+  const { data: lessonInfo, isSuccess } = useQuery({
     queryKey: ["lessonInfo", lessonId],
     queryFn: async (): Promise<Lesson> => {
       const response = await fetch(config.apiBaseUrl + `/lessons/${lessonId}`, {
@@ -59,7 +63,11 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
         },
       });
 
-      return await response.json();
+      const resJson = await response.json();
+      if (!response.ok)
+        throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
     },
   });
 
@@ -74,7 +82,11 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
         },
       });
 
-      return await response.json();
+      const resJson = await response.json();
+      if (!response.ok)
+        throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
     },
   });
 
@@ -92,7 +104,10 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
         }
       );
 
-      return res.json();
+      const resJson = await res.json();
+      if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
     },
   });
 
@@ -125,43 +140,59 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
     },
   });
 
-  function generateList(data: Rollcall[] | undefined): ListItemType[] {
-    if (!data) return [];
+  const report = useMemo(() => {
+    if (!scoreInfo) return undefined;
 
-    const list: ListItemType[] = [];
-    const report = scoreInfo?.reduce((acc, cur) => {
+    return scoreInfo.reduce((acc, cur) => {
       if (cur.type === "NumberScore") {
         acc[cur.title] = {
           id: cur._id!,
           value: 0,
         };
-        return acc;
+      } else {
+        acc[cur.title] = {
+          id: cur._id!,
+          value: false,
+        };
       }
 
-      acc[cur.title] = {
-        id: cur._id!,
-        value: false,
-      };
       return acc;
     }, {} as NonNullable<ListItemType["report"]>);
+  }, [scoreInfo]);
 
-    if (data) {
-      data.forEach((item) => {
-        list.push({
-          id: item.register.id,
-          name: item.register.name,
-          class: classId,
-          isPresent: item.isPresent,
-          report: report,
+  const generateList = useCallback(
+    (data: Rollcall[] | undefined): ListItemType[] => {
+      if (!data || !report) return [];
+      const list: ListItemType[] = [];
+
+      if (data) {
+        data.forEach((item) => {
+          list.push({
+            id: item.register.id,
+            name: item.register.name,
+            class: classId,
+            isPresent: item.isPresent,
+            report: structuredClone(report),
+          });
         });
-      });
-    }
+      }
 
-    return list;
-  }
+      return list;
+    },
+    [report, classId]
+  );
 
-  const [classReport, setReport] = useState<ListItemType[]>(generateList(data));
+  const [classReport, setReport] = useState<ListItemType[]>([]);
   const [tempItem, setTempItem] = useState<Partial<ListItemType>>({});
+
+  useEffect(() => {
+    if (isPending || isError || !data || !lessonInfo) return;
+    setReport(generateList(data));
+  }, [data, lessonInfo]);
+
+  useEffect(() => {
+    if (error) console.log(error.message, error.cause);
+  }, [error]);
 
   const handleOpenBottomSheet = useCallback(
     (id: string) => {
@@ -175,7 +206,7 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
       setTempItem(item);
       bottomSheetRef.current?.present();
     },
-    [tempItem]
+    [classReport]
   );
 
   function onSheetDismiss() {
@@ -183,17 +214,20 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
   }
 
   const handleSaveReportChanges = useCallback(() => {
-    const newValue = classReport.map((item) =>
-      item.id === tempItem.id
-        ? { ...item, report: tempItem.report, isPresent: true }
-        : item
+    setReport((prev) =>
+      prev.map((item) =>
+        item.id === tempItem.id
+          ? { ...item, report: tempItem.report, isPresent: true }
+          : item
+      )
     );
 
-    setReport(newValue);
     bottomSheetRef.current?.close();
-  }, [classReport]);
+  }, [tempItem]);
 
   function saveReport() {
+    if (lessonInfo?.isFinished) return;
+
     Alert.alert("Atenção", "Tem certeza que deseja finalizar o registro?", [
       {
         text: "Cancelar",
@@ -221,11 +255,13 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
           />
           <StackHeader.Title>{classData?.name ?? "-"}</StackHeader.Title>
         </StackHeader.Content>
-        <StackHeader.Action
-          name={isEditable ? "close" : "pencil"}
-          onPress={() => setIsEditable((prev) => !prev)}
-          color={theme.colors.gray}
-        />
+        {isSuccess && lessonInfo.isFinished === undefined && (
+          <StackHeader.Action
+            name={isEditable ? "close" : "pencil"}
+            onPress={() => setIsEditable((prev) => !prev)}
+            color={theme.colors.gray}
+          />
+        )}
       </StackHeader.Root>
 
       <ThemedView flex={1} padding="s" backgroundColor="white">
@@ -280,32 +316,34 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
                     </ThemedView>
                   </TextButton>
                 )}
-                ListFooterComponent={
-                  <ThemedView
-                    flexDirection="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    gap="s"
-                  >
-                    <TextButton
-                      variant="outline"
-                      disabled={!isEditable}
-                      onClick={saveReport}
+                ListFooterComponent={(): React.ReactNode =>
+                  lessonInfo?.isFinished === undefined && (
+                    <ThemedView
+                      flexDirection="row"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      gap="s"
                     >
-                      <ThemedText fontSize={16} fontWeight="bold">
-                        Finalizar
-                      </ThemedText>
-                    </TextButton>
-                    <TextButton
-                      variant="outline"
-                      disabled={!isEditable}
-                      onClick={() => {}}
-                    >
-                      <ThemedText fontSize={16} fontWeight="bold">
-                        Resetar
-                      </ThemedText>
-                    </TextButton>
-                  </ThemedView>
+                      <TextButton
+                        variant="outline"
+                        disabled={!isEditable}
+                        onClick={saveReport}
+                      >
+                        <ThemedText fontSize={16} fontWeight="bold">
+                          Finalizar
+                        </ThemedText>
+                      </TextButton>
+                      <TextButton
+                        variant="outline"
+                        disabled={!isEditable}
+                        onClick={() => {}}
+                      >
+                        <ThemedText fontSize={16} fontWeight="bold">
+                          Resetar
+                        </ThemedText>
+                      </TextButton>
+                    </ThemedView>
+                  )
                 }
               />
             )}
