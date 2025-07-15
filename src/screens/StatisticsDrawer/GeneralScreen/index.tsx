@@ -217,126 +217,123 @@ export default function GeneralScreen() {
   );
 
   return (
-    <ThemedView flex={1} backgroundColor="secondary">
+    <ThemedView flex={1} backgroundColor="secondary" pt="safeArea">
       <FocusAwareStatusBar style="light" translucent />
 
-      <ThemedView paddingTop="safeArea">
-        <ScrollView nestedScrollEnabled>
-          <ThemedView flexDirection="row" mx="s" mt="s" alignItems="center">
-            <ThemedView flex={1} alignItems="center" pl="l">
-              <ThemedText color="gray" variant="body" fontWeight="bold">
-                Minha EBD
-              </ThemedText>
-            </ThemedView>
-            <Ionicons.Button
-              name="menu"
-              color={theme.colors.gray}
-              onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-              size={25}
-              backgroundColor="transparent"
-              underlayColor="transparent"
-              style={{ padding: 0 }}
-              iconStyle={{ marginRight: 0 }}
-            />
-          </ThemedView>
-
-          <ThemedView flexDirection="column" alignItems="center" mt="m">
-            <ThemedText variant="h1" color="white">
-              Escola Bíblica
-            </ThemedText>
-            <ThemedText variant="body" color="white">
-              Vila Mury
-            </ThemedText>
-          </ThemedView>
-
-          <ThemedView mt="m">
-            <IntervalControl
-              interval={interval}
-              onCardPress={handleCardPress}
-            />
-          </ThemedView>
-
-          <ThemedView
-            flexDirection="row"
-            mt="xxxl"
-            justifyContent="space-around"
-          >
-            <CustomTextCard text="Matriculados: 22" height={34} />
-            <CustomTextCard text="Média no Intervalo: 76%" height={34} />
-          </ThemedView>
-
-          <ThemedView
-            mt="s"
-            flex={1}
-            backgroundColor="white"
-            borderTopLeftRadius={20}
-            borderTopRightRadius={20}
-          >
-            <ThemedView alignItems="center">
-              <ThemedText color="black" fontWeight="bold" mt="m">
-                Ranking Geral de Pontuação
-              </ThemedText>
-              <ThemedText color="gray" fontSize={12}>
-                A pontuação é baseada no intervalo selecionado.
-              </ThemedText>
-            </ThemedView>
-
-            <SwitchSelector
-              options={[
-                { label: "Alunos", value: "alunos" },
-                { label: "Professores", value: "professores" },
-              ]}
-              onPress={(value: string) => setSelectedList(value)}
-              initial={0}
-              textColor={theme.colors.gray}
-              selectedColor={theme.colors.white}
-              buttonColor={theme.colors.gray}
-              style={{ marginVertical: 10, marginHorizontal: 5 }}
-            />
-            {(isPending || isRollcallsPending || isClassesPending) && (
-              <ThemedView>
-                <ThemedText>Carregando...</ThemedText>
-              </ThemedView>
-            )}
-            {isError && (
-              <ThemedView>
-                <ThemedText>Erro ao carregar dados...</ThemedText>
-              </ThemedView>
-            )}
-            {!isPending &&
-              !isRollcallsPending &&
-              !isError &&
-              !isClassesPending &&
-              (selectedList === "alunos" ? (
-                <SectionList
-                  sections={DATA_STUDENTS}
-                  scrollEnabled={false}
-                  contentContainerStyle={{ gap: theme.spacing.s }}
-                  style={{ marginHorizontal: 10 }}
-                  renderItem={({ item, index }) =>
-                    handleRenderItem(item, index)
-                  }
-                  renderSectionHeader={({ section: { title } }) => (
-                    <ThemedText>{title}</ThemedText>
-                  )}
-                />
-              ) : (
-                <FlatList
-                  data={DATA_TEACHERS}
-                  scrollEnabled={false}
-                  contentContainerStyle={{
-                    gap: theme.spacing.s,
-                    marginVertical: theme.spacing.s,
-                    marginHorizontal: theme.spacing.s,
-                  }}
-                  renderItem={({ item, index }) =>
-                    handleRenderItem(item, index)
-                  }
-                />
-              ))}
-          </ThemedView>
-        </ScrollView>
+      <ThemedView flexDirection="row" mx="s" mt="s" alignItems="center">
+        <ThemedView flex={1} alignItems="center" pl="l">
+          <ThemedText color="gray" variant="body" fontWeight="bold">
+            Minha EBD
+          </ThemedText>
+        </ThemedView>
+        <Ionicons.Button
+          name="menu"
+          color={theme.colors.gray}
+          onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+          size={25}
+          backgroundColor="transparent"
+          underlayColor="transparent"
+          style={{ padding: 0 }}
+          iconStyle={{ marginRight: 0 }}
+        />
       </ThemedView>
+
+      <ScrollView nestedScrollEnabled contentContainerStyle={{ flexGrow: 1 }}>
+        <ThemedView flexDirection="column" alignItems="center" mt="m">
+          <ThemedText variant="h1" color="white">
+            Escola Bíblica
+          </ThemedText>
+          <ThemedText variant="body" color="white">
+            Vila Mury
+          </ThemedText>
+        </ThemedView>
+
+        <ThemedView mt="m">
+          <IntervalControl interval={interval} onCardPress={handleCardPress} />
+        </ThemedView>
+
+        <ThemedView flexDirection="row" mt="xl" justifyContent="space-around">
+          <CustomTextCard
+            text={
+              "Matriculados: " +
+              (DATA_STUDENTS.reduce(
+                (acc, item) => acc + (item.data.length || 0),
+                0
+              ) || 0)
+            }
+            height={34}
+          />
+          <CustomTextCard text="Média no Intervalo: -" height={34} />
+        </ThemedView>
+
+        <ThemedView
+          mt="s"
+          height="auto"
+          flex={1}
+          backgroundColor="white"
+          borderTopLeftRadius={20}
+          borderTopRightRadius={20}
+        >
+          <ThemedView alignItems="center">
+            <ThemedText color="black" fontWeight="bold" mt="m">
+              Ranking Geral de Pontuação
+            </ThemedText>
+            <ThemedText color="gray" fontSize={12}>
+              A pontuação é baseada no intervalo selecionado.
+            </ThemedText>
+          </ThemedView>
+
+          <SwitchSelector
+            options={[
+              { label: "Alunos", value: "alunos" },
+              { label: "Professores", value: "professores" },
+            ]}
+            onPress={(value: string) => setSelectedList(value)}
+            initial={0}
+            textColor={theme.colors.gray}
+            selectedColor={theme.colors.white}
+            buttonColor={theme.colors.gray}
+            style={{ marginVertical: 10, marginHorizontal: 5 }}
+          />
+          {(isPending || isRollcallsPending || isClassesPending) && (
+            <ThemedView>
+              <ThemedText>Carregando...</ThemedText>
+            </ThemedView>
+          )}
+          {isError && (
+            <ThemedView>
+              <ThemedText>Erro ao carregar dados...</ThemedText>
+            </ThemedView>
+          )}
+          {!isPending &&
+            !isRollcallsPending &&
+            !isError &&
+            !isClassesPending &&
+            (selectedList === "alunos" ? (
+              <SectionList
+                sections={DATA_STUDENTS}
+                scrollEnabled={false}
+                contentContainerStyle={{ gap: theme.spacing.s }}
+                style={{ marginHorizontal: 10 }}
+                renderItem={({ item, index }) => handleRenderItem(item, index)}
+                renderSectionHeader={({ section: { title } }) => (
+                  <ThemedText>{title}</ThemedText>
+                )}
+              />
+            ) : (
+              <FlatList
+                data={DATA_TEACHERS}
+                scrollEnabled={false}
+                contentContainerStyle={{
+                  gap: theme.spacing.s,
+                  marginVertical: theme.spacing.s,
+                  marginHorizontal: theme.spacing.s,
+                }}
+                renderItem={({ item, index }) => handleRenderItem(item, index)}
+              />
+            ))}
+        </ThemedView>
+      </ScrollView>
     </ThemedView>
   );
 }
