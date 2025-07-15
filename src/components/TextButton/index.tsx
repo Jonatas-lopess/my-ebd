@@ -1,8 +1,6 @@
 import ThemedView from "@components/ThemedView";
-import { useTheme } from "@shopify/restyle";
 import { ThemeProps } from "@theme";
-import { FlexStyle } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { FlexStyle, TouchableOpacity } from "react-native";
 
 type TextButtonProps = {
   children: React.ReactNode;
@@ -30,7 +28,6 @@ export default function TextButton({
   opacity = 1,
   disabled = false,
 }: TextButtonProps) {
-  const theme = useTheme<ThemeProps>();
   const outlineStyles: OutlineStyleType = {
     borderWidth: 1,
     borderColor: "lightgrey",

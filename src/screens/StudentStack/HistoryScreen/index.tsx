@@ -122,6 +122,8 @@ export default function HistoryScreen({
     }, []);
   }, [data, interval]);
 
+  useEffect(() => console.log(error?.cause), [error]);
+
   const MONTHS = [
     "Janeiro",
     "Fevereiro",

@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useTheme } from "@shopify/restyle";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FlatList, ScrollView, SectionList } from "react-native";
 import SwitchSelector from "react-native-switch-selector";
 import CustomTextCard from "@components/CustomTextCard";
@@ -17,6 +17,8 @@ import { useQuery } from "@tanstack/react-query";
 import config from "config";
 import { useAuth } from "@providers/AuthProvider";
 import { RegisterFromApi } from "@screens/StudentStack/StudentScreen/type";
+import { Rollcall } from "@screens/LessonStack/type";
+import { _Class } from "@screens/ClassStack/ClassScreen/type";
 
 export default function GeneralScreen() {
   const theme = useTheme<ThemeProps>();
@@ -26,7 +28,7 @@ export default function GeneralScreen() {
   const [interval, setInterval] =
     useState<IntervalOptionTypes>("Últimas 13 aulas");
 
-  /* const { data, error, isError, isPending } = useQuery({
+  const { data, error, isError, isPending } = useQuery({
     queryKey: ["register"],
     queryFn: async (): Promise<RegisterFromApi[]> => {
       const res = await fetch(config.apiBaseUrl + "/registers", {
@@ -42,10 +44,141 @@ export default function GeneralScreen() {
 
       return resJson;
     },
-  }); */
+  });
 
-  const DATA_STUDENTS: { title: string; data: DataType[] }[] = [];
-  const DATA_TEACHERS: DataType[] = [];
+  const { data: classes, isPending: isClassesPending } = useQuery({
+    queryKey: ["altclass"],
+    queryFn: async (): Promise<_Class[]> => {
+      const res = await fetch(config.apiBaseUrl + "/classes", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const resJson = await res.json();
+      if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
+    },
+    select: (data) => data.map((item) => item.name),
+  });
+
+  const { data: rollcalls, isPending: isRollcallsPending } = useQuery({
+    queryKey: ["rollcalls"],
+    queryFn: async (): Promise<Rollcall[]> => {
+      const response = await fetch(`${config.apiBaseUrl}/rollcalls`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const resJson = await response.json();
+      if (!response.ok)
+        throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
+    },
+  });
+
+  useEffect(() => {
+    if (error) console.log(error?.cause);
+  }, [error]);
+
+  function filterRollcallByInterval(
+    data: Rollcall[],
+    interval: IntervalOptionTypes
+  ) {
+    return data.filter((item) => {
+      const lessonDate = new Date(item.lesson.date);
+      const currentDate = new Date();
+      const daysDifference = Math.ceil(
+        (currentDate.getTime() - lessonDate.getTime()) / (1000 * 3600 * 24)
+      );
+
+      switch (interval) {
+        case "Últimas 13 aulas":
+          return daysDifference <= 90; // Approx. 3 months
+        case "1º Trimestre":
+          return lessonDate.getMonth() < 3; // January to March
+        case "2º Trimestre":
+          return lessonDate.getMonth() >= 3 && lessonDate.getMonth() < 6; // April to June
+        default:
+          return true;
+      }
+    });
+  }
+
+  const generateStudentList = useCallback((): {
+    title: string;
+    data: DataType[];
+  }[] => {
+    if (!rollcalls || !data) return [];
+
+    const filteredRollcalls = filterRollcallByInterval(
+      rollcalls,
+      "Últimas 13 aulas"
+    );
+    const sections: { title: string; data: DataType[] }[] =
+      classes?.map((className) => ({
+        title: className,
+        data: [],
+      })) || [];
+
+    data.forEach((register) => {
+      if (register.user) return;
+
+      const section = sections.find((sec) => sec.title === register.class.name);
+
+      if (section && !section.data.some((s) => s.id === register._id)) {
+        section.data.push({
+          id: register._id,
+          name: register.name,
+          points: filteredRollcalls.reduce((total, rollcall) => {
+            if (rollcall.register.id === register._id) {
+              return total + (rollcall.isPresent ? 1 : 0);
+            }
+
+            return total;
+          }, 0),
+        });
+      }
+    });
+
+    return sections;
+  }, [data, rollcalls]);
+
+  const generateTeacherList = useCallback((): DataType[] => {
+    if (!data || !rollcalls) return [];
+
+    const filteredRollcalls = filterRollcallByInterval(
+      rollcalls,
+      "Últimas 13 aulas"
+    );
+
+    return data
+      .filter((register) => register.user)
+      .map<DataType>((register): DataType => {
+        const points = filteredRollcalls.reduce((total, rollcall) => {
+          if (rollcall.register.id === register._id) {
+            return total + (rollcall.isPresent ? 1 : 0);
+          }
+          return total;
+        }, 0);
+
+        return {
+          id: register._id,
+          name: register.name,
+          points,
+        };
+      });
+  }, [data, rollcalls]);
+
+  const DATA_STUDENTS = generateStudentList();
+  const DATA_TEACHERS = generateTeacherList();
 
   const handleCardPress = useCallback((newInterval: IntervalOptionTypes) => {
     setInterval(newInterval);
@@ -77,8 +210,8 @@ export default function GeneralScreen() {
           backgroundColor: "#fff",
         }}
       >
-        <ThemedText fontSize={16}>{item.nome}</ThemedText>
-        <ThemedText>{item.pontos}</ThemedText>
+        <ThemedText fontSize={16}>{item.name}</ThemedText>
+        <ThemedText>{item.points}</ThemedText>
       </ThemedView>
     </ThemedView>
   );
@@ -134,7 +267,7 @@ export default function GeneralScreen() {
 
           <ThemedView
             mt="s"
-            height="auto"
+            flex={1}
             backgroundColor="white"
             borderTopLeftRadius={20}
             borderTopRightRadius={20}
@@ -160,30 +293,47 @@ export default function GeneralScreen() {
               buttonColor={theme.colors.gray}
               style={{ marginVertical: 10, marginHorizontal: 5 }}
             />
-
-            {selectedList === "alunos" ? (
-              <SectionList
-                sections={DATA_STUDENTS}
-                scrollEnabled={false}
-                contentContainerStyle={{ gap: theme.spacing.s }}
-                style={{ marginHorizontal: 10 }}
-                renderItem={({ item, index }) => handleRenderItem(item, index)}
-                renderSectionHeader={({ section: { title } }) => (
-                  <ThemedText>{title}</ThemedText>
-                )}
-              />
-            ) : (
-              <FlatList
-                data={DATA_TEACHERS}
-                scrollEnabled={false}
-                contentContainerStyle={{
-                  gap: theme.spacing.s,
-                  marginVertical: theme.spacing.s,
-                  marginHorizontal: theme.spacing.s,
-                }}
-                renderItem={({ item, index }) => handleRenderItem(item, index)}
-              />
+            {(isPending || isRollcallsPending || isClassesPending) && (
+              <ThemedView>
+                <ThemedText>Carregando...</ThemedText>
+              </ThemedView>
             )}
+            {isError && (
+              <ThemedView>
+                <ThemedText>Erro ao carregar dados...</ThemedText>
+              </ThemedView>
+            )}
+            {!isPending &&
+              !isRollcallsPending &&
+              !isError &&
+              !isClassesPending &&
+              (selectedList === "alunos" ? (
+                <SectionList
+                  sections={DATA_STUDENTS}
+                  scrollEnabled={false}
+                  contentContainerStyle={{ gap: theme.spacing.s }}
+                  style={{ marginHorizontal: 10 }}
+                  renderItem={({ item, index }) =>
+                    handleRenderItem(item, index)
+                  }
+                  renderSectionHeader={({ section: { title } }) => (
+                    <ThemedText>{title}</ThemedText>
+                  )}
+                />
+              ) : (
+                <FlatList
+                  data={DATA_TEACHERS}
+                  scrollEnabled={false}
+                  contentContainerStyle={{
+                    gap: theme.spacing.s,
+                    marginVertical: theme.spacing.s,
+                    marginHorizontal: theme.spacing.s,
+                  }}
+                  renderItem={({ item, index }) =>
+                    handleRenderItem(item, index)
+                  }
+                />
+              ))}
           </ThemedView>
         </ScrollView>
       </ThemedView>

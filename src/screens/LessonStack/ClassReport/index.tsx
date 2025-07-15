@@ -14,7 +14,7 @@ import TextButton from "@components/TextButton";
 import { CustomBottomModal } from "@components/CustomBottomModal";
 import { ListItemType } from "../LessonDetails/type";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import config from "config";
 import { useAuth } from "@providers/AuthProvider";
 import { Rollcall } from "../type";
@@ -22,11 +22,13 @@ import { Score } from "@screens/StatisticsDrawer/SettingsStack/ScoreOptions/type
 import ScoreOption from "@components/ScoreOption";
 import { Lesson } from "../HomeScreen/type";
 import structuredClone from "@ungap/structured-clone";
+import { RegisterFromApi } from "@screens/StudentStack/StudentScreen/type";
 
 export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
   const { classId, lessonId } = route.params;
   const navigation = useNavigation();
   const theme = useTheme<ThemeProps>();
+  const queryClient = useQueryClient();
   const { token } = useAuth().authState;
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [isEditable, setIsEditable] = useState(false);
@@ -71,7 +73,11 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
     },
   });
 
-  const { data: scoreInfo } = useQuery({
+  const {
+    data: scoreInfo,
+    isLoading: isLoadingScores,
+    isError: isErrorScores,
+  } = useQuery({
     queryKey: ["scores"],
     queryFn: async (): Promise<Score[]> => {
       const response = await fetch(config.apiBaseUrl + "/scores", {
@@ -91,6 +97,28 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
   });
 
   const { data, error, isPending, isError } = useQuery({
+    queryKey: ["students", classId],
+    queryFn: async (): Promise<RegisterFromApi[]> => {
+      const response = await fetch(
+        config.apiBaseUrl + `/registers?class=${classId}&hasUser=false`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const resJson = await response.json();
+      if (!response.ok)
+        throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
+    },
+  });
+
+  const { data: rollcalls, isPending: isRollcallsPending } = useQuery({
     queryKey: ["classReport", lessonId, classId],
     queryFn: async (): Promise<Rollcall[]> => {
       const res = await fetch(
@@ -161,17 +189,23 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
   }, [scoreInfo]);
 
   const generateList = useCallback(
-    (data: Rollcall[] | undefined): ListItemType[] => {
-      if (!data || !report) return [];
+    (rawList: RegisterFromApi[] | undefined): ListItemType[] => {
+      if (!rawList || !report) return [];
       const list: ListItemType[] = [];
 
-      if (data) {
-        data.forEach((item) => {
+      if (rawList) {
+        rawList.forEach((item) => {
           list.push({
-            id: item.register.id,
-            name: item.register.name,
+            id: item._id,
+            name: item.name,
             class: classId,
-            isPresent: item.isPresent,
+            isPresent:
+              rollcalls?.some(
+                (rollcall) =>
+                  rollcall.lesson.id === lessonId &&
+                  rollcall.register.id === item._id &&
+                  rollcall.isPresent
+              ) ?? false,
             report: structuredClone(report),
           });
         });
@@ -179,16 +213,16 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
 
       return list;
     },
-    [report, classId]
+    [report, classId, lessonId, rollcalls]
   );
 
   const [classReport, setReport] = useState<ListItemType[]>([]);
   const [tempItem, setTempItem] = useState<Partial<ListItemType>>({});
 
   useEffect(() => {
-    if (isPending || isError || !data || !lessonInfo) return;
+    if (isPending || isError || isRollcallsPending) return;
     setReport(generateList(data));
-  }, [data, lessonInfo]);
+  }, [isRollcallsPending, isPending, isError]);
 
   useEffect(() => {
     if (error) console.log(error.message, error.cause);
@@ -322,23 +356,35 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
                       flexDirection="row"
                       justifyContent="space-between"
                       alignItems="center"
-                      gap="s"
+                      my="s"
+                      mx="m"
                     >
-                      <TextButton
-                        variant="outline"
-                        disabled={!isEditable}
-                        onClick={saveReport}
-                      >
-                        <ThemedText fontSize={16} fontWeight="bold">
+                      <TextButton disabled={!isEditable} onClick={saveReport}>
+                        <ThemedText
+                          fontSize={18}
+                          fontWeight="bold"
+                          color="white"
+                          my="xs"
+                          mx="m"
+                        >
                           Finalizar
                         </ThemedText>
                       </TextButton>
                       <TextButton
                         variant="outline"
                         disabled={!isEditable}
-                        onClick={() => {}}
+                        onClick={() =>
+                          queryClient.invalidateQueries({
+                            queryKey: ["students", classId],
+                          })
+                        }
                       >
-                        <ThemedText fontSize={16} fontWeight="bold">
+                        <ThemedText
+                          fontSize={18}
+                          fontWeight="bold"
+                          mx="m"
+                          my="xs"
+                        >
                           Resetar
                         </ThemedText>
                       </TextButton>
@@ -357,6 +403,30 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
         stackBehavior="replace"
       >
         <CustomBottomModal.Content title={tempItem.name ?? ""}>
+          {isLoadingScores && (
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+          )}
+          {isErrorScores && (
+            <ThemedText>
+              Erro ao carregar as informações de pontuação.
+            </ThemedText>
+          )}
+          {!isLoadingScores &&
+            !isErrorScores &&
+            scoreInfo &&
+            scoreInfo.length > 0 && (
+              <ThemedText textAlign="center" mb="s">
+                Clique sobre os ícones para editar as informações.
+              </ThemedText>
+            )}
+          {!isLoadingScores &&
+            !isErrorScores &&
+            scoreInfo &&
+            scoreInfo.length === 0 && (
+              <ThemedText textAlign="center" mb="s">
+                Não há informações de pontuação registradas.
+              </ThemedText>
+            )}
           {scoreInfo?.map((item) => {
             if (item.type === "BooleanScore")
               return (
@@ -396,7 +466,7 @@ export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
                   }}
                 />
               );
-          })}
+          }) ?? <ThemedText>Sem informações disponíveis.</ThemedText>}
         </CustomBottomModal.Content>
         <CustomBottomModal.Action
           text="Confirmar"

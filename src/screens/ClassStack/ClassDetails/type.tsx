@@ -1,4 +1,5 @@
 export type DataType = {
-  nome: string;
-  pontos: number;
+  id: string;
+  name: string;
+  points: number;
 };
