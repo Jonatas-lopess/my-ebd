@@ -29,7 +29,10 @@ export default function AccountInfo() {
           <CustomCard.Detail>
             Seu nome pode ser visto pelos administradores da escola.
           </CustomCard.Detail>
-          <CustomCard.Pressable text={user?.name ?? ""} onPress={() => {}} />
+          <CustomCard.Pressable
+            text={(user?.name || user?.register?.name) ?? ""}
+            onPress={() => {}}
+          />
         </CustomCard.Root>
 
         <CustomCard.Root>

@@ -170,12 +170,26 @@ export default function HomeScreen() {
 
               return (
                 <InfoCard.Root
-                  onPress={() =>
+                  onPress={() => {
+                    if (user === undefined) throw new Error("User not found");
+
+                    if (user.role === "teacher" && user.register === undefined)
+                      throw new Error("User register not found");
+
+                    if (user.role === "teacher")
+                      return navigation.navigate("Inicio", {
+                        screen: "ClassReport",
+                        params: {
+                          classId: user.register!.class,
+                          lessonId: item._id!,
+                        },
+                      });
+
                     navigation.navigate("Inicio", {
                       screen: "LessonDetails",
                       params: { lessonId: item._id! },
-                    })
-                  }
+                    });
+                  }}
                   onLongPress={() =>
                     user?.role === "admin" && console.log("log")
                   }
