@@ -1,5 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import StudentScreen from "./RegisterScreen";
+import RegisterScreen from "./RegisterScreen";
 import HistoryScreen from "./HistoryScreen";
 import { RegisterStackParamList } from "@custom/types/navigation";
 import { createComponentForStaticNavigation } from "@react-navigation/native";
@@ -7,7 +7,7 @@ import { createComponentForStaticNavigation } from "@react-navigation/native";
 const StackConfig = createNativeStackNavigator<RegisterStackParamList>({
   initialRouteName: "RegisterList",
   screens: {
-    RegisterList: StudentScreen,
+    RegisterList: RegisterScreen,
     RegisterHistory: HistoryScreen,
   },
   screenOptions: { headerShown: false },

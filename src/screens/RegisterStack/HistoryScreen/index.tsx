@@ -2,7 +2,7 @@ import { useNavigation } from "@react-navigation/native";
 import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
-import { StudentStackProps } from "@custom/types/navigation";
+import { RegisterStackProps } from "@custom/types/navigation";
 import { Ionicons } from "@expo/vector-icons";
 import { ScrollView, SectionList } from "react-native";
 import { ThemeProps } from "@theme";
@@ -24,7 +24,7 @@ type GroupedRollcall = {
 
 export default function HistoryScreen({
   route,
-}: StudentStackProps<"RegisterHistory">) {
+}: RegisterStackProps<"RegisterHistory">) {
   const { studentId } = route.params;
   const { token } = useAuth().authState;
   const navigation = useNavigation();
