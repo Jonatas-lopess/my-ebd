@@ -7,7 +7,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { DrawerScreenProps } from "@react-navigation/drawer";
 
 export type AdminRootTabParamList = {
-  Inicio: NavigatorScreenParams<HomeStackParamList>;
+  Lessons: NavigatorScreenParams<HomeStackParamList>;
   Turmas: NavigatorScreenParams<ClassStackParamList>;
   Cadastros: NavigatorScreenParams<StudentStackParamList>;
   Geral: NavigatorScreenParams<StatisticsDrawerParamList>;

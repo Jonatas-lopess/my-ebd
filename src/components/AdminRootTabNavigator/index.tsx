@@ -18,7 +18,7 @@ export default function AdminRootTabNavigator() {
             let icon: keyof typeof Ionicons.glyphMap =
               "tablet-landscape-outline";
 
-            if (route.name === "Inicio") icon = "home";
+            if (route.name === "Lessons") icon = "book";
             if (route.name === "Turmas") icon = "school";
             if (route.name === "Cadastros") icon = "people";
             if (route.name === "Geral") icon = "stats-chart";
@@ -27,10 +27,14 @@ export default function AdminRootTabNavigator() {
           },
         })}
       >
-        <Tabs.Screen name="Inicio" component={LessonStack} />
+        <Tabs.Screen name="Geral" component={StatisticsDrawer} />
+        <Tabs.Screen
+          name="Lessons"
+          options={{ title: "Lições" }}
+          component={LessonStack}
+        />
         <Tabs.Screen name="Turmas" component={ClassStack} />
         <Tabs.Screen name="Cadastros" component={StudentStack} />
-        <Tabs.Screen name="Geral" component={StatisticsDrawer} />
       </Tabs.Group>
     </Tabs.Navigator>
   );
