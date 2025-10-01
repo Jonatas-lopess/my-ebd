@@ -16,7 +16,7 @@ import { DataType } from "@screens/ClassStack/ClassDetails/type";
 import { useQuery } from "@tanstack/react-query";
 import config from "config";
 import { useAuth } from "@providers/AuthProvider";
-import { RegisterFromApi } from "@screens/RegisterStack/StudentScreen/type";
+import { RegisterFromApi } from "@screens/RegisterStack/RegisterScreen/type";
 import { Rollcall } from "@screens/LessonStack/type";
 import { _Class } from "@screens/ClassStack/ClassScreen/type";
 
