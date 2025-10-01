@@ -15,7 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import config from "config";
 import { useAuth } from "@providers/AuthProvider";
 import { Rollcall } from "@screens/LessonStack/type";
-import Register from "../StudentScreen/type";
+import Register from "../RegisterScreen/type";
 
 type GroupedRollcall = {
   month: number;

@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ClassStackParamList } from "@custom/types/navigation";
 import ClassScreen from "./ClassScreen";
 import ClassDetails from "./ClassDetails";
-import HistoryScreen from "../StudentStack/HistoryScreen";
+import HistoryScreen from "../RegisterStack/HistoryScreen";
 
 const StackConfig = createNativeStackNavigator<ClassStackParamList>({
   initialRouteName: "ClassList",

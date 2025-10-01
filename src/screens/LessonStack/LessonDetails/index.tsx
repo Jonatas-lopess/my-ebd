@@ -17,7 +17,7 @@ import { CustomBottomModal } from "@components/CustomBottomModal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@providers/AuthProvider";
 import config from "config";
-import { RegisterFromApi } from "@screens/StudentStack/StudentScreen/type";
+import { RegisterFromApi } from "@screens/RegisterStack/StudentScreen/type";
 import { Lesson } from "../HomeScreen/type";
 import ScoreOption from "@components/ScoreOption";
 import { Score } from "@screens/StatisticsDrawer/SettingsStack/ScoreOptions/type";

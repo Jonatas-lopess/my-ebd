@@ -9,7 +9,7 @@ import { DrawerScreenProps } from "@react-navigation/drawer";
 export type AdminRootTabParamList = {
   Lessons: NavigatorScreenParams<HomeStackParamList>;
   Turmas: NavigatorScreenParams<ClassStackParamList>;
-  Cadastros: NavigatorScreenParams<StudentStackParamList>;
+  Cadastros: NavigatorScreenParams<RegisterStackParamList>;
   Geral: NavigatorScreenParams<StatisticsDrawerParamList>;
 };
 
@@ -18,7 +18,7 @@ export type AdminRootTabProps<T extends keyof AdminRootTabParamList> =
 
 export type TeacherRootTabParamList = {
   Inicio: NavigatorScreenParams<HomeStackParamList>;
-  Alunos: NavigatorScreenParams<StudentStackParamList>;
+  Alunos: NavigatorScreenParams<RegisterStackParamList>;
   Geral: NavigatorScreenParams<StatisticsDrawerParamList>;
 };
 
@@ -34,14 +34,14 @@ export type HomeStackParamList = {
 export type HomeStackProps<T extends keyof HomeStackParamList> =
   NativeStackScreenProps<HomeStackParamList, T>;
 
-export type StudentStackParamList = {
+export type RegisterStackParamList = {
   RegisterList: undefined;
   RegisterHistory: { studentId: string };
 };
 
-export type StudentStackProps<T extends keyof StudentStackParamList> =
+export type RegisterStackProps<T extends keyof RegisterStackParamList> =
   CompositeScreenProps<
-    NativeStackScreenProps<StudentStackParamList, T>,
+    NativeStackScreenProps<RegisterStackParamList, T>,
     AdminRootTabProps<keyof AdminRootTabParamList>
   >;
 

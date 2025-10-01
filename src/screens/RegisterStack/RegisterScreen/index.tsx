@@ -25,7 +25,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CustomBottomModal } from "@components/CustomBottomModal";
 import RegisterForm from "@components/RegisterForm";
 
-export default function StudentScreen() {
+export default function RegisterScreen() {
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
   const bottomSheetRef = useRef<BottomSheetModal>(null);

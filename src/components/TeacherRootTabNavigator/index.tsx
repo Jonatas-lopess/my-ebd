@@ -1,7 +1,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { TeacherRootTabParamList } from "@custom/types/navigation";
 import { Ionicons } from "@expo/vector-icons";
-import StudentStack from "@screens/StudentStack";
+import StudentStack from "@screens/RegisterStack";
 import StatisticsDrawer from "@screens/StatisticsDrawer";
 import LessonStack from "@screens/LessonStack";
 

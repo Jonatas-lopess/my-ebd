@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
-import StudentStack from "@screens/StudentStack";
+import RegisterStack from "@screens/RegisterStack";
 import { AdminRootTabParamList } from "@custom/types/navigation";
 import StatisticsDrawer from "@screens/StatisticsDrawer";
 import LessonStack from "@screens/LessonStack";
@@ -34,7 +34,7 @@ export default function AdminRootTabNavigator() {
           component={LessonStack}
         />
         <Tabs.Screen name="Turmas" component={ClassStack} />
-        <Tabs.Screen name="Cadastros" component={StudentStack} />
+        <Tabs.Screen name="Cadastros" component={RegisterStack} />
       </Tabs.Group>
     </Tabs.Navigator>
   );

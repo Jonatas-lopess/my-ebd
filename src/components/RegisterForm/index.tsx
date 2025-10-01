@@ -12,7 +12,7 @@ import {
   DateTimePickerAndroid,
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { RegisterFromApp } from "@screens/StudentStack/StudentScreen/type";
+import { RegisterFromApp } from "@screens/RegisterStack/RegisterScreen/type";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { theme } from "@theme";
 import {
