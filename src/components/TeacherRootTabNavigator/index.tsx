@@ -1,7 +1,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { TeacherRootTabParamList } from "@custom/types/navigation";
 import { Ionicons } from "@expo/vector-icons";
-import StudentStack from "@screens/RegisterStack";
+import RegisterStack from "@screens/RegisterStack";
 import StatisticsDrawer from "@screens/StatisticsDrawer";
 import LessonStack from "@screens/LessonStack";
 
@@ -16,7 +16,7 @@ export default function TeacherRootTabNavigator() {
           let icon: keyof typeof Ionicons.glyphMap = "tablet-landscape-outline";
 
           if (route.name === "Inicio") icon = "home";
-          if (route.name === "Alunos") icon = "school";
+          if (route.name === "Cadastros") icon = "school";
           if (route.name === "Geral") icon = "stats-chart";
 
           return <Ionicons name={icon} size={size} color={color} />;
@@ -24,7 +24,7 @@ export default function TeacherRootTabNavigator() {
       })}
     >
       <Tabs.Screen name={"Inicio"} component={LessonStack} />
-      <Tabs.Screen name={"Alunos"} component={StudentStack} />
+      <Tabs.Screen name={"Cadastros"} component={RegisterStack} />
       <Tabs.Screen name={"Geral"} component={StatisticsDrawer} />
     </Tabs.Navigator>
   );

@@ -18,7 +18,7 @@ export type AdminRootTabProps<T extends keyof AdminRootTabParamList> =
 
 export type TeacherRootTabParamList = {
   Inicio: NavigatorScreenParams<HomeStackParamList>;
-  Alunos: NavigatorScreenParams<RegisterStackParamList>;
+  Cadastros: NavigatorScreenParams<RegisterStackParamList>;
   Geral: NavigatorScreenParams<StatisticsDrawerParamList>;
 };
 

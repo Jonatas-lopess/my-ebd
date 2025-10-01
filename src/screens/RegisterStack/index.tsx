@@ -15,7 +15,7 @@ const StackConfig = createNativeStackNavigator<RegisterStackParamList>({
 
 const RegisterNavigator = createComponentForStaticNavigation(
   StackConfig,
-  "Alunos"
+  "Cadastros"
 );
 
 export default function RegisterStack() {
