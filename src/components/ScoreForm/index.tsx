@@ -79,7 +79,7 @@ export default function ScoreForm({ mutateFallback }: Props) {
 
   return (
     <>
-      <ThemedView>
+      <ThemedView g="s">
         <TextInput
           placeholder="Título"
           onChangeText={(text) =>
@@ -124,6 +124,7 @@ export default function ScoreForm({ mutateFallback }: Props) {
         <CustomBottomModal.Content title="Tipos de Pontuação">
           <FlatList
             data={["BooleanScore", "NumberScore"]}
+            style={{ marginBottom: theme.spacing.m }}
             contentContainerStyle={{ gap: theme.spacing.s }}
             renderItem={({ item }) => (
               <TouchableOpacity
@@ -136,7 +137,11 @@ export default function ScoreForm({ mutateFallback }: Props) {
                   borderColor="lightgrey"
                   borderRadius={25}
                 >
-                  <ThemedText>{item}</ThemedText>
+                  <ThemedText>
+                    {item === "BooleanScore"
+                      ? "Pontuação Booleana"
+                      : "Pontuação Numérica"}
+                  </ThemedText>
                 </ThemedView>
               </TouchableOpacity>
             )}
