@@ -22,7 +22,7 @@ export default function CustomBottomModalContent({
           {subtitle}
         </ThemedText>
       )}
-      <ThemedView gap="s" my="m" mx="s">
+      <ThemedView mt="m" mx="s">
         {children}
       </ThemedView>
     </>

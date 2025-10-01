@@ -18,7 +18,6 @@ export default function CustomBottomModalAction({
         py="xs"
         px="s"
         mb="m"
-        mx="s"
         borderRadius={25}
       >
         <ThemedText
