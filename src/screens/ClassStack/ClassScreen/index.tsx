@@ -1,4 +1,4 @@
-import { Alert, FlatList, TextInput, TouchableOpacity } from "react-native";
+import { FlatList, KeyboardAvoidingView, Platform } from "react-native";
 import ThemedView from "@components/ThemedView";
 import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import { ThemeProps } from "@theme";
@@ -6,31 +6,25 @@ import { useTheme } from "@shopify/restyle";
 import { InfoCard } from "@components/InfoCard";
 import { StackHeader } from "@components/StackHeader";
 import { useNavigation } from "@react-navigation/native";
+import { CustomBottomModal } from "@components/CustomBottomModal";
 import {
-  BottomSheetEventType,
-  CustomBottomModal,
-} from "@components/CustomBottomModal";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useCallback, useRef, useState } from "react";
+  BottomSheetModal,
+  BottomSheetModalProvider,
+} from "@gorhom/bottom-sheet";
+import { useRef, useState } from "react";
 import ThemedText from "@components/ThemedText";
 import { _Class } from "./type";
 import { useAuth } from "@providers/AuthProvider";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import config from "config";
+import ClassForm from "@components/ClassForm";
 
 export default function ClassScreen() {
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const optionsSheetRef = useRef<BottomSheetModal>(null);
-  const queryClient = useQueryClient();
-  const { token, user } = useAuth().authState;
-  const EMPTYCLASSDATA: _Class = {
-    name: "",
-    group: undefined,
-    flag: user?.plan ?? "",
-  };
-  const [newClass, setNewClass] = useState(EMPTYCLASSDATA);
+  const { token } = useAuth().authState;
+  const [isPendingMutate, setIsPendingMutate] = useState(false);
 
   const {
     data: DATA_CLASS,
@@ -55,64 +49,12 @@ export default function ClassScreen() {
     },
   });
 
-  const mutation = useMutation({
-    mutationFn: async (newData: _Class) => {
-      const res = await fetch(config.apiBaseUrl + "/classes", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newData),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message, { cause: data.error });
-
-      return data;
-    },
-    onSuccess: () => {
-      bottomSheetRef.current?.dismiss();
-      return queryClient.invalidateQueries({ queryKey: ["altclass"] });
-    },
-    onError: (error, variables) => {
-      Alert.alert(
-        "Algo deu errado!",
-        `Erro ao criar a turma ${variables.name}. Confira sua conexão de internet e tente novamente.`
-      );
-      console.log(error.message, error.cause);
-    },
-  });
-
-  const { isPending: isPendingMutate, variables, mutate } = mutation;
-
-  const handleBottomSheet = useCallback((e: BottomSheetEventType) => {
-    if (e.type === "open") bottomSheetRef.current?.present();
-    if (e.type === "close") setNewClass(EMPTYCLASSDATA);
-  }, []);
-
-  const handleOptionsSheet = useCallback((e: BottomSheetEventType) => {
-    if (e.type === "open") optionsSheetRef.current?.present();
-    if (e.type === "set") {
-      setNewClass((prev) => ({ ...prev, group: e.value }));
-      optionsSheetRef.current?.dismiss();
-    }
-    if (e.type === "close") optionsSheetRef.current?.dismiss();
-  }, []);
-
-  function handleCreateNewClass() {
-    if (!newClass.name || !newClass.group) {
-      return Alert.alert("Alerta", "Preencha todos os campos.");
-    }
-
-    mutate(newClass);
-    setNewClass(EMPTYCLASSDATA);
-    bottomSheetRef.current?.dismiss();
-  }
-
   return (
-    <>
-      <ThemedView flex={1} style={{ backgroundColor: "white" }}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <ThemedView style={{ backgroundColor: "white" }}>
         <FocusAwareStatusBar style="dark" translucent />
 
         <StackHeader.Root>
@@ -123,7 +65,7 @@ export default function ClassScreen() {
           <StackHeader.Actions>
             <StackHeader.Action
               name="add-outline"
-              onPress={() => handleBottomSheet({ type: "open" })}
+              onPress={() => bottomSheetRef.current?.present()}
               color={theme.colors.gray}
             />
           </StackHeader.Actions>
@@ -173,9 +115,7 @@ export default function ClassScreen() {
                   alignItems="center"
                   gap="s"
                 >
-                  <ThemedText>
-                    Adicionando a turma {variables.name}...
-                  </ThemedText>
+                  <ThemedText>Adicionando a nova turma...</ThemedText>
                 </ThemedView>
               )
             }
@@ -191,76 +131,19 @@ export default function ClassScreen() {
         )}
       </ThemedView>
 
-      <CustomBottomModal.Root
-        ref={bottomSheetRef}
-        onDismiss={() => handleBottomSheet({ type: "close" })}
-      >
-        <CustomBottomModal.Content
-          title="Nova Turma"
-          subtitle="Preencha o nome e a faixa etária da turma. As categorias servem apenas para ordenar as turmas no aplicativo."
+      <BottomSheetModalProvider>
+        <CustomBottomModal.Root
+          ref={bottomSheetRef}
+          onDismiss={() => bottomSheetRef.current?.dismiss()}
         >
-          <TextInput
-            placeholder="Nome*"
-            onChangeText={(text) =>
-              setNewClass((prev) => ({ ...prev, name: text }))
-            }
-            style={{
-              borderWidth: 1,
-              borderColor: theme.colors.lightgrey,
-              borderRadius: 25,
-              padding: theme.spacing.s,
-            }}
-          />
-          <TouchableOpacity
-            onPress={() => handleOptionsSheet({ type: "open" })}
+          <CustomBottomModal.Content
+            title="Nova Turma"
+            subtitle="Preencha o nome e a faixa etária da turma. As categorias servem apenas para ordenar as turmas no aplicativo."
           >
-            <ThemedView
-              padding="s"
-              borderWidth={1}
-              borderColor="lightgrey"
-              borderRadius={25}
-            >
-              <ThemedText
-                style={{ color: newClass.group ? "black" : "#a0a0a0" }}
-              >
-                {newClass.group ? newClass.group : "Faixa Etária"}
-              </ThemedText>
-            </ThemedView>
-          </TouchableOpacity>
-        </CustomBottomModal.Content>
-        <CustomBottomModal.Action onPress={handleCreateNewClass} />
-      </CustomBottomModal.Root>
-
-      <CustomBottomModal.Root ref={optionsSheetRef} stackBehavior="push">
-        <CustomBottomModal.Content title="Faixas Etárias">
-          <FlatList
-            data={[
-              "Discipulados",
-              "Adultos",
-              "Jovens",
-              "Adolescentes",
-              "Crianças",
-              "Maternal",
-            ]}
-            contentContainerStyle={{ gap: theme.spacing.s }}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() => handleOptionsSheet({ type: "set", value: item })}
-              >
-                <ThemedView
-                  py="s"
-                  px="m"
-                  borderWidth={1}
-                  borderColor="lightgrey"
-                  borderRadius={25}
-                >
-                  <ThemedText>{item}</ThemedText>
-                </ThemedView>
-              </TouchableOpacity>
-            )}
-          />
-        </CustomBottomModal.Content>
-      </CustomBottomModal.Root>
-    </>
+            <ClassForm mutateFallback={setIsPendingMutate} />
+          </CustomBottomModal.Content>
+        </CustomBottomModal.Root>
+      </BottomSheetModalProvider>
+    </KeyboardAvoidingView>
   );
 }

@@ -2,7 +2,6 @@ import { forwardRef } from "react";
 import {
   BottomSheetModal,
   BottomSheetModalProps,
-  BottomSheetModalProvider,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 
@@ -15,15 +14,13 @@ const CustomBottomModalRoot = forwardRef<
   CustomBottomModalRootProps
 >(({ children, ...props }, ref) => {
   return (
-    <BottomSheetModalProvider>
-      <BottomSheetModal ref={ref} enableDismissOnClose {...props}>
-        {({ data }) => (
-          <BottomSheetView>
-            <>{typeof children === "function" ? children(data) : children}</>
-          </BottomSheetView>
-        )}
-      </BottomSheetModal>
-    </BottomSheetModalProvider>
+    <BottomSheetModal ref={ref} enableDismissOnClose {...props}>
+      {({ data }) => (
+        <BottomSheetView>
+          <>{typeof children === "function" ? children(data) : children}</>
+        </BottomSheetView>
+      )}
+    </BottomSheetModal>
   );
 });
 
