@@ -5,31 +5,28 @@ import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "@shopify/restyle";
 import { ThemeProps } from "@theme";
 import { CustomCard } from "@components/CustomCard";
-import { Alert, FlatList, TextInput, TouchableOpacity } from "react-native";
+import { FlatList, KeyboardAvoidingView, Platform } from "react-native";
 import TextButton from "@components/TextButton";
 import ThemedText from "@components/ThemedText";
 import CustomIcon from "@components/CustomIcon";
+import { CustomBottomModal } from "@components/CustomBottomModal";
 import {
-  BottomSheetEventType,
-  CustomBottomModal,
-} from "@components/CustomBottomModal";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useCallback, useRef, useState } from "react";
+  BottomSheetModal,
+  BottomSheetModalProvider,
+} from "@gorhom/bottom-sheet";
+import { useRef, useState } from "react";
 import { Score } from "./type";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import config from "config";
 import { useAuth } from "@providers/AuthProvider";
+import ScoreForm from "@components/ScoreForm";
 
 export default function ScoreOptions() {
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
-  const queryClient = useQueryClient();
-  const { token, user } = useAuth().authState;
+  const { token } = useAuth().authState;
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const optionsSheetRef = useRef<BottomSheetModal>(null);
-  const [tempScore, setTempScore] = useState<Partial<Score>>({
-    flag: user?.plan,
-  });
+  const [isPendingMutate, setIsPendingMutate] = useState<boolean>(false);
 
   const { data } = useQuery({
     queryKey: ["scores"],
@@ -46,62 +43,11 @@ export default function ScoreOptions() {
     },
   });
 
-  const { mutate } = useMutation({
-    mutationFn: async (score: Score) => {
-      const response = await fetch(config.apiBaseUrl + "/scores", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(score),
-      });
-
-      return await response.json();
-    },
-    onSuccess: () => {
-      handleCloseBottomSheet();
-      return queryClient.invalidateQueries({ queryKey: ["scores"] });
-    },
-    onError: (err) => {
-      console.log(err);
-    },
-  });
-
-  const handleOpenBottomSheet = useCallback(() => {
-    bottomSheetRef.current?.present();
-  }, []);
-
-  const handleCloseBottomSheet = useCallback(() => {
-    setTempScore({});
-    handleOptionsSheet({ type: "close" });
-    bottomSheetRef.current?.dismiss();
-  }, [tempScore]);
-
-  function createNewScore() {
-    if (
-      tempScore.type === undefined ||
-      tempScore.title === undefined ||
-      tempScore.weight === undefined
-    )
-      return Alert.alert("Please fill in all fields");
-    mutate(tempScore as Score);
-  }
-
-  const handleOptionsSheet = useCallback((e: BottomSheetEventType) => {
-    if (e.type === "open") optionsSheetRef.current?.present();
-    if (e.type === "set") {
-      setTempScore((prev) => ({
-        ...prev,
-        type: e.value as Score["type"],
-      }));
-      optionsSheetRef.current?.dismiss();
-    }
-    if (e.type === "close") optionsSheetRef.current?.dismiss();
-  }, []);
-
   return (
-    <>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
       <FocusAwareStatusBar style="dark" translucent />
 
       <StackHeader.Root>
@@ -115,7 +61,7 @@ export default function ScoreOptions() {
         </StackHeader.Content>
         <StackHeader.Action
           name="add-outline"
-          onPress={handleOpenBottomSheet}
+          onPress={() => bottomSheetRef.current?.present()}
           color={theme.colors.gray}
         />
       </StackHeader.Root>
@@ -142,86 +88,36 @@ export default function ScoreOptions() {
                 </ThemedView>
               </TextButton>
             )}
+            ListFooterComponent={() =>
+              isPendingMutate && (
+                <ThemedView
+                  flexDirection="row"
+                  justifyContent="center"
+                  alignItems="center"
+                  gap="s"
+                >
+                  <ThemedText>Adicionando nova pontuação...</ThemedText>
+                </ThemedView>
+              )
+            }
+            keyExtractor={(item) => item._id!}
           />
         </CustomCard.Root>
       </ThemedView>
 
-      <CustomBottomModal.Root
-        ref={bottomSheetRef}
-        onDismiss={handleCloseBottomSheet}
-      >
-        <CustomBottomModal.Content
-          title="Nova Pontuação"
-          subtitle="Preencha o título, tipo e valor da pontuação."
+      <BottomSheetModalProvider>
+        <CustomBottomModal.Root
+          ref={bottomSheetRef}
+          onDismiss={() => bottomSheetRef.current?.dismiss()}
         >
-          <TextInput
-            placeholder="Título"
-            onChangeText={(text) =>
-              setTempScore((prev) => ({ ...prev, title: text }))
-            }
-            style={{
-              borderWidth: 1,
-              borderColor: theme.colors.lightgrey,
-              borderRadius: 25,
-              padding: theme.spacing.s,
-            }}
-          />
-          <TouchableOpacity
-            onPress={() => handleOptionsSheet({ type: "open" })}
+          <CustomBottomModal.Content
+            title="Nova Pontuação"
+            subtitle="Preencha o título, tipo e valor da pontuação."
           >
-            <ThemedView
-              padding="s"
-              borderWidth={1}
-              borderColor="lightgrey"
-              borderRadius={25}
-            >
-              <ThemedText
-                style={{ color: tempScore.type ? "black" : "#a0a0a0" }}
-              >
-                {tempScore.type ? tempScore.type : "Tipo"}
-              </ThemedText>
-            </ThemedView>
-          </TouchableOpacity>
-          <TextInput
-            placeholder="Valor"
-            keyboardType="numeric"
-            onChangeText={(text) =>
-              setTempScore((prev) => ({ ...prev, weight: Number(text) }))
-            }
-            style={{
-              borderWidth: 1,
-              borderColor: theme.colors.lightgrey,
-              borderRadius: 25,
-              padding: theme.spacing.s,
-            }}
-          />
-        </CustomBottomModal.Content>
-        <CustomBottomModal.Action onPress={createNewScore} />
-      </CustomBottomModal.Root>
-
-      <CustomBottomModal.Root ref={optionsSheetRef} stackBehavior="push">
-        <CustomBottomModal.Content title="Tipos de Pontuação">
-          <FlatList
-            data={["BooleanScore", "NumberScore"]}
-            contentContainerStyle={{ gap: theme.spacing.s }}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() => handleOptionsSheet({ type: "set", value: item })}
-              >
-                <ThemedView
-                  py="s"
-                  px="m"
-                  borderWidth={1}
-                  borderColor="lightgrey"
-                  borderRadius={25}
-                >
-                  <ThemedText>{item}</ThemedText>
-                </ThemedView>
-              </TouchableOpacity>
-            )}
-          />
-        </CustomBottomModal.Content>
-      </CustomBottomModal.Root>
-    </>
+            <ScoreForm mutateFallback={setIsPendingMutate} />
+          </CustomBottomModal.Content>
+        </CustomBottomModal.Root>
+      </BottomSheetModalProvider>
+    </KeyboardAvoidingView>
   );
 }
