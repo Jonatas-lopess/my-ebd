@@ -117,7 +117,7 @@ export default function HomeScreen() {
                         },
                       });
 
-                    navigation.navigate("Inicio", {
+                    navigation.navigate("Lessons", {
                       screen: "LessonDetails",
                       params: { lessonId: item._id! },
                     });

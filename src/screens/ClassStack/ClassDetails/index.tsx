@@ -20,6 +20,7 @@ import { _Class } from "../ClassScreen/type";
 export default function ClassDetails({
   route,
 }: ClassStackProps<"ClassDetails">) {
+  // TODO: Implementar ranking baseado em dados reais
   const theme = useTheme<ThemeProps>();
   const { token } = useAuth().authState;
   const { classId } = route.params;
@@ -45,12 +46,12 @@ export default function ClassDetails({
     },
   });
 
-  const sortedData: DataType[] = (
+  const sortedData: Omit<DataType, "id">[] = (
     data?.students?.map((student: string) => ({
-      nome: student,
-      pontos: 10,
+      name: student,
+      points: 10,
     })) ?? []
-  ).sort((a: DataType, b: DataType) => b.pontos - a.pontos);
+  ).sort((a, b) => b.points - a.points);
 
   const handleCardPress = (newInterval: IntervalOptionTypes) => {
     setInterval(newInterval);
@@ -76,7 +77,7 @@ export default function ClassDetails({
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} nestedScrollEnabled>
         <ThemedView flexDirection="column" alignItems="center" mt="m">
           <ThemedText variant="h1" color="white">
-            Turma
+            {data?.name ?? "Turma"}
           </ThemedText>
         </ThemedView>
 
@@ -132,7 +133,7 @@ export default function ClassDetails({
                     onPress={() =>
                       navigation.navigate("Turmas", {
                         screen: "StudentDetails",
-                        params: { studentId: item.nome },
+                        params: { studentId: item.name },
                       })
                     }
                   >
@@ -147,8 +148,8 @@ export default function ClassDetails({
                         backgroundColor: "#fff",
                       }}
                     >
-                      <ThemedText fontSize={16}>{item.nome}</ThemedText>
-                      <ThemedText>{item.pontos}</ThemedText>
+                      <ThemedText fontSize={16}>{item.name}</ThemedText>
+                      <ThemedText>{item.points}</ThemedText>
                     </ThemedView>
                   </TouchableOpacity>
                 </ThemedView>

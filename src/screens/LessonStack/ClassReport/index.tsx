@@ -22,7 +22,7 @@ import { Score } from "@screens/ScoreOptions/type";
 import ScoreOption from "@components/ScoreOption";
 import { Lesson } from "../HomeScreen/type";
 import structuredClone from "@ungap/structured-clone";
-import { RegisterFromApi } from "@screens/RegisterStack/StudentScreen/type";
+import { RegisterFromApi } from "@screens/RegisterStack/RegisterScreen/type";
 
 export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
   const { classId, lessonId } = route.params;

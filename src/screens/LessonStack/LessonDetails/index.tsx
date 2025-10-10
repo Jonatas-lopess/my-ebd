@@ -6,18 +6,28 @@ import ThemedView from "@components/ThemedView";
 import { HomeStackProps } from "@custom/types/navigation";
 import { ThemeProps } from "@theme";
 import { useNavigation } from "@react-navigation/native";
-import { Alert, FlatList, ScrollView, TouchableOpacity } from "react-native";
+import {
+  Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ListItemType } from "./type";
 import { CustomCard } from "@components/CustomCard";
 import TextButton from "@components/TextButton";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import {
+  BottomSheetModal,
+  BottomSheetModalProvider,
+} from "@gorhom/bottom-sheet";
 import { CustomBottomModal } from "@components/CustomBottomModal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@providers/AuthProvider";
 import config from "config";
-import { RegisterFromApi } from "@screens/RegisterStack/StudentScreen/type";
+import { RegisterFromApi } from "@screens/RegisterStack/RegisterScreen/type";
 import { Lesson } from "../HomeScreen/type";
 import ScoreOption from "@components/ScoreOption";
 import { Score } from "@screens/ScoreOptions/type";
@@ -279,7 +289,10 @@ export default function LessonDetails({
   }
 
   return (
-    <>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
       <ThemedView flex={1} style={{ backgroundColor: "white" }}>
         <FocusAwareStatusBar style="dark" translucent />
 
@@ -496,54 +509,69 @@ export default function LessonDetails({
         </ThemedView>
       </ThemedView>
 
-      <CustomBottomModal.Root ref={bottomSheetRef} onDismiss={onSheetDismiss}>
-        <CustomBottomModal.Content title={tempItem.name ?? ""}>
-          {scoreInfo?.map((item) => {
-            if (item.type === "BooleanScore")
-              return (
-                <ScoreOption
-                  key={item._id}
-                  type={item.type}
-                  icon="star"
-                  title={
-                    item.title.charAt(0).toUpperCase() + item.title.slice(1)
-                  }
-                  value={
-                    (tempItem.report?.[item.title].value as boolean) ?? false
-                  }
-                  onClick={() => {
-                    const newState = { ...tempItem };
-                    newState.report![item.title].value =
-                      !newState.report![item.title].value;
-                    setTempItem(newState);
-                  }}
-                />
-              );
+      <BottomSheetModalProvider>
+        <CustomBottomModal.Root ref={bottomSheetRef} onDismiss={onSheetDismiss}>
+          <CustomBottomModal.Content title={tempItem.name ?? ""}>
+            {scoreInfo === undefined || scoreInfo.length === 0 ? (
+              <ThemedView justifyContent="center" alignItems="center" mb="m">
+                <ThemedText color="gray">
+                  Nenhum tipo de pontuação cadastrada.
+                </ThemedText>
+              </ThemedView>
+            ) : (
+              scoreInfo.map((item) => {
+                if (item.type === "BooleanScore")
+                  return (
+                    <ScoreOption
+                      key={item._id}
+                      type={item.type}
+                      icon="star"
+                      title={
+                        item.title.charAt(0).toUpperCase() + item.title.slice(1)
+                      }
+                      value={
+                        (tempItem.report?.[item.title].value as boolean) ??
+                        false
+                      }
+                      onClick={() => {
+                        const newState = { ...tempItem };
+                        newState.report![item.title].value =
+                          !newState.report![item.title].value;
+                        setTempItem(newState);
+                      }}
+                    />
+                  );
 
-            if (item.type === "NumberScore")
-              return (
-                <ScoreOption
-                  key={item._id}
-                  type={item.type}
-                  icon="star"
-                  title={
-                    item.title.charAt(0).toUpperCase() + item.title.slice(1)
-                  }
-                  value={(tempItem.report?.[item.title].value as number) ?? 0}
-                  onChange={(value) => {
-                    const newState = { ...tempItem };
-                    newState.report![item.title].value = value ?? 0;
-                    setTempItem(newState);
-                  }}
-                />
-              );
-          })}
-        </CustomBottomModal.Content>
-        <CustomBottomModal.Action
-          text="Confirmar"
-          onPress={handleSaveReportChanges}
-        />
-      </CustomBottomModal.Root>
-    </>
+                if (item.type === "NumberScore")
+                  return (
+                    <ScoreOption
+                      key={item._id}
+                      type={item.type}
+                      icon="star"
+                      title={
+                        item.title.charAt(0).toUpperCase() + item.title.slice(1)
+                      }
+                      value={
+                        (tempItem.report?.[item.title].value as number) ?? 0
+                      }
+                      onChange={(value) => {
+                        const newState = { ...tempItem };
+                        newState.report![item.title].value = value ?? 0;
+                        setTempItem(newState);
+                      }}
+                    />
+                  );
+              })
+            )}
+            {scoreInfo !== undefined && scoreInfo.length > 0 && (
+              <CustomBottomModal.Action
+                text="Confirmar"
+                onPress={handleSaveReportChanges}
+              />
+            )}
+          </CustomBottomModal.Content>
+        </CustomBottomModal.Root>
+      </BottomSheetModalProvider>
+    </KeyboardAvoidingView>
   );
 }
