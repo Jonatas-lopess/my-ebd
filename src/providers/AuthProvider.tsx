@@ -117,8 +117,8 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       setAuth({
         token: data.token,
         user: data.user ?? {
-          name: "",
-          email: "",
+          name: "teste",
+          email: "teste@teste.com",
           role: "admin",
           plan: "6823a5469dc1ccabbcd0659c",
         },
