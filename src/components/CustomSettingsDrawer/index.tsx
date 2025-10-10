@@ -36,15 +36,16 @@ export default function CustomSettingsDrawer(
       </DrawerContentScrollView>
       <TouchableOpacity onPress={onLogOut}>
         <ThemedView
-          px="m"
+          pl="l"
           py="m"
           flexDirection="row"
           gap="s"
           borderBottomColor="lightgrey"
           borderBottomWidth={1}
+          alignItems="center"
         >
-          <CustomIcon name="log-out" color="black" size={20} />
-          <ThemedText color="black" fontSize={16}>
+          <CustomIcon name="log-out" style={{ color: "dimgrey" }} size={24} />
+          <ThemedText style={{ color: "grey" }} fontSize={16} fontWeight="bold">
             Sair
           </ThemedText>
         </ThemedView>

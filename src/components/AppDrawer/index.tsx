@@ -32,6 +32,12 @@ export default function AppDrawer({ renderTab }: AppDrawerProps) {
           let icon: keyof typeof Ionicons.glyphMap | undefined = undefined;
 
           if (route.name === "Home") icon = "home";
+          else if (route.name === "AccountInfo") icon = "person";
+          else if (route.name === "TeacherAccess") icon = "school";
+          else if (route.name === "AdminAccess") icon = "shield-checkmark";
+          else if (route.name === "ManageBranch") icon = "business";
+          else if (route.name === "ManageHeadquarter") icon = "business-sharp";
+          else if (route.name === "ScoreOptions") icon = "stats-chart";
 
           return icon && <Ionicons name={icon} size={size} color={color} />;
         },
@@ -42,18 +48,43 @@ export default function AppDrawer({ renderTab }: AppDrawerProps) {
     >
       <Drawer.Screen
         name="Home"
+        options={{ title: "Inicio" }}
         component={
           renderTab === "admin"
             ? AdminRootTabNavigator
             : TeacherRootTabNavigator
         }
       />
-      <Drawer.Screen name="AccountInfo" component={AccountInfo} />
-      <Drawer.Screen name="TeacherAccess" component={TeacherAccess} />
-      <Drawer.Screen name="AdminAccess" component={AdminAccess} />
-      <Drawer.Screen name="ManageBranch" component={ManageBranch} />
-      <Drawer.Screen name="ManageHeadquarter" component={ManageHeadquarter} />
-      <Drawer.Screen name="ScoreOptions" component={ScoreOptions} />
+      <Drawer.Screen
+        name="AccountInfo"
+        options={{ title: "Minha Conta" }}
+        component={AccountInfo}
+      />
+      <Drawer.Screen
+        name="TeacherAccess"
+        options={{ title: "Acesso do Professor" }}
+        component={TeacherAccess}
+      />
+      <Drawer.Screen
+        name="AdminAccess"
+        options={{ title: "Acesso do Administrador" }}
+        component={AdminAccess}
+      />
+      <Drawer.Screen
+        name="ManageBranch"
+        options={{ title: "Gerenciar Filial" }}
+        component={ManageBranch}
+      />
+      <Drawer.Screen
+        name="ManageHeadquarter"
+        options={{ title: "Gerenciar Sede" }}
+        component={ManageHeadquarter}
+      />
+      <Drawer.Screen
+        name="ScoreOptions"
+        options={{ title: "Opções de Pontuação" }}
+        component={ScoreOptions}
+      />
     </Drawer.Navigator>
   );
 }
