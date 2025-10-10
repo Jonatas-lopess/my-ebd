@@ -46,9 +46,8 @@ export default function RegisterScreen() {
         alignItems="center"
         gap="s"
       >
-        <ThemedText>Name:</ThemedText>
         <TextInput
-          placeholder="Enter your name"
+          placeholder="Name"
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
@@ -70,9 +69,8 @@ export default function RegisterScreen() {
         alignItems="center"
         gap="s"
       >
-        <ThemedText>Email:</ThemedText>
         <TextInput
-          placeholder="Enter your email"
+          placeholder="Email"
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
@@ -98,9 +96,8 @@ export default function RegisterScreen() {
         alignItems="center"
         gap="s"
       >
-        <ThemedText>Password:</ThemedText>
         <TextInput
-          placeholder="Enter your password"
+          placeholder="Password"
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
@@ -137,7 +134,7 @@ export default function RegisterScreen() {
           <ThemedText color="white">Sign Up</ThemedText>
         )}
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
         <ThemedText color="lightBlue">
           Already have an account?{" "}
           <ThemedText color="primary" fontWeight="bold">
