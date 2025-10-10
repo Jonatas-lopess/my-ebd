@@ -42,11 +42,9 @@ export default function LoginScreen() {
         flexDirection="row"
         justifyContent="space-between"
         alignItems="center"
-        gap="s"
       >
-        <ThemedText>Email:</ThemedText>
         <TextInput
-          placeholder="Enter your email"
+          placeholder="Email"
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
@@ -68,12 +66,10 @@ export default function LoginScreen() {
         flexDirection="row"
         justifyContent="space-between"
         alignItems="center"
-        gap="s"
       >
-        <ThemedText>Password:</ThemedText>
         <TextInput
           ref={passwordInputRef}
-          placeholder="Enter your password"
+          placeholder="Password"
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
@@ -112,7 +108,10 @@ export default function LoginScreen() {
       </TouchableOpacity>
       <ThemedText color="gray" mt="m" textAlign="center" fontSize={16}>
         Don&apos;t have an account?{" "}
-        <ThemedText color="lightBlue" onPress={() => navigation.goBack()}>
+        <ThemedText
+          color="lightBlue"
+          onPress={() => navigation.navigate("Signin")}
+        >
           Sign up
         </ThemedText>
       </ThemedText>
