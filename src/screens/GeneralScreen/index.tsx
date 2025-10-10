@@ -240,6 +240,7 @@ export default function GeneralScreen() {
 
       <ScrollView nestedScrollEnabled contentContainerStyle={{ flexGrow: 1 }}>
         <ThemedView flexDirection="column" alignItems="center" mt="m">
+          <ThemedView width={140} height={140} borderRadius={70} bg="gray" />
           <ThemedText variant="h1" color="white">
             Escola Bíblica
           </ThemedText>
