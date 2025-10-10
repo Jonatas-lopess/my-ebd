@@ -1,9 +1,8 @@
 import { useAuth } from "@providers/AuthProvider";
 import LoginStack from "@screens/LoginStack";
-import AdminRootTabNavigator from "../AdminRootTabNavigator";
-import TeacherRootTabNavigator from "../TeacherRootTabNavigator";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+import AppDrawer from "@components/AppDrawer";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,13 +24,13 @@ export default function AuthController() {
     return <LoginStack />;
   }
 
-  if (authState.user.role === "admin" || authState.user.role === "owner") {
-    return <AdminRootTabNavigator />;
-  }
-
-  if (authState.user.role === "teacher") {
-    return <TeacherRootTabNavigator />;
-  }
-
-  return <></>;
+  return (
+    <AppDrawer
+      renderTab={
+        authState.user.role === "admin" || authState.user.role === "owner"
+          ? "admin"
+          : "teacher"
+      }
+    />
+  );
 }

@@ -10,7 +10,7 @@ export type AdminRootTabParamList = {
   Lessons: NavigatorScreenParams<HomeStackParamList>;
   Turmas: NavigatorScreenParams<ClassStackParamList>;
   Cadastros: NavigatorScreenParams<RegisterStackParamList>;
-  Geral: NavigatorScreenParams<StatisticsDrawerParamList>;
+  Geral: NavigatorScreenParams<AppDrawerParamList>;
 };
 
 export type AdminRootTabProps<T extends keyof AdminRootTabParamList> =
@@ -19,7 +19,7 @@ export type AdminRootTabProps<T extends keyof AdminRootTabParamList> =
 export type TeacherRootTabParamList = {
   Inicio: NavigatorScreenParams<HomeStackParamList>;
   Cadastros: NavigatorScreenParams<RegisterStackParamList>;
-  Geral: NavigatorScreenParams<StatisticsDrawerParamList>;
+  Geral: NavigatorScreenParams<AppDrawerParamList>;
 };
 
 export type TeacherRootTabProps<T extends keyof TeacherRootTabParamList> =
@@ -62,16 +62,8 @@ export type ClassStackProps<T extends keyof ClassStackParamList> =
     AdminRootTabProps<keyof AdminRootTabParamList>
   >;
 
-export type StatisticsDrawerParamList = {
-  Statistics: undefined;
-  Settings: NavigatorScreenParams<SettingsStackParamList>;
-};
-
-export type StatisticsDrawerProps<T extends keyof StatisticsDrawerParamList> =
-  DrawerScreenProps<StatisticsDrawerParamList, T>;
-
-export type SettingsStackParamList = {
-  SettingsList: undefined;
+export type AppDrawerParamList = {
+  Home: { renderTab: "admin" | "teacher" };
   AccountInfo: undefined;
   TeacherAccess: undefined;
   AdminAccess: undefined;
@@ -79,6 +71,9 @@ export type SettingsStackParamList = {
   ManageHeadquarter: undefined;
   ScoreOptions: undefined;
 };
+
+export type AppDrawerProps<T extends keyof AppDrawerParamList> =
+  DrawerScreenProps<AppDrawerParamList, T>;
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace

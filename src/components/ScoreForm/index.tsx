@@ -6,7 +6,7 @@ import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useAuth } from "@providers/AuthProvider";
-import { Score } from "@screens/StatisticsDrawer/SettingsStack/ScoreOptions/type";
+import { Score } from "@screens/ScoreOptions/type";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { theme } from "@theme";
 import config from "config";

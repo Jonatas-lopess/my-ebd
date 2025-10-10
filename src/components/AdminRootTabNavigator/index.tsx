@@ -2,9 +2,9 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import RegisterStack from "@screens/RegisterStack";
 import { AdminRootTabParamList } from "@custom/types/navigation";
-import StatisticsDrawer from "@screens/StatisticsDrawer";
 import LessonStack from "@screens/LessonStack";
 import ClassStack from "@screens/ClassStack";
+import GeneralScreen from "@screens/GeneralScreen";
 
 const Tabs = createBottomTabNavigator<AdminRootTabParamList>();
 
@@ -27,7 +27,7 @@ export default function AdminRootTabNavigator() {
           },
         })}
       >
-        <Tabs.Screen name="Geral" component={StatisticsDrawer} />
+        <Tabs.Screen name="Geral" component={GeneralScreen} />
         <Tabs.Screen
           name="Lessons"
           options={{ title: "Lições" }}

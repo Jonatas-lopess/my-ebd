@@ -20,7 +20,7 @@ import config from "config";
 import { RegisterFromApi } from "@screens/RegisterStack/StudentScreen/type";
 import { Lesson } from "../HomeScreen/type";
 import ScoreOption from "@components/ScoreOption";
-import { Score } from "@screens/StatisticsDrawer/SettingsStack/ScoreOptions/type";
+import { Score } from "@screens/ScoreOptions/type";
 import { Rollcall } from "../type";
 import { _Class } from "@screens/ClassStack/ClassScreen/type";
 import structuredClone from "@ungap/structured-clone";

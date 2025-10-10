@@ -18,7 +18,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import config from "config";
 import { useAuth } from "@providers/AuthProvider";
 import { Rollcall } from "../type";
-import { Score } from "@screens/StatisticsDrawer/SettingsStack/ScoreOptions/type";
+import { Score } from "@screens/ScoreOptions/type";
 import ScoreOption from "@components/ScoreOption";
 import { Lesson } from "../HomeScreen/type";
 import structuredClone from "@ungap/structured-clone";
