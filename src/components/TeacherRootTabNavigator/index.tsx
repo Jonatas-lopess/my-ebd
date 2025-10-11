@@ -3,7 +3,7 @@ import { TeacherRootTabParamList } from "@custom/types/navigation";
 import { Ionicons } from "@expo/vector-icons";
 import RegisterStack from "@screens/RegisterStack";
 import LessonStack from "@screens/LessonStack";
-import GeneralScreen from "@screens/GeneralScreen";
+import GeneralStack from "@screens/GeneralStack";
 
 const Tabs = createBottomTabNavigator<TeacherRootTabParamList>();
 
@@ -15,7 +15,7 @@ export default function TeacherRootTabNavigator() {
         tabBarIcon: ({ color, size }) => {
           let icon: keyof typeof Ionicons.glyphMap = "tablet-landscape-outline";
 
-          if (route.name === "Inicio") icon = "home";
+          if (route.name === "Lessons") icon = "home";
           if (route.name === "Cadastros") icon = "school";
           if (route.name === "Geral") icon = "stats-chart";
 
@@ -23,9 +23,13 @@ export default function TeacherRootTabNavigator() {
         },
       })}
     >
-      <Tabs.Screen name={"Inicio"} component={LessonStack} />
+      <Tabs.Screen
+        name={"Lessons"}
+        options={{ title: "Lições" }}
+        component={LessonStack}
+      />
       <Tabs.Screen name={"Cadastros"} component={RegisterStack} />
-      <Tabs.Screen name={"Geral"} component={GeneralScreen} />
+      <Tabs.Screen name={"Geral"} component={GeneralStack} />
     </Tabs.Navigator>
   );
 }

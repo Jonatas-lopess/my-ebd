@@ -20,7 +20,7 @@ import { useQuery } from "@tanstack/react-query";
 import config from "config";
 import LessonForm from "@components/LessonForm";
 
-export default function HomeScreen() {
+export default function LessonScreen() {
   //TODO: create a teacher screen to manage lessons
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
@@ -109,7 +109,7 @@ export default function HomeScreen() {
                       throw new Error("User register not found");
 
                     if (user.role === "teacher")
-                      return navigation.navigate("Inicio", {
+                      return navigation.navigate("Lessons", {
                         screen: "ClassReport",
                         params: {
                           classId: user.register!.class,

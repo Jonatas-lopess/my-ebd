@@ -4,7 +4,7 @@ import RegisterStack from "@screens/RegisterStack";
 import { AdminRootTabParamList } from "@custom/types/navigation";
 import LessonStack from "@screens/LessonStack";
 import ClassStack from "@screens/ClassStack";
-import GeneralScreen from "@screens/GeneralScreen";
+import GeneralStack from "@screens/GeneralStack";
 
 const Tabs = createBottomTabNavigator<AdminRootTabParamList>();
 
@@ -21,13 +21,13 @@ export default function AdminRootTabNavigator() {
             if (route.name === "Lessons") icon = "book";
             if (route.name === "Turmas") icon = "school";
             if (route.name === "Cadastros") icon = "people";
-            if (route.name === "Geral") icon = "stats-chart";
+            if (route.name === "Geral") icon = "home";
 
             return <Ionicons name={icon} size={size} color={color} />;
           },
         })}
       >
-        <Tabs.Screen name="Geral" component={GeneralScreen} />
+        <Tabs.Screen name="Geral" component={GeneralStack} />
         <Tabs.Screen
           name="Lessons"
           options={{ title: "Lições" }}

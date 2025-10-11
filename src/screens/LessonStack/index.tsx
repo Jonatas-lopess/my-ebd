@@ -1,11 +1,11 @@
 import { createComponentForStaticNavigation } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { HomeStackParamList } from "@custom/types/navigation";
-import HomeScreen from "./HomeScreen";
+import { LessonStackParamList } from "@custom/types/navigation";
+import HomeScreen from "./LessonScreen";
 import LessonDetails from "./LessonDetails";
 import ClassReport from "./ClassReport";
 
-const StackConfig = createNativeStackNavigator<HomeStackParamList>({
+const StackConfig = createNativeStackNavigator<LessonStackParamList>({
   initialRouteName: "LessonList",
   screens: {
     LessonList: HomeScreen,

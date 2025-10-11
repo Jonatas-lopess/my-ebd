@@ -7,32 +7,40 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { DrawerScreenProps } from "@react-navigation/drawer";
 
 export type AdminRootTabParamList = {
-  Lessons: NavigatorScreenParams<HomeStackParamList>;
+  Lessons: NavigatorScreenParams<LessonStackParamList>;
   Turmas: NavigatorScreenParams<ClassStackParamList>;
   Cadastros: NavigatorScreenParams<RegisterStackParamList>;
-  Geral: NavigatorScreenParams<AppDrawerParamList>;
+  Geral: NavigatorScreenParams<GeneralStackParamList>;
 };
 
 export type AdminRootTabProps<T extends keyof AdminRootTabParamList> =
   BottomTabScreenProps<AdminRootTabParamList, T>;
 
 export type TeacherRootTabParamList = {
-  Inicio: NavigatorScreenParams<HomeStackParamList>;
+  Lessons: NavigatorScreenParams<LessonStackParamList>;
   Cadastros: NavigatorScreenParams<RegisterStackParamList>;
-  Geral: NavigatorScreenParams<AppDrawerParamList>;
+  Geral: NavigatorScreenParams<GeneralStackParamList>;
 };
 
 export type TeacherRootTabProps<T extends keyof TeacherRootTabParamList> =
   BottomTabScreenProps<TeacherRootTabParamList, T>;
 
-export type HomeStackParamList = {
+export type LessonStackParamList = {
   LessonList: undefined;
   LessonDetails: { lessonId: string };
   ClassReport: { classId: string; lessonId: string };
 };
 
-export type HomeStackProps<T extends keyof HomeStackParamList> =
-  NativeStackScreenProps<HomeStackParamList, T>;
+export type GeneralStackParamList = {
+  Home: undefined;
+  GeneralScreen: undefined;
+};
+
+export type GeneralStackProps<T extends keyof GeneralStackParamList> =
+  NativeStackScreenProps<GeneralStackParamList, T>;
+
+export type LessonStackProps<T extends keyof LessonStackParamList> =
+  NativeStackScreenProps<LessonStackParamList, T>;
 
 export type RegisterStackParamList = {
   RegisterList: undefined;
@@ -81,6 +89,7 @@ declare global {
     interface RootParamList
       extends AdminRootTabParamList,
         TeacherRootTabParamList,
-        LoginStackParamList {}
+        LoginStackParamList,
+        AppDrawerParamList {}
   }
 }

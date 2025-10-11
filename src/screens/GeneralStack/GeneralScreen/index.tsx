@@ -219,11 +219,19 @@ export default function GeneralScreen() {
   return (
     <ThemedView flex={1} backgroundColor="secondary" pt="safeArea">
       <FocusAwareStatusBar style="light" translucent />
-
-      <ThemedView flexDirection="row" mx="s" mt="s" alignItems="center">
-        <ThemedView flex={1} alignItems="center" pl="l">
-          <ThemedText color="gray" variant="body" fontWeight="bold">
-            Minha EBD
+      <ThemedView flexDirection="row" mx="s" my="m" alignItems="center">
+        <Ionicons.Button
+          name="arrow-back"
+          onPress={() => navigation.goBack()}
+          size={25}
+          backgroundColor="transparent"
+          underlayColor="transparent"
+          style={{ padding: 0 }}
+          iconStyle={{ marginRight: 0 }}
+        />
+        <ThemedView flex={1} alignItems="center">
+          <ThemedText color="white" variant="h1" fontWeight="bold">
+            Ranque Geral
           </ThemedText>
         </ThemedView>
         <Ionicons.Button
@@ -239,16 +247,6 @@ export default function GeneralScreen() {
       </ThemedView>
 
       <ScrollView nestedScrollEnabled contentContainerStyle={{ flexGrow: 1 }}>
-        <ThemedView flexDirection="column" alignItems="center" mt="m">
-          <ThemedView width={140} height={140} borderRadius={70} bg="gray" />
-          <ThemedText variant="h1" color="white">
-            Escola Bíblica
-          </ThemedText>
-          <ThemedText variant="body" color="white">
-            Vila Mury
-          </ThemedText>
-        </ThemedView>
-
         <ThemedView mt="m">
           <IntervalControl interval={interval} onCardPress={handleCardPress} />
         </ThemedView>

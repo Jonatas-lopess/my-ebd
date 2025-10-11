@@ -3,7 +3,7 @@ import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import { StackHeader } from "@components/StackHeader";
 import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
-import { HomeStackProps } from "@custom/types/navigation";
+import { LessonStackProps } from "@custom/types/navigation";
 import { ThemeProps } from "@theme";
 import { useNavigation } from "@react-navigation/native";
 import {
@@ -28,7 +28,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@providers/AuthProvider";
 import config from "config";
 import { RegisterFromApi } from "@screens/RegisterStack/RegisterScreen/type";
-import { Lesson } from "../HomeScreen/type";
+import { Lesson } from "../LessonScreen/type";
 import ScoreOption from "@components/ScoreOption";
 import { Score } from "@screens/ScoreOptions/type";
 import { Rollcall } from "../type";
@@ -37,7 +37,7 @@ import structuredClone from "@ungap/structured-clone";
 
 export default function LessonDetails({
   route,
-}: HomeStackProps<"LessonDetails">) {
+}: LessonStackProps<"LessonDetails">) {
   const { lessonId } = route.params;
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
@@ -395,7 +395,7 @@ export default function LessonDetails({
                   renderItem={({ item }) => (
                     <TouchableOpacity
                       onPress={() =>
-                        navigation.navigate("Inicio", {
+                        navigation.navigate("Lessons", {
                           screen: "ClassReport",
                           params: { classId: item._id!, lessonId },
                         })

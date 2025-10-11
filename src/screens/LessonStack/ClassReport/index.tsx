@@ -3,7 +3,7 @@ import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import { StackHeader } from "@components/StackHeader";
 import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
-import { HomeStackProps } from "@custom/types/navigation";
+import { LessonStackProps } from "@custom/types/navigation";
 import { ScrollView, FlatList, Alert, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@shopify/restyle";
@@ -20,11 +20,13 @@ import { useAuth } from "@providers/AuthProvider";
 import { Rollcall } from "../type";
 import { Score } from "@screens/ScoreOptions/type";
 import ScoreOption from "@components/ScoreOption";
-import { Lesson } from "../HomeScreen/type";
+import { Lesson } from "../LessonScreen/type";
 import structuredClone from "@ungap/structured-clone";
 import { RegisterFromApi } from "@screens/RegisterStack/RegisterScreen/type";
 
-export default function ClassReport({ route }: HomeStackProps<"ClassReport">) {
+export default function ClassReport({
+  route,
+}: LessonStackProps<"ClassReport">) {
   const { classId, lessonId } = route.params;
   const navigation = useNavigation();
   const theme = useTheme<ThemeProps>();

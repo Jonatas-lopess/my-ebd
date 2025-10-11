@@ -8,7 +8,7 @@ import {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { useAuth } from "@providers/AuthProvider";
-import { Lesson } from "@screens/LessonStack/HomeScreen/type";
+import { Lesson } from "@screens/LessonStack/LessonScreen/type";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import config from "config";
 import { theme } from "@theme";
