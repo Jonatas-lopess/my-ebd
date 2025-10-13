@@ -71,7 +71,7 @@ export default function RegisterScreen() {
     return resJson;
   }
 
-  const { data, error, isError, isPending } = useQuery({
+  const { data, error, isError, isPending, isLoading } = useQuery({
     queryKey: ["register"],
     queryFn: getRegisters,
   });
@@ -132,7 +132,7 @@ export default function RegisterScreen() {
           }}
         />
 
-        {isPending && (
+        {isLoading && (
           <ThemedView flex={1} justifyContent="center" alignItems="center">
             <ThemedText>Carregando...</ThemedText>
           </ThemedView>
@@ -195,7 +195,7 @@ export default function RegisterScreen() {
               );
             }}
             ListFooterComponent={() =>
-              mutateState && (
+              (mutateState || isPending) && (
                 <ThemedView
                   flexDirection="row"
                   justifyContent="center"

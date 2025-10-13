@@ -38,7 +38,7 @@ export default function ScoreForm({ mutateFallback }: Props) {
     if (e.type === "close") optionsSheetRef.current?.dismiss();
   }, []);
 
-  const { isPending } = useMutation({
+  const { isPending, mutate } = useMutation({
     mutationFn: async () => {
       const response = await fetch(config.apiBaseUrl + "/scores", {
         method: "POST",
@@ -67,8 +67,8 @@ export default function ScoreForm({ mutateFallback }: Props) {
     )
       return Alert.alert("Atenção", "Preencha todos os campos obrigatórios.");
 
-    console.log(tempScore);
-    //mutate();
+    //console.log(tempScore);
+    mutate();
     optionsSheetRef.current?.dismiss();
     setTempScore({ flag: user?.plan });
   }
@@ -82,6 +82,7 @@ export default function ScoreForm({ mutateFallback }: Props) {
       <ThemedView g="s">
         <TextInput
           placeholder="Título"
+          placeholderTextColor="#a0a0a0"
           onChangeText={(text) =>
             setTempScore((prev) => ({ ...prev, title: text }))
           }
@@ -106,6 +107,7 @@ export default function ScoreForm({ mutateFallback }: Props) {
         </TouchableOpacity>
         <TextInput
           placeholder="Valor"
+          placeholderTextColor="#a0a0a0"
           keyboardType="numeric"
           onChangeText={(text) =>
             setTempScore((prev) => ({ ...prev, weight: Number(text) }))
