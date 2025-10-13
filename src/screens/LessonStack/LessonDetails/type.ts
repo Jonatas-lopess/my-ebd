@@ -9,5 +9,5 @@ export type ListItemType = {
   name: string;
   class: string;
   isPresent: boolean;
-  report?: { [key: string]: { id: string; value: number | boolean } };
+  report?: Array<{ id: string; value: number | boolean }>;
 };

@@ -159,21 +159,21 @@ export default function LessonDetails({
   const report = useMemo(() => {
     if (!scoreInfo) return undefined;
 
-    return scoreInfo.reduce((acc, cur) => {
+    return scoreInfo.reduce((acc: ListItemType["report"], cur) => {
       if (cur.type === "NumberScore") {
-        acc[cur.title] = {
+        acc!.push({
           id: cur._id!,
           value: 0,
-        };
+        });
       } else {
-        acc[cur.title] = {
+        acc!.push({
           id: cur._id!,
           value: false,
-        };
+        });
       }
 
       return acc;
-    }, {} as NonNullable<ListItemType["report"]>);
+    }, []);
   }, [scoreInfo]);
 
   const generateList = useCallback(
@@ -530,13 +530,16 @@ export default function LessonDetails({
                         item.title.charAt(0).toUpperCase() + item.title.slice(1)
                       }
                       value={
-                        (tempItem.report?.[item.title].value as boolean) ??
-                        false
+                        (tempItem.report?.find((r) => r.id === item.title)
+                          ?.value as boolean) ?? false
                       }
                       onClick={() => {
                         const newState = { ...tempItem };
-                        newState.report![item.title].value =
-                          !newState.report![item.title].value;
+                        newState.report!.find(
+                          (r) => r.id === item.title
+                        )!.value = !newState.report!.find(
+                          (r) => r.id === item.title
+                        )!.value;
                         setTempItem(newState);
                       }}
                     />
@@ -552,11 +555,14 @@ export default function LessonDetails({
                         item.title.charAt(0).toUpperCase() + item.title.slice(1)
                       }
                       value={
-                        (tempItem.report?.[item.title].value as number) ?? 0
+                        (tempItem.report?.find((r) => r.id === item.title)
+                          ?.value as number) ?? 0
                       }
                       onChange={(value) => {
                         const newState = { ...tempItem };
-                        newState.report![item.title].value = value ?? 0;
+                        newState.report!.find(
+                          (r) => r.id === item.title
+                        )!.value = value ?? 0;
                         setTempItem(newState);
                       }}
                     />

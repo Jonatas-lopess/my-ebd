@@ -17,7 +17,7 @@ import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import config from "config";
 import { useAuth } from "@providers/AuthProvider";
 import { Rollcall } from "../type";
@@ -32,6 +32,7 @@ export default function ClassReport({
 }: LessonStackProps<"ClassReport">) {
   const { classId, lessonId } = route.params;
   const navigation = useNavigation();
+  const queryClient = useQueryClient();
   const theme = useTheme<ThemeProps>();
   const { token } = useAuth().authState;
   const bottomSheetRef = useRef<BottomSheetModal>(null);
@@ -146,7 +147,7 @@ export default function ClassReport({
   const { mutate } = useMutation({
     mutationFn: async (data: ListItemType[]) => {
       const res = await fetch(config.apiBaseUrl + "/report", {
-        method: "PUT",
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -166,6 +167,11 @@ export default function ClassReport({
     },
     onSuccess: () => {
       bottomSheetRef.current?.close();
+      queryClient.invalidateQueries({ queryKey: ["lessonInfo", lessonId] });
+      queryClient.invalidateQueries({
+        queryKey: ["teacherRollcalls", lessonId],
+      });
+      navigation.goBack();
     },
     onError: (error) => {
       console.log(error.message, error.cause);
@@ -175,21 +181,21 @@ export default function ClassReport({
   const report = useMemo(() => {
     if (!scoreInfo) return undefined;
 
-    return scoreInfo.reduce((acc, cur) => {
+    return scoreInfo.reduce((acc: ListItemType["report"], cur) => {
       if (cur.type === "NumberScore") {
-        acc[cur.title] = {
+        acc!.push({
           id: cur._id!,
           value: 0,
-        };
+        });
       } else {
-        acc[cur.title] = {
+        acc!.push({
           id: cur._id!,
           value: false,
-        };
+        });
       }
 
       return acc;
-    }, {} as NonNullable<ListItemType["report"]>);
+    }, []);
   }, [scoreInfo]);
 
   const generateList = useCallback(
@@ -274,6 +280,7 @@ export default function ClassReport({
       {
         text: "Sim",
         onPress: () => {
+          //console.log(classReport);
           mutate(classReport);
         },
       },
@@ -409,70 +416,78 @@ export default function ClassReport({
           stackBehavior="replace"
         >
           <CustomBottomModal.Content title={tempItem.name ?? ""}>
-            {isLoadingScores && (
-              <ActivityIndicator size="small" color={theme.colors.primary} />
-            )}
-            {isErrorScores && (
-              <ThemedText>
-                Erro ao carregar as informações de pontuação.
-              </ThemedText>
-            )}
-            {!isLoadingScores &&
-              !isErrorScores &&
-              scoreInfo &&
-              scoreInfo.length > 0 && (
-                <ThemedText textAlign="center" mb="s">
-                  Clique sobre os ícones para editar as informações.
+            <ThemedView g="s" mb="m">
+              {isLoadingScores && (
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+              )}
+              {isErrorScores && (
+                <ThemedText>
+                  Erro ao carregar as informações de pontuação.
                 </ThemedText>
               )}
-            {!isLoadingScores &&
-              !isErrorScores &&
-              scoreInfo &&
-              scoreInfo.length === 0 && (
-                <ThemedText textAlign="center" mb="s">
-                  Não há informações de pontuação registradas.
-                </ThemedText>
-              )}
-            {scoreInfo?.map((item) => {
-              if (item.type === "BooleanScore")
-                return (
-                  <ScoreOption
-                    key={item._id}
-                    type={item.type}
-                    icon="star"
-                    title={
-                      item.title.charAt(0).toUpperCase() + item.title.slice(1)
-                    }
-                    value={
-                      (tempItem.report?.[item.title].value as boolean) ?? false
-                    }
-                    onClick={() => {
-                      const newState = { ...tempItem };
-                      newState.report![item.title].value =
-                        !newState.report![item.title].value;
-                      setTempItem(newState);
-                    }}
-                  />
-                );
+              {!isLoadingScores &&
+                !isErrorScores &&
+                scoreInfo &&
+                scoreInfo.length > 0 && (
+                  <ThemedText textAlign="center">
+                    Clique sobre os ícones para editar as informações.
+                  </ThemedText>
+                )}
+              {!isLoadingScores &&
+                !isErrorScores &&
+                scoreInfo &&
+                scoreInfo.length === 0 && (
+                  <ThemedText textAlign="center">
+                    Não há informações de pontuação registradas.
+                  </ThemedText>
+                )}
+              {scoreInfo?.map((item) => {
+                if (item.type === "BooleanScore")
+                  return (
+                    <ScoreOption
+                      key={item._id}
+                      type={item.type}
+                      icon="star"
+                      title={
+                        item.title.charAt(0).toUpperCase() + item.title.slice(1)
+                      }
+                      value={
+                        (tempItem.report?.find((r) => r.id === item._id)
+                          ?.value as boolean) ?? false
+                      }
+                      onClick={() => {
+                        const newState = { ...tempItem };
+                        newState.report!.find((r) => r.id === item._id)!.value =
+                          !newState.report!.find((r) => r.id === item._id)!
+                            .value;
+                        setTempItem(newState);
+                      }}
+                    />
+                  );
 
-              if (item.type === "NumberScore")
-                return (
-                  <ScoreOption
-                    key={item._id}
-                    type={item.type}
-                    icon="star"
-                    title={
-                      item.title.charAt(0).toUpperCase() + item.title.slice(1)
-                    }
-                    value={(tempItem.report?.[item.title].value as number) ?? 0}
-                    onChange={(value) => {
-                      const newState = { ...tempItem };
-                      newState.report![item.title].value = value ?? 0;
-                      setTempItem(newState);
-                    }}
-                  />
-                );
-            }) ?? <ThemedText>Sem informações disponíveis.</ThemedText>}
+                if (item.type === "NumberScore")
+                  return (
+                    <ScoreOption
+                      key={item._id}
+                      type={item.type}
+                      icon="star"
+                      title={
+                        item.title.charAt(0).toUpperCase() + item.title.slice(1)
+                      }
+                      value={
+                        (tempItem.report?.find((r) => r.id === item._id)
+                          ?.value as number) ?? 0
+                      }
+                      onChange={(value) => {
+                        const newState = { ...tempItem };
+                        newState.report!.find((r) => r.id === item._id)!.value =
+                          value ?? 0;
+                        setTempItem(newState);
+                      }}
+                    />
+                  );
+              }) ?? <ThemedText>Sem informações disponíveis.</ThemedText>}
+            </ThemedView>
           </CustomBottomModal.Content>
           <CustomBottomModal.Action
             text="Confirmar"
