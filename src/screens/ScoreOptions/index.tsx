@@ -28,7 +28,7 @@ export default function ScoreOptions() {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [isPendingMutate, setIsPendingMutate] = useState<boolean>(false);
 
-  const { data } = useQuery({
+  const { data, isLoading, isPending } = useQuery({
     queryKey: ["scores"],
     queryFn: async (): Promise<Score[]> => {
       const response = await fetch(config.apiBaseUrl + "/scores", {
@@ -72,36 +72,43 @@ export default function ScoreOptions() {
             Lista de opções para pontuar alunos e professores. Clique sobre o
             campo para editar, caso deseje.
           </CustomCard.Detail>
-          <FlatList
-            data={data}
-            contentContainerStyle={{ gap: theme.spacing.xs }}
-            renderItem={({ item }) => (
-              <TextButton
-                variant="outline"
-                justifyContent="space-between"
-                onClick={() => {}}
-              >
-                <ThemedText fontSize={16}>{item.title}</ThemedText>
-                <ThemedView gap="xs" flexDirection="row" alignItems="center">
-                  <CustomIcon name="star" color="#ffd700" size={20} />
-                  <ThemedText>{item.weight}</ThemedText>
-                </ThemedView>
-              </TextButton>
-            )}
-            ListFooterComponent={() =>
-              isPendingMutate && (
-                <ThemedView
-                  flexDirection="row"
-                  justifyContent="center"
-                  alignItems="center"
-                  gap="s"
+          {isLoading && (
+            <ThemedView flex={1} justifyContent="center" alignItems="center">
+              <ThemedText>Carregando...</ThemedText>
+            </ThemedView>
+          )}
+          {data && (
+            <FlatList
+              data={data}
+              contentContainerStyle={{ gap: theme.spacing.xs }}
+              renderItem={({ item }) => (
+                <TextButton
+                  variant="outline"
+                  justifyContent="space-between"
+                  onClick={() => {}}
                 >
-                  <ThemedText>Adicionando nova pontuação...</ThemedText>
-                </ThemedView>
-              )
-            }
-            keyExtractor={(item) => item._id!}
-          />
+                  <ThemedText fontSize={16}>{item.title}</ThemedText>
+                  <ThemedView gap="xs" flexDirection="row" alignItems="center">
+                    <CustomIcon name="star" color="#ffd700" size={20} />
+                    <ThemedText>{item.weight}</ThemedText>
+                  </ThemedView>
+                </TextButton>
+              )}
+              ListFooterComponent={() =>
+                (isPendingMutate || isPending) && (
+                  <ThemedView
+                    flexDirection="row"
+                    justifyContent="center"
+                    alignItems="center"
+                    gap="s"
+                  >
+                    <ThemedText>Adicionando nova pontuação...</ThemedText>
+                  </ThemedView>
+                )
+              }
+              keyExtractor={(item) => item._id!}
+            />
+          )}
         </CustomCard.Root>
       </ThemedView>
 

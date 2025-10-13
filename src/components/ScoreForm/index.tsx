@@ -39,14 +39,14 @@ export default function ScoreForm({ mutateFallback }: Props) {
   }, []);
 
   const { isPending, mutate } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (scoreInfo: Score) => {
       const response = await fetch(config.apiBaseUrl + "/scores", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(tempScore),
+        body: JSON.stringify(scoreInfo),
       });
 
       return await response.json();
@@ -55,7 +55,11 @@ export default function ScoreForm({ mutateFallback }: Props) {
       return queryClient.invalidateQueries({ queryKey: ["scores"] });
     },
     onError: (err) => {
-      console.log(err);
+      Alert.alert(
+        "Algo deu errado!",
+        `Erro ao criar o registro. Confira sua conexão de internet e tente novamente.`
+      );
+      console.log(err.message, err.cause);
     },
   });
 
@@ -67,8 +71,8 @@ export default function ScoreForm({ mutateFallback }: Props) {
     )
       return Alert.alert("Atenção", "Preencha todos os campos obrigatórios.");
 
-    //console.log(tempScore);
-    mutate();
+    //console.log(JSON.stringify(tempScore));
+    mutate(tempScore as Score);
     optionsSheetRef.current?.dismiss();
     setTempScore({ flag: user?.plan });
   }
@@ -83,6 +87,7 @@ export default function ScoreForm({ mutateFallback }: Props) {
         <TextInput
           placeholder="Título"
           placeholderTextColor="#a0a0a0"
+          value={tempScore.title}
           onChangeText={(text) =>
             setTempScore((prev) => ({ ...prev, title: text }))
           }
@@ -107,6 +112,7 @@ export default function ScoreForm({ mutateFallback }: Props) {
         </TouchableOpacity>
         <TextInput
           placeholder="Valor"
+          value={tempScore.weight?.toString()}
           placeholderTextColor="#a0a0a0"
           keyboardType="numeric"
           onChangeText={(text) =>
