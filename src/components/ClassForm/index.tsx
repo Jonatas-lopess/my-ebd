@@ -42,14 +42,14 @@ export default function ClassForm({ mutateFallback }: Props) {
   }, []);
 
   const mutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (classData: _Class) => {
       const res = await fetch(config.apiBaseUrl + "/classes", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(inputs),
+        body: JSON.stringify(classData),
       });
 
       const data = await res.json();
@@ -77,7 +77,7 @@ export default function ClassForm({ mutateFallback }: Props) {
     }
 
     //console.log(inputs);
-    mutate();
+    mutate(inputs as _Class);
     optionsSheetRef.current?.dismiss();
     setInputs(EMPTYCLASSDATA);
   }
@@ -92,6 +92,7 @@ export default function ClassForm({ mutateFallback }: Props) {
         <TextInput
           placeholder="Nome*"
           placeholderTextColor="#a0a0a0"
+          value={inputs.name}
           onChangeText={(text) =>
             setInputs((prev) => ({ ...prev, name: text }))
           }
