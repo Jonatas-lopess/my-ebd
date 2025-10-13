@@ -38,7 +38,7 @@ export default function LessonForm({
     newLesson.number === defaultLessonNumber ||
     newLesson.number === 1;
 
-  const { isPending } = useMutation({
+  const { isPending, mutate } = useMutation({
     mutationFn: async () => {
       const response = await fetch(config.apiBaseUrl + "/lessons", {
         method: "POST",
@@ -80,8 +80,8 @@ export default function LessonForm({
     });
 
   const handleCreateNewLesson = () => {
-    //mutate();
-    console.log(newLesson);
+    //console.log(newLesson);
+    mutate();
   };
 
   useEffect(() => {

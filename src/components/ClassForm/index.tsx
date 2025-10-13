@@ -66,15 +66,15 @@ export default function ClassForm({ mutateFallback }: Props) {
       console.log(error.message, error.cause);
     },
   });
-  const { isPending } = mutation;
+  const { isPending, mutate } = mutation;
 
   function handleCreateNewClass() {
     if (!inputs.name || !inputs.group) {
       return Alert.alert("Alerta", "Preencha todos os campos.");
     }
 
-    //mutate();
-    console.log(inputs);
+    //console.log(inputs);
+    mutate();
     optionsSheetRef.current?.dismiss();
     setInputs(EMPTYCLASSDATA);
   }

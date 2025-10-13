@@ -93,7 +93,7 @@ export default function RegisterForm({ mutateFallback }: Props) {
     },
   });
 
-  const { isPending } = mutation;
+  const { isPending, mutate } = mutation;
 
   const handleOptionsSheet = useCallback((e: BottomSheetEventType) => {
     if (e.type === "open") optionsSheetRef.current?.present();
@@ -112,8 +112,8 @@ export default function RegisterForm({ mutateFallback }: Props) {
       return Alert.alert("Atenção", "Preencha todos os campos obrigatórios.");
     }
 
-    console.log(inputs);
-    //mutate(newRegister);
+    //console.log(inputs);
+    mutate(inputs as RegisterFromApp);
     optionsSheetRef.current?.dismiss();
     setInputs({});
   }
@@ -234,7 +234,7 @@ export default function RegisterForm({ mutateFallback }: Props) {
 
       <CustomBottomModal.Root ref={optionsSheetRef} stackBehavior="push">
         <CustomBottomModal.Content title="Turmas">
-          <ThemedView>
+          <ThemedView mb="m">
             <FlatList
               data={data}
               contentContainerStyle={{ gap: theme.spacing.s }}
