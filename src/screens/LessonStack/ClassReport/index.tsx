@@ -13,8 +13,11 @@ import { useNavigation } from "@react-navigation/native";
 import TextButton from "@components/TextButton";
 import { CustomBottomModal } from "@components/CustomBottomModal";
 import { ListItemType } from "../LessonDetails/type";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  BottomSheetModal,
+  BottomSheetModalProvider,
+} from "@gorhom/bottom-sheet";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import config from "config";
 import { useAuth } from "@providers/AuthProvider";
 import { Rollcall } from "../type";
@@ -30,7 +33,6 @@ export default function ClassReport({
   const { classId, lessonId } = route.params;
   const navigation = useNavigation();
   const theme = useTheme<ThemeProps>();
-  const queryClient = useQueryClient();
   const { token } = useAuth().authState;
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [isEditable, setIsEditable] = useState(false);
@@ -375,10 +377,11 @@ export default function ClassReport({
                       <TextButton
                         variant="outline"
                         disabled={!isEditable}
-                        onClick={() =>
-                          queryClient.invalidateQueries({
+                        onClick={
+                          () => setReport(generateList(data))
+                          /* queryClient.invalidateQueries({
                             queryKey: ["students", classId],
-                          })
+                          }) */
                         }
                       >
                         <ThemedText
@@ -399,82 +402,84 @@ export default function ClassReport({
         </ScrollView>
       </ThemedView>
 
-      <CustomBottomModal.Root
-        ref={bottomSheetRef}
-        onDismiss={onSheetDismiss}
-        stackBehavior="replace"
-      >
-        <CustomBottomModal.Content title={tempItem.name ?? ""}>
-          {isLoadingScores && (
-            <ActivityIndicator size="small" color={theme.colors.primary} />
-          )}
-          {isErrorScores && (
-            <ThemedText>
-              Erro ao carregar as informações de pontuação.
-            </ThemedText>
-          )}
-          {!isLoadingScores &&
-            !isErrorScores &&
-            scoreInfo &&
-            scoreInfo.length > 0 && (
-              <ThemedText textAlign="center" mb="s">
-                Clique sobre os ícones para editar as informações.
+      <BottomSheetModalProvider>
+        <CustomBottomModal.Root
+          ref={bottomSheetRef}
+          onDismiss={onSheetDismiss}
+          stackBehavior="replace"
+        >
+          <CustomBottomModal.Content title={tempItem.name ?? ""}>
+            {isLoadingScores && (
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+            )}
+            {isErrorScores && (
+              <ThemedText>
+                Erro ao carregar as informações de pontuação.
               </ThemedText>
             )}
-          {!isLoadingScores &&
-            !isErrorScores &&
-            scoreInfo &&
-            scoreInfo.length === 0 && (
-              <ThemedText textAlign="center" mb="s">
-                Não há informações de pontuação registradas.
-              </ThemedText>
-            )}
-          {scoreInfo?.map((item) => {
-            if (item.type === "BooleanScore")
-              return (
-                <ScoreOption
-                  key={item._id}
-                  type={item.type}
-                  icon="star"
-                  title={
-                    item.title.charAt(0).toUpperCase() + item.title.slice(1)
-                  }
-                  value={
-                    (tempItem.report?.[item.title].value as boolean) ?? false
-                  }
-                  onClick={() => {
-                    const newState = { ...tempItem };
-                    newState.report![item.title].value =
-                      !newState.report![item.title].value;
-                    setTempItem(newState);
-                  }}
-                />
-              );
+            {!isLoadingScores &&
+              !isErrorScores &&
+              scoreInfo &&
+              scoreInfo.length > 0 && (
+                <ThemedText textAlign="center" mb="s">
+                  Clique sobre os ícones para editar as informações.
+                </ThemedText>
+              )}
+            {!isLoadingScores &&
+              !isErrorScores &&
+              scoreInfo &&
+              scoreInfo.length === 0 && (
+                <ThemedText textAlign="center" mb="s">
+                  Não há informações de pontuação registradas.
+                </ThemedText>
+              )}
+            {scoreInfo?.map((item) => {
+              if (item.type === "BooleanScore")
+                return (
+                  <ScoreOption
+                    key={item._id}
+                    type={item.type}
+                    icon="star"
+                    title={
+                      item.title.charAt(0).toUpperCase() + item.title.slice(1)
+                    }
+                    value={
+                      (tempItem.report?.[item.title].value as boolean) ?? false
+                    }
+                    onClick={() => {
+                      const newState = { ...tempItem };
+                      newState.report![item.title].value =
+                        !newState.report![item.title].value;
+                      setTempItem(newState);
+                    }}
+                  />
+                );
 
-            if (item.type === "NumberScore")
-              return (
-                <ScoreOption
-                  key={item._id}
-                  type={item.type}
-                  icon="star"
-                  title={
-                    item.title.charAt(0).toUpperCase() + item.title.slice(1)
-                  }
-                  value={(tempItem.report?.[item.title].value as number) ?? 0}
-                  onChange={(value) => {
-                    const newState = { ...tempItem };
-                    newState.report![item.title].value = value ?? 0;
-                    setTempItem(newState);
-                  }}
-                />
-              );
-          }) ?? <ThemedText>Sem informações disponíveis.</ThemedText>}
-        </CustomBottomModal.Content>
-        <CustomBottomModal.Action
-          text="Confirmar"
-          onPress={handleSaveReportChanges}
-        />
-      </CustomBottomModal.Root>
+              if (item.type === "NumberScore")
+                return (
+                  <ScoreOption
+                    key={item._id}
+                    type={item.type}
+                    icon="star"
+                    title={
+                      item.title.charAt(0).toUpperCase() + item.title.slice(1)
+                    }
+                    value={(tempItem.report?.[item.title].value as number) ?? 0}
+                    onChange={(value) => {
+                      const newState = { ...tempItem };
+                      newState.report![item.title].value = value ?? 0;
+                      setTempItem(newState);
+                    }}
+                  />
+                );
+            }) ?? <ThemedText>Sem informações disponíveis.</ThemedText>}
+          </CustomBottomModal.Content>
+          <CustomBottomModal.Action
+            text="Confirmar"
+            onPress={handleSaveReportChanges}
+          />
+        </CustomBottomModal.Root>
+      </BottomSheetModalProvider>
     </ThemedView>
   );
 }

@@ -127,6 +127,7 @@ export default function RegisterForm({ mutateFallback }: Props) {
       <ThemedView gap="s">
         <TextInput
           placeholder="Nome*"
+          placeholderTextColor="#a0a0a0"
           value={inputs.name}
           onChangeText={(text) =>
             setInputs((prev) => ({ ...prev, name: text }))
@@ -162,6 +163,7 @@ export default function RegisterForm({ mutateFallback }: Props) {
         <ThemedView flexDirection="row" gap="s">
           <MaskInput
             placeholder="Número de Celular"
+            placeholderTextColor="#a0a0a0"
             value={inputs.phone}
             onChangeText={(text) =>
               setInputs((prev) => ({ ...prev, phone: text }))
