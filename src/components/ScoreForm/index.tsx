@@ -11,7 +11,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { theme } from "@theme";
 import config from "config";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, FlatList, TextInput, TouchableOpacity } from "react-native";
+import {
+  Alert,
+  FlatList,
+  Keyboard,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
 
 type Props = {
   mutateFallback: React.Dispatch<React.SetStateAction<boolean>>;
@@ -27,7 +33,10 @@ export default function ScoreForm({ mutateFallback }: Props) {
   });
 
   const handleOptionsSheet = useCallback((e: BottomSheetEventType) => {
-    if (e.type === "open") optionsSheetRef.current?.present();
+    if (e.type === "open") {
+      Keyboard.dismiss();
+      optionsSheetRef.current?.present();
+    }
     if (e.type === "set") {
       setTempScore((prev) => ({
         ...prev,

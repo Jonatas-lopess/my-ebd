@@ -6,6 +6,7 @@ import {
   Pressable,
   FlatList,
   Alert,
+  Keyboard,
 } from "react-native";
 import MaskInput, { Masks } from "react-native-mask-input";
 import {
@@ -96,7 +97,10 @@ export default function RegisterForm({ mutateFallback }: Props) {
   const { isPending, mutate } = mutation;
 
   const handleOptionsSheet = useCallback((e: BottomSheetEventType) => {
-    if (e.type === "open") optionsSheetRef.current?.present();
+    if (e.type === "open") {
+      Keyboard.dismiss();
+      optionsSheetRef.current?.present();
+    }
     if (e.type === "set") {
       setInputs((prev) => ({
         ...prev,

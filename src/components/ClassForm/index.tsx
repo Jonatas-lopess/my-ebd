@@ -11,7 +11,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { theme } from "@theme";
 import config from "config";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, FlatList, TouchableOpacity } from "react-native";
+import { Alert, FlatList, Keyboard, TouchableOpacity } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 
 type Props = {
@@ -30,7 +30,10 @@ export default function ClassForm({ mutateFallback }: Props) {
   const optionsSheetRef = useRef<BottomSheetModal>(null);
 
   const handleOptionsSheet = useCallback((e: BottomSheetEventType) => {
-    if (e.type === "open") optionsSheetRef.current?.present();
+    if (e.type === "open") {
+      Keyboard.dismiss();
+      optionsSheetRef.current?.present();
+    }
     if (e.type === "set") {
       setInputs((prev) => ({ ...prev, group: e.value }));
       optionsSheetRef.current?.dismiss();
@@ -88,6 +91,7 @@ export default function ClassForm({ mutateFallback }: Props) {
       <ThemedView g="s">
         <TextInput
           placeholder="Nome*"
+          placeholderTextColor="#a0a0a0"
           onChangeText={(text) =>
             setInputs((prev) => ({ ...prev, name: text }))
           }
@@ -125,6 +129,7 @@ export default function ClassForm({ mutateFallback }: Props) {
               "Crianças",
               "Maternal",
             ]}
+            style={{ marginBottom: theme.spacing.m }}
             contentContainerStyle={{ gap: theme.spacing.s }}
             renderItem={({ item }) => (
               <TouchableOpacity
