@@ -24,7 +24,7 @@ import {
   BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
 import { CustomBottomModal } from "@components/CustomBottomModal";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@providers/AuthProvider";
 import config from "config";
 import { RegisterFromApi } from "@screens/RegisterStack/RegisterScreen/type";
@@ -40,6 +40,7 @@ export default function LessonDetails({
 }: LessonStackProps<"LessonDetails">) {
   const { lessonId } = route.params;
   const theme = useTheme<ThemeProps>();
+  const queryClient = useQueryClient();
   const navigation = useNavigation();
   const [isEditable, setIsEditable] = useState(false);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
@@ -150,6 +151,11 @@ export default function LessonDetails({
       if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
 
       return resJson;
+    },
+    onSuccess: () => {
+      bottomSheetRef.current?.close();
+      queryClient.invalidateQueries({ queryKey: ["lessons"] });
+      navigation.goBack();
     },
     onError: (error) => {
       console.log(error.message, error.cause);
@@ -304,7 +310,8 @@ export default function LessonDetails({
               color={theme.colors.gray}
             />
             <StackHeader.Title>
-              {isSuccess && (lessonInfo.title ?? lessonInfo.number!.toString())}
+              {isSuccess &&
+                (lessonInfo.title ?? `${lessonInfo.number!.toString()}º Lição`)}
             </StackHeader.Title>
           </StackHeader.Content>
           {isSuccess && (
@@ -512,63 +519,67 @@ export default function LessonDetails({
       <BottomSheetModalProvider>
         <CustomBottomModal.Root ref={bottomSheetRef} onDismiss={onSheetDismiss}>
           <CustomBottomModal.Content title={tempItem.name ?? ""}>
-            {scoreInfo === undefined || scoreInfo.length === 0 ? (
-              <ThemedView justifyContent="center" alignItems="center" mb="m">
-                <ThemedText color="gray">
-                  Nenhum tipo de pontuação cadastrada.
-                </ThemedText>
-              </ThemedView>
-            ) : (
-              scoreInfo.map((item) => {
-                if (item.type === "BooleanScore")
-                  return (
-                    <ScoreOption
-                      key={item._id}
-                      type={item.type}
-                      icon="star"
-                      title={
-                        item.title.charAt(0).toUpperCase() + item.title.slice(1)
-                      }
-                      value={
-                        (tempItem.report?.find((r) => r.id === item.title)
-                          ?.value as boolean) ?? false
-                      }
-                      onClick={() => {
-                        const newState = { ...tempItem };
-                        newState.report!.find(
-                          (r) => r.id === item.title
-                        )!.value = !newState.report!.find(
-                          (r) => r.id === item.title
-                        )!.value;
-                        setTempItem(newState);
-                      }}
-                    />
-                  );
+            <ThemedView g="s" mb="m">
+              {scoreInfo === undefined || scoreInfo.length === 0 ? (
+                <ThemedView justifyContent="center" alignItems="center">
+                  <ThemedText color="gray">
+                    Nenhum tipo de pontuação cadastrada.
+                  </ThemedText>
+                </ThemedView>
+              ) : (
+                scoreInfo.map((item) => {
+                  if (item.type === "BooleanScore")
+                    return (
+                      <ScoreOption
+                        key={item._id}
+                        type={item.type}
+                        icon="star"
+                        title={
+                          item.title.charAt(0).toUpperCase() +
+                          item.title.slice(1)
+                        }
+                        value={
+                          (tempItem.report?.find((r) => r.id === item._id)
+                            ?.value as boolean) ?? false
+                        }
+                        onClick={() => {
+                          const newState = { ...tempItem };
+                          newState.report!.find(
+                            (r) => r.id === item._id
+                          )!.value = !newState.report!.find(
+                            (r) => r.id === item._id
+                          )!.value;
+                          setTempItem(newState);
+                        }}
+                      />
+                    );
 
-                if (item.type === "NumberScore")
-                  return (
-                    <ScoreOption
-                      key={item._id}
-                      type={item.type}
-                      icon="star"
-                      title={
-                        item.title.charAt(0).toUpperCase() + item.title.slice(1)
-                      }
-                      value={
-                        (tempItem.report?.find((r) => r.id === item.title)
-                          ?.value as number) ?? 0
-                      }
-                      onChange={(value) => {
-                        const newState = { ...tempItem };
-                        newState.report!.find(
-                          (r) => r.id === item.title
-                        )!.value = value ?? 0;
-                        setTempItem(newState);
-                      }}
-                    />
-                  );
-              })
-            )}
+                  if (item.type === "NumberScore")
+                    return (
+                      <ScoreOption
+                        key={item._id}
+                        type={item.type}
+                        icon="star"
+                        title={
+                          item.title.charAt(0).toUpperCase() +
+                          item.title.slice(1)
+                        }
+                        value={
+                          (tempItem.report?.find((r) => r.id === item._id)
+                            ?.value as number) ?? 0
+                        }
+                        onChange={(value) => {
+                          const newState = { ...tempItem };
+                          newState.report!.find(
+                            (r) => r.id === item._id
+                          )!.value = value ?? 0;
+                          setTempItem(newState);
+                        }}
+                      />
+                    );
+                })
+              )}
+            </ThemedView>
             {scoreInfo !== undefined && scoreInfo.length > 0 && (
               <CustomBottomModal.Action
                 text="Confirmar"
