@@ -18,7 +18,7 @@ export default function CustomSettingsDrawer(
   const theme = useTheme<ThemeProps>();
 
   return (
-    <ThemedView flex={1} pb="m">
+    <ThemedView flex={1} pb="safeArea">
       <ThemedView
         py="safeArea"
         borderBottomWidth={1}
@@ -55,6 +55,7 @@ export default function CustomSettingsDrawer(
         style={{ color: "grey" }}
         textAlign="center"
         mt="m"
+        mb="s"
       >
         Versão: 0.0.1
       </ThemedText>

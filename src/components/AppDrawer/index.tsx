@@ -60,31 +60,35 @@ export default function AppDrawer({ renderTab }: AppDrawerProps) {
         options={{ title: "Minha Conta" }}
         component={AccountInfo}
       />
-      <Drawer.Screen
-        name="TeacherAccess"
-        options={{ title: "Acesso do Professor" }}
-        component={TeacherAccess}
-      />
-      <Drawer.Screen
-        name="AdminAccess"
-        options={{ title: "Acesso do Administrador" }}
-        component={AdminAccess}
-      />
-      <Drawer.Screen
-        name="ManageBranch"
-        options={{ title: "Gerenciar Filial" }}
-        component={ManageBranch}
-      />
-      <Drawer.Screen
-        name="ManageHeadquarter"
-        options={{ title: "Gerenciar Sede" }}
-        component={ManageHeadquarter}
-      />
-      <Drawer.Screen
-        name="ScoreOptions"
-        options={{ title: "Opções de Pontuação" }}
-        component={ScoreOptions}
-      />
+      {renderTab === "admin" && (
+        <>
+          <Drawer.Screen
+            name="TeacherAccess"
+            options={{ title: "Acesso do Professor" }}
+            component={TeacherAccess}
+          />
+          <Drawer.Screen
+            name="AdminAccess"
+            options={{ title: "Acesso do Administrador" }}
+            component={AdminAccess}
+          />
+          <Drawer.Screen
+            name="ManageBranch"
+            options={{ title: "Gerenciar Filial" }}
+            component={ManageBranch}
+          />
+          <Drawer.Screen
+            name="ManageHeadquarter"
+            options={{ title: "Gerenciar Sede" }}
+            component={ManageHeadquarter}
+          />
+          <Drawer.Screen
+            name="ScoreOptions"
+            options={{ title: "Opções de Pontuação" }}
+            component={ScoreOptions}
+          />
+        </>
+      )}
     </Drawer.Navigator>
   );
 }
