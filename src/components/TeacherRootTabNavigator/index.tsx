@@ -15,21 +15,21 @@ export default function TeacherRootTabNavigator() {
         tabBarIcon: ({ color, size }) => {
           let icon: keyof typeof Ionicons.glyphMap = "tablet-landscape-outline";
 
-          if (route.name === "Lessons") icon = "home";
+          if (route.name === "Lessons") icon = "book";
           if (route.name === "Cadastros") icon = "school";
-          if (route.name === "Geral") icon = "stats-chart";
+          if (route.name === "Geral") icon = "home";
 
           return <Ionicons name={icon} size={size} color={color} />;
         },
       })}
     >
+      <Tabs.Screen name={"Geral"} component={GeneralStack} />
       <Tabs.Screen
         name={"Lessons"}
         options={{ title: "Lições" }}
         component={LessonStack}
       />
       <Tabs.Screen name={"Cadastros"} component={RegisterStack} />
-      <Tabs.Screen name={"Geral"} component={GeneralStack} />
     </Tabs.Navigator>
   );
 }
