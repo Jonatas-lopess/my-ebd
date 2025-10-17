@@ -88,7 +88,9 @@ export default function HomeScreen() {
           >
             <Ionicons name="trophy" color={theme.colors.primary} size={26} />
             <ThemedText color="primary" fontWeight="bold">
-              Ranque Geral
+              {user?.role === "admin" || user?.role === "owner"
+                ? "Ranque Geral"
+                : "Ranque da Turma"}
             </ThemedText>
           </TouchableOpacity>
 

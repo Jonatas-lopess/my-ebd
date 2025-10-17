@@ -3,7 +3,7 @@ import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
-import { FlatList } from "react-native";
+import { Alert, FlatList } from "react-native";
 import { InfoCard } from "@components/InfoCard";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@providers/AuthProvider";
@@ -16,15 +16,16 @@ import { useRef, useState } from "react";
 
 import { CustomBottomModal } from "@components/CustomBottomModal";
 import { Lesson } from "./type";
-import { useQuery } from "@tanstack/react-query";
+import { skipToken, useQuery } from "@tanstack/react-query";
 import config from "config";
 import LessonForm from "@components/LessonForm";
 
 export default function LessonScreen() {
-  //TODO: create a teacher screen to manage lessons
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
-  const { user, token } = useAuth().authState;
+  const { user: { role: userRole, register: userRegister } = {}, token } =
+    useAuth().authState;
+  const { class: classId } = userRegister || {};
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [isPendingMutate, setIsPendingMutate] = useState(false);
 
@@ -39,8 +40,38 @@ export default function LessonScreen() {
         },
       });
 
+      if (!response.ok) {
+        throw new Error("Failed to fetch lessons");
+      }
+
       return await response.json();
     },
+  });
+
+  async function getClassDetails(): Promise<{ students: string[] }> {
+    const res = await fetch(
+      config.apiBaseUrl + `/classes/${classId}?select=students`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const resJson = await res.json();
+    if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
+
+    return resJson;
+  }
+
+  const { data: classData } = useQuery({
+    queryKey: ["classDetails", classId],
+    queryFn:
+      userRole === "teacher" && classId !== undefined
+        ? getClassDetails
+        : skipToken,
   });
 
   const defaultLessonNumber = data && data.length + 1;
@@ -72,11 +103,13 @@ export default function LessonScreen() {
               onPress={() => {}}
               color={theme.colors.gray}
             />
-            <StackHeader.Action
-              name="add-outline"
-              onPress={handleOpenBottomSheet}
-              color={theme.colors.gray}
-            />
+            {(userRole === "owner" || userRole === "admin") && (
+              <StackHeader.Action
+                name="add-outline"
+                onPress={handleOpenBottomSheet}
+                color={theme.colors.gray}
+              />
+            )}
           </StackHeader.Actions>
         </StackHeader.Root>
 
@@ -103,16 +136,19 @@ export default function LessonScreen() {
               return (
                 <InfoCard.Root
                   onPress={() => {
-                    if (user === undefined) throw new Error("User not found");
+                    if (userRole === undefined)
+                      throw new Error("User not found");
 
-                    if (user.role === "teacher" && user.register === undefined)
+                    if (userRole === "teacher" && classId === undefined) {
+                      console.log(userRegister);
                       throw new Error("User register not found");
+                    }
 
-                    if (user.role === "teacher")
+                    if (userRole === "teacher")
                       return navigation.navigate("Lessons", {
                         screen: "ClassReport",
                         params: {
-                          classId: user.register!.class,
+                          classId: classId!,
                           lessonId: item._id!,
                         },
                       });
@@ -123,7 +159,8 @@ export default function LessonScreen() {
                     });
                   }}
                   onLongPress={() =>
-                    user?.role === "admin" && console.log("log")
+                    (userRole === "admin" || userRole === "owner") &&
+                    Alert.alert("log")
                   }
                 >
                   <ThemedView flexDirection="row" alignItems="center">
@@ -141,18 +178,32 @@ export default function LessonScreen() {
                         : ""}
                     </InfoCard.Detail>
                   </ThemedView>
-                  {item.rollcalls && rollcallDone !== item.rollcalls.length && (
-                    <ThemedText style={{ color: "red" }}>
-                      {item.rollcalls.length - rollcallDone!} chamadas pendentes
-                    </ThemedText>
-                  )}
+                  {(userRole === "admin" || userRole === "owner") &&
+                    item.rollcalls &&
+                    rollcallDone !== item.rollcalls.length && (
+                      <ThemedText style={{ color: "red" }}>
+                        {item.rollcalls.length - rollcallDone!} chamadas
+                        pendentes
+                      </ThemedText>
+                    )}
                   <InfoCard.Content>
-                    <ThemedText>Presentes: -</ThemedText>
-                    <ThemedView
-                      borderLeftWidth={1}
-                      borderLeftColor="lightgrey"
-                    />
-                    <ThemedText>Ausentes: -</ThemedText>
+                    {userRole === "admin" || userRole === "owner" ? (
+                      item.rollcalls && (
+                        <ThemedText>Turmas: {item.rollcalls.length}</ThemedText>
+                      )
+                    ) : (
+                      <ThemedText>
+                        Alunos: {classData?.students.length ?? "-"}
+                      </ThemedText>
+                      /* <>
+                        <ThemedText>Presentes: -</ThemedText>
+                        <ThemedView
+                          borderLeftWidth={1}
+                          borderLeftColor="lightgrey"
+                        />
+                        <ThemedText>Ausentes: -</ThemedText>
+                      </> */
+                    )}
                   </InfoCard.Content>
                 </InfoCard.Root>
               );

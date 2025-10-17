@@ -18,9 +18,8 @@ import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
-import { RegisterFromApi } from "./type";
+import { getRegisters } from "./type";
 import { useAuth } from "@providers/AuthProvider";
-import config from "config";
 import { useQuery } from "@tanstack/react-query";
 import { CustomBottomModal } from "@components/CustomBottomModal";
 import RegisterForm from "@components/RegisterForm";
@@ -34,46 +33,9 @@ export default function RegisterScreen() {
   const { token, user } = useAuth().authState;
   const [mutateState, setMutateState] = useState(false);
 
-  async function getRegisters(): Promise<RegisterFromApi[]> {
-    if (user === undefined) throw new Error("User is undefined");
-
-    if (user.role === "teacher") {
-      const res = await fetch(
-        config.apiBaseUrl +
-          "/registers?hasUser=false&class=" +
-          user.register?.class,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const resJson = await res.json();
-      if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
-
-      return resJson;
-    }
-
-    const res = await fetch(config.apiBaseUrl + "/registers", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    const resJson = await res.json();
-    if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
-
-    return resJson;
-  }
-
   const { data, error, isError, isPending, isLoading } = useQuery({
     queryKey: ["register"],
-    queryFn: getRegisters,
+    queryFn: () => getRegisters({ token: token, user: user }),
   });
 
   const matchMonth = (aniversary: Date) => {
@@ -111,11 +73,13 @@ export default function RegisterScreen() {
               onPress={() => setBirthdayFilter(!birthdayFilter)}
               color={birthdayFilter ? theme.colors.primary : theme.colors.gray}
             />
-            <StackHeader.Action
-              name="add-outline"
-              onPress={() => bottomSheetRef.current?.present()}
-              color={theme.colors.gray}
-            />
+            {user && (user.role === "admin" || user.role === "owner") && (
+              <StackHeader.Action
+                name="add-outline"
+                onPress={() => bottomSheetRef.current?.present()}
+                color={theme.colors.gray}
+              />
+            )}
           </StackHeader.Actions>
         </StackHeader.Root>
 

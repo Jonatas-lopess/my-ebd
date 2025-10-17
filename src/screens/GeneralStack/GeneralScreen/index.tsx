@@ -13,75 +13,84 @@ import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { ThemeProps } from "@theme";
 import { DataType } from "@screens/ClassStack/ClassDetails/type";
-import { useQuery } from "@tanstack/react-query";
+import { skipToken, useQuery } from "@tanstack/react-query";
 import config from "config";
 import { useAuth } from "@providers/AuthProvider";
-import { RegisterFromApi } from "@screens/RegisterStack/RegisterScreen/type";
+import { getRegisters } from "@screens/RegisterStack/RegisterScreen/type";
 import { Rollcall } from "@screens/LessonStack/type";
 import { _Class } from "@screens/ClassStack/ClassScreen/type";
 
 export default function GeneralScreen() {
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
-  const { token } = useAuth().authState;
+  const { token, user } = useAuth().authState;
   const [selectedList, setSelectedList] = useState("alunos");
   const [interval, setInterval] =
     useState<IntervalOptionTypes>("Últimas 13 aulas");
 
   const { data, error, isError, isPending } = useQuery({
     queryKey: ["register"],
-    queryFn: async (): Promise<RegisterFromApi[]> => {
-      const res = await fetch(config.apiBaseUrl + "/registers", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      const resJson = await res.json();
-      if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
-
-      return resJson;
-    },
+    queryFn: () => getRegisters({ token: token, user: user }),
   });
+
+  async function getClasses(): Promise<_Class[]> {
+    const res = await fetch(config.apiBaseUrl + "/classes", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const resJson = await res.json();
+    if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
+
+    return resJson;
+  }
 
   const { data: classes, isPending: isClassesPending } = useQuery({
     queryKey: ["altclass"],
-    queryFn: async (): Promise<_Class[]> => {
-      const res = await fetch(config.apiBaseUrl + "/classes", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      const resJson = await res.json();
-      if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
-
-      return resJson;
-    },
+    queryFn:
+      user?.role === "admin" || user?.role === "owner" ? getClasses : skipToken,
     select: (data) => data.map((item) => item.name),
   });
 
-  const { data: rollcalls, isPending: isRollcallsPending } = useQuery({
-    queryKey: ["rollcalls"],
-    queryFn: async (): Promise<Rollcall[]> => {
-      const response = await fetch(`${config.apiBaseUrl}/rollcalls`, {
+  async function getRollcalls(): Promise<Rollcall[]> {
+    if (user === undefined) throw new Error("User is undefined");
+
+    let response: Response;
+
+    if (user.role === "teacher") {
+      response = await fetch(
+        `${config.apiBaseUrl}/rollcalls?class=${user.register?.class}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } else {
+      response = await fetch(`${config.apiBaseUrl}/rollcalls`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
+    }
 
-      const resJson = await response.json();
-      if (!response.ok)
-        throw new Error(resJson.message, { cause: resJson.error });
+    const resJson = await response.json();
+    if (!response.ok)
+      throw new Error(resJson.message, { cause: resJson.error });
 
-      return resJson;
-    },
+    return resJson;
+  }
+
+  const { data: rollcalls, isPending: isRollcallsPending } = useQuery({
+    queryKey: ["rollcalls"],
+    queryFn: getRollcalls,
   });
 
   useEffect(() => {
@@ -152,7 +161,7 @@ export default function GeneralScreen() {
   }, [data, rollcalls]);
 
   const generateTeacherList = useCallback((): DataType[] => {
-    if (!data || !rollcalls) return [];
+    if (!data || !rollcalls || user?.role === "teacher") return [];
 
     const filteredRollcalls = filterRollcallByInterval(
       rollcalls,
@@ -282,18 +291,21 @@ export default function GeneralScreen() {
             </ThemedText>
           </ThemedView>
 
-          <SwitchSelector
-            options={[
-              { label: "Alunos", value: "alunos" },
-              { label: "Professores", value: "professores" },
-            ]}
-            onPress={(value: string) => setSelectedList(value)}
-            initial={0}
-            textColor={theme.colors.gray}
-            selectedColor={theme.colors.white}
-            buttonColor={theme.colors.gray}
-            style={{ marginVertical: 10, marginHorizontal: 5 }}
-          />
+          {user && (user.role === "admin" || user.role === "owner") && (
+            <SwitchSelector
+              options={[
+                { label: "Alunos", value: "alunos" },
+                { label: "Professores", value: "professores" },
+              ]}
+              onPress={(value: string) => setSelectedList(value)}
+              initial={0}
+              textColor={theme.colors.gray}
+              selectedColor={theme.colors.white}
+              buttonColor={theme.colors.gray}
+              style={{ marginVertical: 10, marginHorizontal: 5 }}
+            />
+          )}
+
           {(isPending || isRollcallsPending || isClassesPending) && (
             <ThemedView>
               <ThemedText>Carregando...</ThemedText>
