@@ -34,6 +34,8 @@ import { Score } from "@screens/ScoreOptions/type";
 import { Rollcall } from "../type";
 import { _Class } from "@screens/ClassStack/ClassScreen/type";
 import structuredClone from "@ungap/structured-clone";
+import { printToFileAsync } from "expo-print";
+import { shareAsync } from "expo-sharing";
 
 export default function LessonDetails({
   route,
@@ -294,6 +296,89 @@ export default function LessonDetails({
     ]);
   }
 
+  async function printToFile() {
+    if (!lessonId || lessonInfo?.isFinished === undefined)
+      return Alert.alert(
+        "Erro",
+        "Não foi possível gerar o relatório. A lição ainda está em aberto."
+      );
+
+    const report: Rollcall[] = await (
+      await fetch(config.apiBaseUrl + `/rollcalls?lesson=${lessonId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      })
+    ).json();
+    console.log(report);
+
+    const html = `
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+          <title>Relatório de Chamada</title>
+        </head>
+        <body>
+          <h1>Relatório de Chamada - Lição Nº ${lessonInfo.number} ${
+      lessonInfo.title ? `- ${lessonInfo.title}` : ""
+    }</h1>
+          <div>
+            <h2>Data da Lição: ${new Date(
+              lessonInfo.date
+            ).toLocaleDateString()}</h2>
+            <h2>Presença dos Professores:</h2>
+            <div>
+              ${report
+                .map((r) => {
+                  return `
+                  <div style="margin-bottom: 20px;">
+                    <h3>Professor: ${r.register.name}</h3>
+                    <p>Presente: ${r.isPresent ? "Sim" : "Não"}</p>
+                    ${
+                      r.score === undefined || r.score.length === 0
+                        ? "<p>Nenhum relatório de pontuação disponível.</p>"
+                        : `
+                      <h4>Relatório de Pontuação:</h4>
+                    <ul>
+                      ${
+                        r.score
+                          ?.map((s) => {
+                            const scoreDetail = scoreInfo?.find(
+                              (score) => score._id === s.scoreInfo
+                            );
+                            return `
+                          <li>
+                            ${
+                              scoreDetail
+                                ? scoreDetail.title
+                                : "Tipo de Pontuação Desconhecido"
+                            }: ${s.value}
+                          </li>
+                        `;
+                          })
+                          .join("") ?? ""
+                      }
+                    </ul>
+                    `
+                    }
+                  </div>
+                `;
+                })
+                .join("")}
+          </div>
+        </body>
+      </html>
+    `;
+
+    /* const { uri } = await printToFileAsync({ html });
+    console.log("File has been saved to:", uri);
+
+    await shareAsync(uri, { UTI: ".pdf", mimeType: "application/pdf" }); */
+  }
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -351,6 +436,7 @@ export default function LessonDetails({
                   borderRadius: 20,
                   marginTop: theme.spacing.s,
                 }}
+                onPress={printToFile}
               >
                 <ThemedText
                   fontSize={16}
