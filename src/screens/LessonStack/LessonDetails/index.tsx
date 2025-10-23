@@ -7,9 +7,11 @@ import { LessonStackProps } from "@custom/types/navigation";
 import { ThemeProps } from "@theme";
 import { useNavigation } from "@react-navigation/native";
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   ScrollView,
   TouchableOpacity,
@@ -45,6 +47,7 @@ export default function LessonDetails({
   const queryClient = useQueryClient();
   const navigation = useNavigation();
   const [isEditable, setIsEditable] = useState(false);
+  const [isRenderingReport, setIsRenderingReport] = useState(false);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const { token } = useAuth().authState;
 
@@ -296,6 +299,14 @@ export default function LessonDetails({
     ]);
   }
 
+  function formatDate(dateString: string | Date): string {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
   async function printToFile() {
     if (!lessonId || lessonInfo?.isFinished === undefined)
       return Alert.alert(
@@ -303,80 +314,162 @@ export default function LessonDetails({
         "Não foi possível gerar o relatório. A lição ainda está em aberto."
       );
 
-    const report: Rollcall[] = await (
-      await fetch(config.apiBaseUrl + `/rollcalls?lesson=${lessonId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-    ).json();
-    console.log(report);
+    setIsRenderingReport(true);
 
-    const html = `
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
-          <title>Relatório de Chamada</title>
-        </head>
-        <body>
-          <h1>Relatório de Chamada - Lição Nº ${lessonInfo.number} ${
-      lessonInfo.title ? `- ${lessonInfo.title}` : ""
-    }</h1>
-          <div>
-            <h2>Data da Lição: ${new Date(
-              lessonInfo.date
-            ).toLocaleDateString()}</h2>
-            <h2>Presença dos Professores:</h2>
-            <div>
-              ${report
-                .map((r) => {
-                  return `
-                  <div style="margin-bottom: 20px;">
-                    <h3>Professor: ${r.register.name}</h3>
-                    <p>Presente: ${r.isPresent ? "Sim" : "Não"}</p>
+    try {
+      const report: Rollcall[] = await (
+        await fetch(config.apiBaseUrl + `/rollcalls?lesson=${lessonId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+      ).json();
+      console.log(report);
+
+      const html = `<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+        <title>Relatório de Chamada</title>
+        <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h2, h4, h5 {
+            margin: 0;
+            padding: 0;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        </style>
+    </head>
+    <body>
+        <div style="text-align: center;text-transform: uppercase;margin-bottom: 2rem;">
+            <h2>Lição Nº ${lessonInfo.number} ${
+        lessonInfo.title ? "- " + lessonInfo.title : ""
+      }</h2>
+            <h2>${formatDate(lessonInfo.date)}</h2>
+        </div>
+        <div style="margin-bottom: 2rem;">
+            <h4 style="text-transform: uppercase;">Relatório dos Professores</h4>
+            <hr>
+            <table border="1" cellspacing="0" cellpadding="5" width="100%">
+                <tr>
+                    <th>Professor</th>
+                    <th>Classe</th>
                     ${
-                      r.score === undefined || r.score.length === 0
-                        ? "<p>Nenhum relatório de pontuação disponível.</p>"
-                        : `
-                      <h4>Relatório de Pontuação:</h4>
-                    <ul>
+                      scoreInfo
+                        ?.map((score) => `<th>${score.title}</th>`)
+                        .join("") ?? ""
+                    }
+                </tr>
+                ${report
+                  .map((rollcall) => {
+                    const scoresHtml =
+                      scoreInfo
+                        ?.map((score) => {
+                          const reportItem = rollcall.score?.find(
+                            (r) => r.scoreInfo === score._id
+                          );
+                          return `<td>${
+                            reportItem
+                              ? typeof reportItem.value === "number"
+                                ? reportItem.value
+                                : reportItem.value
+                                ? "Sim"
+                                : "Não"
+                              : ""
+                          }</td>`;
+                        })
+                        .join("") ?? "";
+
+                    return `<tr>
+                    <td>${rollcall.register.name}</td>
+                    <td>${rollcall.register.class}</td>
+                    ${scoresHtml}
+                </tr>`;
+                  })
+                  .join("")}
+            </table>
+        </div>
+        <div>
+            <h4 style="text-transform: uppercase;">Relatório dos Alunos</h4>
+            <hr>
+            ${classes
+              ?.map((cls) => {
+                const classRollcalls = report.filter(
+                  (r) => r.register.class === cls._id
+                );
+
+                return `<h5>${cls.name}</h5>
+              <table border="1" cellspacing="0" cellpadding="5" width="100%">
+                  <tr>
+                      <th>Aluno</th>
                       ${
-                        r.score
-                          ?.map((s) => {
-                            const scoreDetail = scoreInfo?.find(
-                              (score) => score._id === s.scoreInfo
-                            );
-                            return `
-                          <li>
-                            ${
-                              scoreDetail
-                                ? scoreDetail.title
-                                : "Tipo de Pontuação Desconhecido"
-                            }: ${s.value}
-                          </li>
-                        `;
-                          })
+                        scoreInfo
+                          ?.map((score) => `<th>${score.title}</th>`)
                           .join("") ?? ""
                       }
-                    </ul>
-                    `
-                    }
-                  </div>
-                `;
-                })
-                .join("")}
-          </div>
-        </body>
-      </html>
-    `;
+                  </tr>
+                  ${classRollcalls
+                    .map((rollcall) => {
+                      const scoresHtml =
+                        scoreInfo
+                          ?.map((score) => {
+                            const reportItem = rollcall.score?.find(
+                              (r) => r.scoreInfo === score._id
+                            );
 
-    /* const { uri } = await printToFileAsync({ html });
-    console.log("File has been saved to:", uri);
+                            return `<td>${
+                              reportItem
+                                ? typeof reportItem.value === "number"
+                                  ? reportItem.value
+                                  : reportItem.value
+                                  ? "Sim"
+                                  : "Não"
+                                : ""
+                            }</td>`;
+                          })
+                          .join("") ?? "";
 
-    await shareAsync(uri, { UTI: ".pdf", mimeType: "application/pdf" }); */
+                      return `<tr>
+                          <td>${rollcall.register.name}</td>
+                          ${scoresHtml}
+                      </tr>`;
+                    })
+                    .join("")}
+              </table>`;
+              })
+              .join("")}
+        </div>
+    </body>
+    </html>`;
+
+      const { uri } = await printToFileAsync({ html });
+      console.log("File has been saved to:", uri);
+
+      setIsRenderingReport(false);
+      await shareAsync(uri, { UTI: ".pdf", mimeType: "application/pdf" });
+    } catch (error) {
+      setIsRenderingReport(false);
+      console.log(error);
+      Alert.alert("Erro", "Não foi possível gerar o relatório.");
+      return;
+    }
   }
 
   return (
@@ -675,6 +768,13 @@ export default function LessonDetails({
           </CustomBottomModal.Content>
         </CustomBottomModal.Root>
       </BottomSheetModalProvider>
+
+      <Modal visible={isRenderingReport} transparent animationType="fade">
+        <ThemedView flex={1} justifyContent="center" alignItems="center">
+          <ThemedText>Gerando relatório...</ThemedText>
+          <ActivityIndicator size="large" color="primary" />
+        </ThemedView>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
