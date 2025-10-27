@@ -23,20 +23,25 @@ type RegisterFromApiExtraInfo = {
   rollcalls?: { id: string; isPresent: boolean }[];
 };
 
+type GetRegistersParams = {
+  token: string | undefined;
+  user: User | undefined;
+  hasUser?: boolean | undefined;
+};
+
 export async function getRegisters({
   token,
   user,
-}: {
-  token: string | undefined;
-  user: User | undefined;
-}): Promise<RegisterFromApi[]> {
+  hasUser,
+}: GetRegistersParams): Promise<RegisterFromApi[]> {
   if (user === undefined) throw new Error("User is undefined");
 
   if (user.role === "teacher") {
     const res = await fetch(
       config.apiBaseUrl +
-        "/registers?hasUser=false&class=" +
-        user.register?.class,
+        `/registers?class=${user.register!.class}${
+          hasUser !== undefined ? "&hasUser=" + hasUser : ""
+        }`,
       {
         method: "GET",
         headers: {

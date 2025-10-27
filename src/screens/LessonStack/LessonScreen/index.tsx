@@ -3,7 +3,7 @@ import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
-import { Alert, FlatList } from "react-native";
+import { Alert, FlatList, RefreshControl } from "react-native";
 import { InfoCard } from "@components/InfoCard";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@providers/AuthProvider";
@@ -29,7 +29,7 @@ export default function LessonScreen() {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [isPendingMutate, setIsPendingMutate] = useState(false);
 
-  const { data, isPending, isError, error } = useQuery({
+  const { data, isPending, isError, error, isRefetching, refetch } = useQuery({
     queryKey: ["lessons"],
     queryFn: async (): Promise<Lesson[]> => {
       const response = await fetch(config.apiBaseUrl + "/lessons", {
@@ -227,6 +227,9 @@ export default function LessonScreen() {
               paddingVertical: theme.spacing.s,
               paddingHorizontal: theme.spacing.s,
             }}
+            refreshControl={
+              <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+            }
           />
         )}
       </ThemedView>

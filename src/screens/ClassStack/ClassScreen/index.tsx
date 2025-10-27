@@ -1,4 +1,9 @@
-import { FlatList, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  RefreshControl,
+} from "react-native";
 import ThemedView from "@components/ThemedView";
 import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import { ThemeProps } from "@theme";
@@ -31,6 +36,8 @@ export default function ClassScreen() {
     error,
     isPending,
     isError,
+    refetch,
+    isRefetching,
   } = useQuery({
     queryKey: ["altclass"],
     queryFn: async (): Promise<_Class[]> => {
@@ -127,6 +134,9 @@ export default function ClassScreen() {
               paddingHorizontal: theme.spacing.s,
             }}
             showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+            }
           />
         )}
       </ThemedView>

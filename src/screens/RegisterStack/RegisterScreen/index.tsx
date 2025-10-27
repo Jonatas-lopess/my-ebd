@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  RefreshControl,
   TextInput,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -33,10 +34,11 @@ export default function RegisterScreen() {
   const { token, user } = useAuth().authState;
   const [mutateState, setMutateState] = useState(false);
 
-  const { data, error, isError, isPending, isLoading } = useQuery({
-    queryKey: ["register"],
-    queryFn: () => getRegisters({ token: token, user: user }),
-  });
+  const { data, error, isError, isPending, isLoading, isRefetching, refetch } =
+    useQuery({
+      queryKey: ["register"],
+      queryFn: () => getRegisters({ token: token, user: user, hasUser: false }),
+    });
 
   const matchMonth = (aniversary: Date) => {
     const month = aniversary.getMonth() + 1;
@@ -180,6 +182,9 @@ export default function RegisterScreen() {
               marginTop: theme.spacing.s,
               paddingHorizontal: theme.spacing.s,
             }}
+            refreshControl={
+              <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+            }
           />
         )}
       </ThemedView>

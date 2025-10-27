@@ -5,7 +5,12 @@ import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "@shopify/restyle";
 import { ThemeProps } from "@theme";
 import { CustomCard } from "@components/CustomCard";
-import { FlatList, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  RefreshControl,
+} from "react-native";
 import TextButton from "@components/TextButton";
 import ThemedText from "@components/ThemedText";
 import CustomIcon from "@components/CustomIcon";
@@ -28,7 +33,7 @@ export default function ScoreOptions() {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [isPendingMutate, setIsPendingMutate] = useState<boolean>(false);
 
-  const { data, isLoading, isPending } = useQuery({
+  const { data, isLoading, isPending, isRefetching, refetch } = useQuery({
     queryKey: ["scores"],
     queryFn: async (): Promise<Score[]> => {
       const response = await fetch(config.apiBaseUrl + "/scores", {
@@ -107,6 +112,9 @@ export default function ScoreOptions() {
                 )
               }
               keyExtractor={(item) => item._id!}
+              refreshControl={
+                <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+              }
             />
           )}
         </CustomCard.Root>
