@@ -2,7 +2,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useTheme } from "@shopify/restyle";
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, ScrollView, SectionList } from "react-native";
+import {
+  FlatList,
+  RefreshControl,
+  ScrollView,
+  SectionList,
+} from "react-native";
 import SwitchSelector from "react-native-switch-selector";
 import CustomTextCard from "@components/CustomTextCard";
 import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
@@ -28,7 +33,7 @@ export default function GeneralScreen() {
   const [interval, setInterval] =
     useState<IntervalOptionTypes>("Últimas 13 aulas");
 
-  const { data, error, isError, isPending } = useQuery({
+  const { data, error, isError, isPending, isRefetching, refetch } = useQuery({
     queryKey: ["register"],
     queryFn: () =>
       getRegisters({
@@ -312,12 +317,12 @@ export default function GeneralScreen() {
           )}
 
           {(isPending || isRollcallsPending || isClassesPending) && (
-            <ThemedView>
+            <ThemedView flex={1} alignItems="center" justifyContent="center">
               <ThemedText>Carregando...</ThemedText>
             </ThemedView>
           )}
           {isError && (
-            <ThemedView>
+            <ThemedView justifyContent="center" mt="l">
               <ThemedText>Erro ao carregar dados...</ThemedText>
             </ThemedView>
           )}
@@ -335,6 +340,12 @@ export default function GeneralScreen() {
                 renderSectionHeader={({ section: { title } }) => (
                   <ThemedText>{title}</ThemedText>
                 )}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={isRefetching}
+                    onRefresh={refetch}
+                  />
+                }
               />
             ) : (
               <FlatList
@@ -346,6 +357,12 @@ export default function GeneralScreen() {
                   marginHorizontal: theme.spacing.s,
                 }}
                 renderItem={({ item, index }) => handleRenderItem(item, index)}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={isRefetching}
+                    onRefresh={refetch}
+                  />
+                }
               />
             ))}
         </ThemedView>
