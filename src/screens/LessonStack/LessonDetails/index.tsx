@@ -227,13 +227,16 @@ export default function LessonDetails({
   } = useQuery({
     queryKey: ["classes"],
     queryFn: async (): Promise<_Class[]> => {
-      const response = await fetch(config.apiBaseUrl + "/classes", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        config.apiBaseUrl + `/classes?lesson=${lessonId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       return await response.json();
     },
@@ -326,7 +329,12 @@ export default function LessonDetails({
           },
         })
       ).json();
-      console.log(report);
+
+      if (!report || report.length === 0) {
+        setIsRenderingReport(false);
+        Alert.alert("Erro", "Não foi possível gerar o relatório.");
+        return console.log(report);
+      }
 
       const html = `<html>
     <head>
@@ -359,10 +367,10 @@ export default function LessonDetails({
     </head>
     <body>
         <div style="text-align: center;text-transform: uppercase;margin-bottom: 2rem;">
-            <h2>Lição Nº ${lessonInfo.number} ${
-        lessonInfo.title ? "- " + lessonInfo.title : ""
+          <h2>Lição Nº ${lessonInfo?.number} ${
+        lessonInfo?.title ? "- " + lessonInfo?.title : ""
       }</h2>
-            <h2>${formatDate(lessonInfo.date)}</h2>
+          <h2>${formatDate(lessonInfo?.date ?? "")}</h2>
         </div>
         <div style="margin-bottom: 2rem;">
             <h4 style="text-transform: uppercase;">Relatório dos Professores</h4>
@@ -376,23 +384,29 @@ export default function LessonDetails({
                         ?.map((score) => `<th>${score.title}</th>`)
                         .join("") ?? ""
                     }
+                    <th>Total</th>
                 </tr>
                 ${report
                   .map((rollcall) => {
+                    let total = 0;
                     const scoresHtml =
                       scoreInfo
                         ?.map((score) => {
                           const reportItem = rollcall.score?.find(
                             (r) => r.scoreInfo === score._id
                           );
+
+                          if (!reportItem) return `<td></td>`;
+                          if (typeof reportItem.value === "number")
+                            total += reportItem.value > 0 ? score.weight : 0;
+                          else if (reportItem.value) total += score.weight;
+
                           return `<td>${
-                            reportItem
-                              ? typeof reportItem.value === "number"
-                                ? reportItem.value
-                                : reportItem.value
-                                ? "Sim"
-                                : "Não"
-                              : ""
+                            typeof reportItem.value === "number"
+                              ? reportItem.value
+                              : reportItem.value
+                              ? "Sim"
+                              : "Não"
                           }</td>`;
                         })
                         .join("") ?? "";
@@ -401,6 +415,7 @@ export default function LessonDetails({
                     <td>${rollcall.register.name}</td>
                     <td>${rollcall.register.class}</td>
                     ${scoresHtml}
+                    <td>${total}</td>
                 </tr>`;
                   })
                   .join("")}
@@ -416,7 +431,7 @@ export default function LessonDetails({
                 );
 
                 return `<h5>${cls.name}</h5>
-              <table border="1" cellspacing="0" cellpadding="5" width="100%">
+              <table border="1" cellspacing="0" cellpadding="5" width="100%" style="margin-bottom: 0.5rem;">
                   <tr>
                       <th>Aluno</th>
                       ${
