@@ -30,7 +30,12 @@ export default function GeneralScreen() {
 
   const { data, error, isError, isPending } = useQuery({
     queryKey: ["register"],
-    queryFn: () => getRegisters({ token: token, user: user }),
+    queryFn: () =>
+      getRegisters({
+        token: token,
+        user: user,
+        ...(user?.role === "teacher" && { hasUser: false }),
+      }),
   });
 
   async function getClasses(): Promise<_Class[]> {
