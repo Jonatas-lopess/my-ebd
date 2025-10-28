@@ -6,7 +6,9 @@ import { useTheme } from "@shopify/restyle";
 export type IntervalOptionTypes =
   | "Últimas 13 aulas"
   | "2º Trimestre"
-  | "1º Trimestre";
+  | "1º Trimestre"
+  | "3º Trimestre"
+  | "4º Trimestre";
 
 type IntervalControlProps = {
   interval: IntervalOptionTypes;
@@ -33,6 +35,18 @@ export default function IntervalControl({
         height={theme.spacing.xl}
         isActive={interval === "Últimas 13 aulas"}
         onPress={() => onCardPress("Últimas 13 aulas")}
+      />
+      <CustomTextCard
+        text="4º Trimestre"
+        height={theme.spacing.xl}
+        isActive={interval === "4º Trimestre"}
+        onPress={() => onCardPress("4º Trimestre")}
+      />
+      <CustomTextCard
+        text="3º Trimestre"
+        height={theme.spacing.xl}
+        isActive={interval === "3º Trimestre"}
+        onPress={() => onCardPress("3º Trimestre")}
       />
       <CustomTextCard
         text="2º Trimestre"

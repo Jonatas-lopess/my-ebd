@@ -4,7 +4,7 @@ import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { RegisterStackProps } from "@custom/types/navigation";
 import { Ionicons } from "@expo/vector-icons";
-import { ScrollView, SectionList } from "react-native";
+import { RefreshControl, ScrollView, SectionList } from "react-native";
 import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
 import { useCallback, useEffect, useState } from "react";
@@ -31,6 +31,7 @@ export default function HistoryScreen({
   const theme = useTheme<ThemeProps>();
   const [interval, setInterval] =
     useState<IntervalOptionTypes>("Últimas 13 aulas");
+  const [groupedData, setGroupedData] = useState<GroupedRollcall[]>();
 
   const { data: info } = useQuery({
     queryKey: ["register_info", studentId],
@@ -54,29 +55,28 @@ export default function HistoryScreen({
     },
   });
 
-  const { data, isPending, isError, error } = useQuery({
-    queryKey: ["rollcalls", studentId],
-    queryFn: async (): Promise<Rollcall[]> => {
-      const response = await fetch(
-        `${config.apiBaseUrl}/rollcalls?register=${studentId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  const { data, isPending, isSuccess, isError, error, isRefetching, refetch } =
+    useQuery({
+      queryKey: ["rollcalls", studentId],
+      queryFn: async (): Promise<Rollcall[]> => {
+        const response = await fetch(
+          `${config.apiBaseUrl}/rollcalls?register=${studentId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-      const resJson = await response.json();
-      if (!response.ok)
-        throw new Error(resJson.message, { cause: resJson.error });
+        const resJson = await response.json();
+        if (!response.ok)
+          throw new Error(resJson.message, { cause: resJson.error });
 
-      return resJson;
-    },
-  });
-
-  let groupedData: GroupedRollcall[] | undefined;
+        return resJson;
+      },
+    });
 
   function filterDataByInterval(
     data: Rollcall[],
@@ -96,6 +96,10 @@ export default function HistoryScreen({
           return lessonDate.getMonth() < 3; // January to March
         case "2º Trimestre":
           return lessonDate.getMonth() >= 3 && lessonDate.getMonth() < 6; // April to June
+        case "3º Trimestre":
+          return lessonDate.getMonth() >= 6 && lessonDate.getMonth() < 9; // July to September
+        case "4º Trimestre":
+          return lessonDate.getMonth() >= 9 && lessonDate.getMonth() < 12; // October to December
         default:
           return true;
       }
@@ -103,24 +107,26 @@ export default function HistoryScreen({
   }
 
   useEffect(() => {
-    if (!data) return;
+    if (!isSuccess) return;
 
     const filteredData = filterDataByInterval(data, interval);
 
-    groupedData = filteredData.reduce<GroupedRollcall[]>((acc, item) => {
-      const lessonDate = new Date(item.lesson.date);
-      const month = lessonDate.getMonth() + 1;
+    setGroupedData(
+      filteredData.reduce<GroupedRollcall[]>((acc, item) => {
+        const lessonDate = new Date(item.lesson.date);
+        const month = lessonDate.getMonth() + 1;
 
-      const existingGroup = acc.find((group) => group.month === month);
-      if (existingGroup) {
-        existingGroup.data.push(item);
-      } else {
-        acc.push({ month, data: [item] });
-      }
+        const existingGroup = acc.find((group) => group.month === month);
+        if (existingGroup) {
+          existingGroup.data.push(item);
+        } else {
+          acc.push({ month, data: [item] });
+        }
 
-      return acc;
-    }, []);
-  }, [data, interval]);
+        return acc;
+      }, [])
+    );
+  }, [data, isSuccess, interval]);
 
   useEffect(() => {
     if (error) console.log(error?.cause);
@@ -298,7 +304,7 @@ export default function HistoryScreen({
                         borderRadius: 50,
                       }}
                     >
-                      {item.lesson.date.getDate()}
+                      {new Date(item.lesson.date).getDate()}
                     </ThemedText>
                     <ThemedText>{`Lição ${item.lesson.number}`}</ThemedText>
                   </ThemedView>
@@ -324,6 +330,9 @@ export default function HistoryScreen({
                   </ThemedText>
                 </ThemedView>
               )}
+              refreshControl={
+                <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+              }
             />
           )}
         </ThemedView>
