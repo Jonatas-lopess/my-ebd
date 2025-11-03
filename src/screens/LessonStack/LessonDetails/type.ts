@@ -6,6 +6,7 @@ export type ClassesType = {
 
 export type ListItemType = {
   id: string;
+  isTeacher: boolean;
   name: string;
   class: string;
   isPresent: boolean;

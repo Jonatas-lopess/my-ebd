@@ -13,6 +13,7 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  RefreshControl,
   ScrollView,
   TouchableOpacity,
 } from "react-native";
@@ -38,6 +39,8 @@ import { _Class } from "@screens/ClassStack/ClassScreen/type";
 import structuredClone from "@ungap/structured-clone";
 import { printToFileAsync } from "expo-print";
 import { shareAsync } from "expo-sharing";
+import { readAsStringAsync } from "expo-file-system";
+import { Asset } from "expo-asset";
 
 export default function LessonDetails({
   route,
@@ -51,7 +54,12 @@ export default function LessonDetails({
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const { token } = useAuth().authState;
 
-  const { data: lessonInfo, isSuccess } = useQuery({
+  const {
+    data: lessonInfo,
+    isSuccess,
+    refetch,
+    isRefetching,
+  } = useQuery({
     queryKey: ["lessonInfo", lessonId],
     queryFn: async (): Promise<Lesson> => {
       const response = await fetch(config.apiBaseUrl + `/lessons/${lessonId}`, {
@@ -189,7 +197,7 @@ export default function LessonDetails({
 
   const generateList = useCallback(
     (data: RegisterFromApi[] | undefined): ListItemType[] => {
-      if (!data || !report) return [];
+      if (!data || !report || !teacherRollcalls) return [];
       const list: ListItemType[] = [];
 
       data.forEach((item) => {
@@ -197,6 +205,7 @@ export default function LessonDetails({
           list.push({
             id: item._id,
             name: item.name,
+            isTeacher: typeof item.user === "string",
             class: item.class.id,
             isPresent: teacherRollcalls
               ? teacherRollcalls.find((r) => r.register.id === item._id)
@@ -336,8 +345,11 @@ export default function LessonDetails({
         return console.log(report);
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const html = require("../../../static/diaryReport.html").default;
+      const asset = await Asset.fromModule(
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        require("@assets/diaryReport.html")
+      ).downloadAsync();
+      const html = await readAsStringAsync(asset.localUri!);
 
       // General Information Hydration
       html.replace("{{DATA_DA_AULA}}", formatDate(lessonInfo?.date ?? ""));
@@ -440,7 +452,7 @@ export default function LessonDetails({
                 .concat("%") +
               "</td>" +
               classScoreCells +
-              // + classOfertCell
+              "<td> - </td>" + // Ofertas das turmas
               "</tr>"
             );
           })
@@ -501,6 +513,9 @@ export default function LessonDetails({
           <ScrollView
             nestedScrollEnabled
             contentContainerStyle={{ gap: 10, padding: theme.spacing.s }}
+            refreshControl={
+              <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+            }
           >
             <CustomCard.Root borderRadius={20}>
               <CustomCard.Title>Relatório Geral</CustomCard.Title>
