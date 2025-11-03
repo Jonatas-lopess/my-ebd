@@ -9,7 +9,8 @@
       "@providers/*": ["./providers/*"],
       "@services/*": ["./services/*"],
       "@custom/types/*": ["./types/*"],
-      "@theme": ["./theme"]
+      "@theme": ["./theme"],
+      "@static/*": ["./static/*"]
     }
   }
 }

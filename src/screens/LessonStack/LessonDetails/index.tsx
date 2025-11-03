@@ -36,7 +36,8 @@ import { Score } from "@screens/ScoreOptions/type";
 import { Rollcall } from "../type";
 import { _Class } from "@screens/ClassStack/ClassScreen/type";
 import structuredClone from "@ungap/structured-clone";
-import { printToFile } from "utils/printToFile";
+import { printToFileAsync } from "expo-print";
+import { shareAsync } from "expo-sharing";
 
 export default function LessonDetails({
   route,
@@ -301,6 +302,163 @@ export default function LessonDetails({
     ]);
   }
 
+  function formatDate(dateString: string | Date): string {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  async function printReport() {
+    if (lessonInfo === undefined || lessonInfo.isFinished === undefined)
+      return Alert.alert(
+        "Erro",
+        "Não foi possível gerar o relatório. A lição ainda está em aberto."
+      );
+
+    setIsRenderingReport(true);
+
+    try {
+      const report: Rollcall[] = await (
+        await fetch(config.apiBaseUrl + `/rollcalls?lesson=${lessonInfo._id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+      ).json();
+
+      if (!report || report.length === 0) {
+        setIsRenderingReport(false);
+        Alert.alert("Erro", "Não foi possível gerar o relatório.");
+        return console.log(report);
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const html = require("../../../static/diaryReport.html").default;
+
+      // General Information Hydration
+      html.replace("{{DATA_DA_AULA}}", formatDate(lessonInfo?.date ?? ""));
+      html.replace("{{NUMERO_DA_LICAO}}", lessonInfo?.number?.toString() ?? "");
+      html.replace("{{TITULO_DA_LICAO}}", lessonInfo?.title ?? "");
+      // Header Hydration
+      html.replace(
+        "{{SCORE_CABECALHOS}}",
+        scoreInfo?.map((score) => `<th>${score.title}</th>`).join("") ?? ""
+      );
+      // Teacher Cells Hydration
+      const teacherListLength = teachersList.length;
+      const teachersPresent = teachersList.reduce(
+        (acc, t) => acc + (t.isPresent ? 1 : 0),
+        0
+      );
+      html.replace("{{PROF_MATRICULADOS}}", teachersList.length.toString());
+      html.replace("{{PROF_PRESENTES}}", teachersPresent.toString());
+      html.replace(
+        "{{PROF_FREQ}}",
+        ((teachersPresent / teacherListLength) * 100).toFixed(2).concat("%")
+      );
+      html.replace(
+        "{{PROF_SCORES}}",
+        scoreInfo
+          ?.map((score) => {
+            const total = teachersList.reduce((acc, t) => {
+              if (score.type === "BooleanScore")
+                return (
+                  acc +
+                  (t.report?.find((tr) => tr.id === score._id)?.value ? 1 : 0)
+                );
+
+              if (score.type === "NumberScore")
+                return (
+                  acc +
+                  (t.report?.find((tr) => tr.id === score._id)?.value as number)
+                );
+
+              return acc;
+            }, 0);
+
+            return "<td>" + total + "</td>";
+          })
+          .join("") ?? ""
+      );
+      //html.replace("{{PROF_OFERTA}}", "-");
+      // Classes Cells Hydration
+      html.replace(
+        "{{LINHAS_DAS_CLASSES}}",
+        classes
+          ?.map((cls) => {
+            const classRlc = report.filter((r) => r.register.class === cls._id);
+            const studentsNumber = classRlc.length;
+            const studentsPresent = classRlc.reduce(
+              (acc, r) => (r.isPresent ? ++acc : acc),
+              0
+            );
+            const classScoreCells =
+              scoreInfo
+                ?.map((score) => {
+                  const total = classRlc.reduce((acc, r) => {
+                    if (score.type === "BooleanScore")
+                      return (
+                        acc +
+                        (r.score?.find((rs) => rs.scoreInfo === score._id)
+                          ?.value
+                          ? 1
+                          : 0)
+                      );
+
+                    if (score.type === "NumberScore")
+                      return (
+                        acc +
+                        (r.score?.find((rs) => rs.scoreInfo === score._id)
+                          ?.value as number)
+                      );
+
+                    return acc;
+                  }, 0);
+
+                  return "<td>" + total + "</td>";
+                })
+                .join("") ?? "";
+
+            return (
+              "<tr>" +
+              "<td>" +
+              cls.name +
+              "</td>" +
+              "<td>" +
+              studentsNumber +
+              "</td>" +
+              "<td>" +
+              studentsPresent +
+              "</td>" +
+              "<td>" +
+              ((studentsPresent / studentsNumber) * 100)
+                .toFixed(2)
+                .concat("%") +
+              "</td>" +
+              classScoreCells +
+              // + classOfertCell
+              "</tr>"
+            );
+          })
+          .join("") ?? ""
+      );
+
+      const { uri } = await printToFileAsync({ html });
+      console.log("File has been saved to:", uri);
+
+      setIsRenderingReport(false);
+      await shareAsync(uri, { UTI: ".pdf", mimeType: "application/pdf" });
+    } catch (error) {
+      setIsRenderingReport(false);
+      console.log(error);
+      return Alert.alert("Erro", "Não foi possível gerar o relatório.");
+    }
+  }
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -358,16 +516,7 @@ export default function LessonDetails({
                   borderRadius: 20,
                   marginTop: theme.spacing.s,
                 }}
-                onPress={() =>
-                  printToFile({
-                    lessonInfo,
-                    token: token ?? "",
-                    setIsRenderingReport,
-                    data,
-                    scoreInfo,
-                    classes,
-                  })
-                }
+                onPress={printReport}
               >
                 <ThemedText
                   fontSize={16}

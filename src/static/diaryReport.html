@@ -46,8 +46,6 @@
     <div style="margin-bottom: 2rem">
       <h4>Informações Gerais</h4>
       <hr />
-      <p>Congregação: {{CONGREGACAO}}</p>
-      <p>Superintendência: {{SUPERINTENDENCIA}}</p>
       <p>Número da Lição: {{NUMERO_DA_LICAO}}</p>
       <p>Título da Lição: {{TITULO_DA_LICAO}}</p>
     </div>
@@ -64,8 +62,14 @@
           <th>Oferta</th>
         </tr>
         <tr>
-          {{LINHAS_DAS_CLASSES}}
+          <td>Professores</td>
+          <td>{{PROF_MATRICULADOS}}</td>
+          <td>{{PROF_PRESENTES}}</td>
+          <td>{{PROF_FREQ}}</td>
+          {{PROF_SCORES}}
+          <td>{{PROF_OFERTA}}</td>
         </tr>
+        {{LINHAS_DAS_CLASSES}}
       </table>
     </div>
   </body>
