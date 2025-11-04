@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useTheme } from "@shopify/restyle";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   FlatList,
   RefreshControl,
@@ -33,7 +33,7 @@ export default function GeneralScreen() {
   const [interval, setInterval] =
     useState<IntervalOptionTypes>("Últimas 13 aulas");
 
-  const { data, error, isError, isPending, isRefetching, refetch } = useQuery({
+  const { data, isError, isPending, isRefetching, refetch } = useQuery({
     queryKey: ["register"],
     queryFn: () =>
       getRegisters({
@@ -102,10 +102,6 @@ export default function GeneralScreen() {
     queryKey: ["rollcalls"],
     queryFn: getRollcalls,
   });
-
-  useEffect(() => {
-    if (error) console.log(error?.cause);
-  }, [error]);
 
   function filterRollcallByInterval(
     data: Rollcall[],
