@@ -12,13 +12,19 @@ import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { CustomBottomModal } from "@components/CustomBottomModal";
 import { Lesson } from "./type";
 import { skipToken, useQuery } from "@tanstack/react-query";
 import config from "config";
 import LessonForm from "@components/LessonForm";
+import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
+
+type IntervalObj = {
+  initialDate: Date | undefined;
+  finalDate: Date | undefined;
+};
 
 export default function LessonScreen() {
   const theme = useTheme<ThemeProps>();
@@ -27,9 +33,24 @@ export default function LessonScreen() {
     useAuth().authState;
   const { class: classId } = userRegister || {};
   const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const intervalSheetRef = useRef<BottomSheetModal>(null);
   const [isPendingMutate, setIsPendingMutate] = useState(false);
+  const today = new Date();
+  const defaultInt = {
+    initialDate: undefined,
+    finalDate: undefined,
+  };
+  const [interval, setInterval] = useState<IntervalObj>(defaultInt);
+  const [tempInterval, setTempInterval] = useState<IntervalObj>(defaultInt);
 
-  const { data, isPending, isError, error, isRefetching, refetch } = useQuery({
+  const {
+    data: rawData,
+    isPending,
+    isError,
+    error,
+    isRefetching,
+    refetch,
+  } = useQuery({
     queryKey: ["lessons"],
     queryFn: async (): Promise<Lesson[]> => {
       const response = await fetch(config.apiBaseUrl + "/lessons", {
@@ -47,6 +68,21 @@ export default function LessonScreen() {
       return await response.json();
     },
   });
+
+  const filterData = useCallback(() => {
+    if (!rawData) return [];
+    if (!interval.initialDate || !interval.finalDate) return rawData;
+
+    return rawData.filter((item) => {
+      const lessonDate = new Date(item.date);
+
+      return (
+        lessonDate >= interval.initialDate! && lessonDate <= interval.finalDate!
+      );
+    });
+  }, [rawData, interval]);
+
+  const data = filterData();
 
   async function getClassDetails(): Promise<{ students: string[] }> {
     const res = await fetch(
@@ -80,6 +116,11 @@ export default function LessonScreen() {
     if (isPending === false) bottomSheetRef.current?.present();
   };
 
+  const handleOpenIntervalSheet = () => {
+    if (interval.finalDate || interval.initialDate) setInterval(defaultInt);
+    else intervalSheetRef.current?.present();
+  };
+
   const formattedDateFromISO = (isoDateString: string): string => {
     const date = new Date(isoDateString);
 
@@ -90,6 +131,17 @@ export default function LessonScreen() {
       .padStart(2, "0")}/${date.getUTCFullYear()}`;
   };
 
+  function handleSetInterval() {
+    if (
+      tempInterval.finalDate === undefined ||
+      tempInterval.initialDate === undefined
+    )
+      return;
+
+    setInterval(tempInterval);
+    intervalSheetRef.current?.dismiss();
+  }
+
   return (
     <>
       <ThemedView flex={1} style={{ backgroundColor: "white" }}>
@@ -99,9 +151,17 @@ export default function LessonScreen() {
           <StackHeader.Title>Minha EBD</StackHeader.Title>
           <StackHeader.Actions>
             <StackHeader.Action
-              name="calendar-clear"
-              onPress={() => {}}
-              color={theme.colors.gray}
+              name={
+                interval.finalDate || interval.finalDate
+                  ? "calendar-times-o"
+                  : "calendar-clear-outline"
+              }
+              onPress={handleOpenIntervalSheet}
+              color={
+                interval.finalDate || interval.finalDate
+                  ? theme.colors.lightBlue
+                  : theme.colors.gray
+              }
             />
             {(userRole === "owner" || userRole === "admin") && (
               <StackHeader.Action
@@ -235,7 +295,7 @@ export default function LessonScreen() {
       </ThemedView>
 
       <BottomSheetModalProvider>
-        <CustomBottomModal.Root ref={bottomSheetRef}>
+        <CustomBottomModal.Root ref={bottomSheetRef} stackBehavior="replace">
           <CustomBottomModal.Content
             title="Nova Lição"
             subtitle="Selecione a data e o número da lição para realizar o cadastro e
@@ -244,6 +304,78 @@ export default function LessonScreen() {
             <LessonForm
               mutateFallback={setIsPendingMutate}
               defaultLessonNumber={defaultLessonNumber}
+            />
+          </CustomBottomModal.Content>
+        </CustomBottomModal.Root>
+
+        <CustomBottomModal.Root
+          ref={intervalSheetRef}
+          onDismiss={() => setTempInterval(defaultInt)}
+          stackBehavior="replace"
+        >
+          <CustomBottomModal.Content
+            title="Filtrar por Intervalo"
+            subtitle="Selecione a data de início e fim do intervalo."
+          >
+            <ThemedView
+              flexDirection="row"
+              justifyContent="space-evenly"
+              ml="s"
+              mb="m"
+            >
+              <ThemedView bg="lightgrey" borderRadius={10} py="s" px="m">
+                <ThemedText
+                  onPress={() =>
+                    DateTimePickerAndroid.open({
+                      value: today,
+                      maximumDate: today,
+                      onChange: (_, value) =>
+                        setTempInterval((oldInt) => {
+                          return { ...oldInt, initialDate: value };
+                        }),
+                    })
+                  }
+                  fontSize={16}
+                  fontWeight="600"
+                >
+                  {tempInterval.initialDate?.toLocaleString("pt-BR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  }) ?? "Selecionar início"}
+                </ThemedText>
+              </ThemedView>
+
+              <ThemedText textAlignVertical="center">até</ThemedText>
+
+              <ThemedView bg="lightgrey" borderRadius={10} py="s" px="m">
+                <ThemedText
+                  onPress={() =>
+                    DateTimePickerAndroid.open({
+                      value: today,
+                      minimumDate: tempInterval.initialDate,
+                      maximumDate: today,
+                      onChange: (_, value) =>
+                        setTempInterval((oldInt) => {
+                          return { ...oldInt, finalDate: value };
+                        }),
+                    })
+                  }
+                  fontSize={16}
+                  fontWeight="600"
+                >
+                  {tempInterval.finalDate?.toLocaleString("pt-BR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  }) ?? "Selecionar fim"}
+                </ThemedText>
+              </ThemedView>
+            </ThemedView>
+
+            <CustomBottomModal.Action
+              text="Selecionar"
+              onPress={handleSetInterval}
             />
           </CustomBottomModal.Content>
         </CustomBottomModal.Root>
