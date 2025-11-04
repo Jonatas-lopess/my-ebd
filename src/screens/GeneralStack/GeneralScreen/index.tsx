@@ -125,6 +125,10 @@ export default function GeneralScreen() {
           return lessonDate.getMonth() < 3; // January to March
         case "2º Trimestre":
           return lessonDate.getMonth() >= 3 && lessonDate.getMonth() < 6; // April to June
+        case "3º Trimestre":
+          return lessonDate.getMonth() >= 6 && lessonDate.getMonth() < 9; // July to September
+        case "4º Trimestre":
+          return lessonDate.getMonth() >= 9 && lessonDate.getMonth() < 12; // October to December
         default:
           return true;
       }
@@ -135,12 +139,10 @@ export default function GeneralScreen() {
     title: string;
     data: DataType[];
   }[] => {
-    if (!rollcalls || !data) return [];
+    if (!rollcalls || !data || !classes) return [];
 
-    const filteredRollcalls = filterRollcallByInterval(
-      rollcalls,
-      "Últimas 13 aulas"
-    );
+    const filteredRollcalls = filterRollcallByInterval(rollcalls, interval);
+
     const sections: { title: string; data: DataType[] }[] =
       classes?.map((className) => ({
         title: className,
@@ -150,10 +152,17 @@ export default function GeneralScreen() {
     data.forEach((register) => {
       if (register.user) return;
 
-      const section = sections.find((sec) => sec.title === register.class.name);
+      const sectionData = sections.find(
+        (sec) => sec.title === register.class.name
+      )?.data;
 
-      if (section && !section.data.some((s) => s.id === register._id)) {
-        section.data.push({
+      if (!sectionData)
+        return console.log(
+          "Error: generateStudentList register section not found."
+        );
+
+      if (!sectionData.some((s) => s.id === register._id)) {
+        sectionData.push({
           id: register._id,
           name: register.name,
           points: filteredRollcalls.reduce((total, rollcall) => {
@@ -164,11 +173,14 @@ export default function GeneralScreen() {
             return total;
           }, 0),
         });
+
+        sections.find((sec) => sec.title === register.class.name)!.data =
+          sectionData;
       }
     });
 
     return sections;
-  }, [data, rollcalls]);
+  }, [data, rollcalls, classes, interval]);
 
   const generateTeacherList = useCallback((): DataType[] => {
     if (!data || !rollcalls || user?.role === "teacher") return [];
