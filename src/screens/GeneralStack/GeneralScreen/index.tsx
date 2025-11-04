@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import { DrawerActions, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "@shopify/restyle";
 import { useCallback, useState } from "react";
 import {
+  Alert,
   FlatList,
   RefreshControl,
   ScrollView,
@@ -243,6 +244,11 @@ export default function GeneralScreen() {
     </ThemedView>
   );
 
+  function printRanking() {
+    // TODO: Criar conteudo da função
+    return Alert.alert("Atenção", "Funcionalidade em desenvolvimento.");
+  }
+
   return (
     <ThemedView flex={1} backgroundColor="secondary" pt="safeArea">
       <FocusAwareStatusBar style="light" translucent />
@@ -262,9 +268,14 @@ export default function GeneralScreen() {
           </ThemedText>
         </ThemedView>
         <Ionicons.Button
-          name="menu"
-          color={theme.colors.gray}
-          onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+          name="paper-plane-sharp"
+          color={theme.colors.white}
+          onPress={() =>
+            Alert.alert("Exportar", "Deseja exportar o ranking como pdf?", [
+              { text: "Cancelar", style: "cancel" },
+              { text: "Sim", onPress: printRanking },
+            ])
+          }
           size={25}
           backgroundColor="transparent"
           underlayColor="transparent"
@@ -281,7 +292,7 @@ export default function GeneralScreen() {
         <ThemedView flexDirection="row" mt="xl" justifyContent="space-around">
           <CustomTextCard
             text={
-              "Matriculados: " +
+              "Total de Alunos: " +
               (DATA_STUDENTS.reduce(
                 (acc, item) => acc + (item.data.length || 0),
                 0
@@ -289,7 +300,10 @@ export default function GeneralScreen() {
             }
             height={34}
           />
-          <CustomTextCard text="Média no Intervalo: -" height={34} />
+          <CustomTextCard
+            text={"Total de Professores: " + DATA_TEACHERS.length}
+            height={34}
+          />
         </ThemedView>
 
         <ThemedView
