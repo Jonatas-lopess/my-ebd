@@ -31,6 +31,7 @@ import { Asset } from "expo-asset";
 import { readAsStringAsync } from "expo-file-system";
 import { shareAsync } from "expo-sharing";
 import { printToFileAsync } from "expo-print";
+import { Score } from "@screens/ScoreOptions/type";
 
 export default function GeneralScreen() {
   const theme = useTheme<ThemeProps>();
@@ -49,6 +50,24 @@ export default function GeneralScreen() {
         user: user,
         ...(user?.role === "teacher" && { hasUser: false }),
       }),
+  });
+
+  const { data: scores } = useQuery({
+    queryKey: ["scores"],
+    queryFn: async (): Promise<Score[]> => {
+      const res = await fetch(config.apiBaseUrl + "/scores", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const resJson = await res.json();
+      if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
+    },
   });
 
   async function getClasses(): Promise<_Class[]> {
@@ -171,7 +190,16 @@ export default function GeneralScreen() {
           name: register.name,
           points: filteredRollcalls.reduce((total, rollcall) => {
             if (rollcall.register.id === register._id) {
-              return total + (rollcall.isPresent ? 1 : 0);
+              const score =
+                rollcall.score?.reduce((acc: number, curr) => {
+                  const scoreObj = scores?.find(
+                    (s) => s._id === curr.scoreInfo
+                  );
+
+                  return acc + (scoreObj && curr.value ? scoreObj.weight : 0);
+                }, 0) ?? (rollcall.isPresent ? 1 : 0);
+
+              return total + score;
             }
 
             return total;
@@ -179,12 +207,12 @@ export default function GeneralScreen() {
         });
 
         sections.find((sec) => sec.title === register.class.name)!.data =
-          sectionData;
+          sectionData.sort((a, b) => b.points - a.points);
       }
     });
 
     return sections;
-  }, [data, rollcalls, classes, interval]);
+  }, [data, rollcalls, classes, scores, interval]);
 
   const generateTeacherList = useCallback((): DataType[] => {
     if (!data || !rollcalls || user?.role === "teacher") return [];
@@ -199,8 +227,16 @@ export default function GeneralScreen() {
       .map<DataType>((register): DataType => {
         const points = filteredRollcalls.reduce((total, rollcall) => {
           if (rollcall.register.id === register._id) {
-            return total + (rollcall.isPresent ? 1 : 0);
+            const score =
+              rollcall.score?.reduce((acc: number, curr) => {
+                const scoreObj = scores?.find((s) => s._id === curr.scoreInfo);
+
+                return acc + (scoreObj && curr.value ? scoreObj.weight : 0);
+              }, 0) ?? (rollcall.isPresent ? 1 : 0);
+
+            return total + score;
           }
+
           return total;
         }, 0);
 

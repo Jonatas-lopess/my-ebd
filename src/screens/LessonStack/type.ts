@@ -12,7 +12,7 @@ export type Rollcall = {
   };
   isPresent: boolean;
   score?: {
-    kind: string;
+    kind: "BooleanScore" | "NumberScore";
     value: number | boolean;
     scoreInfo: string;
   }[];
