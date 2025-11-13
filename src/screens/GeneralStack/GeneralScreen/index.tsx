@@ -3,8 +3,10 @@ import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "@shopify/restyle";
 import { useCallback, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
+  Modal,
   RefreshControl,
   ScrollView,
   SectionList,
@@ -25,12 +27,17 @@ import { useAuth } from "@providers/AuthProvider";
 import { getRegisters } from "@screens/RegisterStack/RegisterScreen/type";
 import { Rollcall } from "@screens/LessonStack/type";
 import { _Class } from "@screens/ClassStack/ClassScreen/type";
+import { Asset } from "expo-asset";
+import { readAsStringAsync } from "expo-file-system";
+import { shareAsync } from "expo-sharing";
+import { printToFileAsync } from "expo-print";
 
 export default function GeneralScreen() {
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
   const { token, user } = useAuth().authState;
   const [selectedList, setSelectedList] = useState("alunos");
+  const [isRendering, setIsRendering] = useState(false);
   const [interval, setInterval] =
     useState<IntervalOptionTypes>("Últimas 13 aulas");
 
@@ -202,7 +209,8 @@ export default function GeneralScreen() {
           name: register.name,
           points,
         };
-      });
+      })
+      .sort((a, b) => b.points - a.points);
   }, [data, rollcalls]);
 
   const DATA_STUDENTS = generateStudentList();
@@ -244,9 +252,63 @@ export default function GeneralScreen() {
     </ThemedView>
   );
 
-  function printRanking() {
-    // TODO: Criar conteudo da função
-    return Alert.alert("Atenção", "Funcionalidade em desenvolvimento.");
+  async function printRanking() {
+    setIsRendering(true);
+
+    try {
+      const asset = await Asset.fromModule(
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        require("@assets/rankingReport.html")
+      ).downloadAsync();
+      const html = await readAsStringAsync(asset.localUri ?? "");
+
+      html.replace("{{INTERVALO}}", interval);
+      html.replace(
+        "{{PROFESSORES}}",
+        DATA_TEACHERS.map((teacher, index) => {
+          return `<tr><td>${index + 1}º</td><td>${teacher.name}</td><td>${
+            teacher.points
+          }</td></tr>`;
+        }).join("")
+      );
+      html.replace(
+        "{{CLASSES}}",
+        DATA_STUDENTS.map((section) => {
+          const sectionTitle = `<h4>${section.title}</h4><hr/>`;
+
+          const sectionData = section.data
+            .map((student, index) => {
+              return `<tr><td>${index + 1}º</td><td>${student.name}</td><td>${
+                student.points
+              }</td></tr>`;
+            })
+            .join("");
+
+          return (
+            sectionTitle +
+            '<table border="1" cellspacing="0" cellpadding="5" width="100%">' +
+            "<tr><th>Posição</th>" +
+            "<th>Nome</th>" +
+            "<th>Total de Pontos</th></tr>" +
+            sectionData +
+            "</table>"
+          );
+        }).join("")
+      );
+
+      const { uri } = await printToFileAsync({ html });
+      console.log("PDF generated at:", uri);
+
+      setIsRendering(false);
+      await shareAsync(uri, {
+        UTI: "com.adobe.pdf",
+        mimeType: "application/pdf",
+      });
+    } catch (error) {
+      setIsRendering(false);
+      console.log("Error exporting ranking:", error);
+      Alert.alert("Erro", "Não foi possível exportar o ranking.");
+    }
   }
 
   return (
@@ -389,6 +451,13 @@ export default function GeneralScreen() {
             ))}
         </ThemedView>
       </ScrollView>
+
+      <Modal visible={isRendering} transparent animationType="fade">
+        <ThemedView flex={1} justifyContent="center" alignItems="center">
+          <ThemedText>Exportando ranking...</ThemedText>
+          <ActivityIndicator size="large" color="primary" />
+        </ThemedView>
+      </Modal>
     </ThemedView>
   );
 }
