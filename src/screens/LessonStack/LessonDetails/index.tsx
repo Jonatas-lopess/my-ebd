@@ -349,7 +349,7 @@ export default function LessonDetails({
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         require("@assets/diaryReport.html")
       ).downloadAsync();
-      const html = await readAsStringAsync(asset.localUri!);
+      const html = await readAsStringAsync(asset.localUri ?? "");
 
       // General Information Hydration
       html.replace("{{DATA_DA_AULA}}", formatDate(lessonInfo?.date ?? ""));
@@ -463,7 +463,10 @@ export default function LessonDetails({
       console.log("File has been saved to:", uri);
 
       setIsRenderingReport(false);
-      await shareAsync(uri, { UTI: ".pdf", mimeType: "application/pdf" });
+      await shareAsync(uri, {
+        UTI: "com.adobe.pdf",
+        mimeType: "application/pdf",
+      });
     } catch (error) {
       setIsRenderingReport(false);
       console.log(error);
