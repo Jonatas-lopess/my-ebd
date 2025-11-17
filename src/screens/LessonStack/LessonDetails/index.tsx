@@ -195,38 +195,49 @@ export default function LessonDetails({
     }, []);
   }, [scoreInfo]);
 
-  const generateList = useCallback(
-    (data: RegisterFromApi[] | undefined): ListItemType[] => {
-      if (!data || !report || !teacherRollcalls) return [];
-      const list: ListItemType[] = [];
+  function generateList(): ListItemType[] {
+    if (isPending || isError || !report || !teacherRollcalls) return [];
+    const list: ListItemType[] = [];
 
-      data.forEach((item) => {
-        if (lessonInfo?.rollcalls?.find((r) => r.classId === item.class.id))
-          list.push({
-            id: item._id,
-            name: item.name,
-            isTeacher: typeof item.user === "string",
-            class: item.class.id,
-            isPresent: teacherRollcalls
-              ? teacherRollcalls.find((r) => r.register.id === item._id)
-                  ?.isPresent ?? false
-              : false,
-            report: structuredClone(report),
-          });
+    data.forEach((item) => {
+      if (!lessonInfo?.rollcalls?.find((r) => r.classId === item.class.id))
+        return;
+
+      list.push({
+        id: item._id,
+        name: item.name,
+        isTeacher: typeof item.user === "string",
+        class: item.class.id,
+        isPresent: teacherRollcalls
+          ? teacherRollcalls.find((r) => r.register.id === item._id)
+              ?.isPresent ?? false
+          : false,
+        report: structuredClone(report),
       });
+    });
 
-      return list;
-    },
-    [lessonInfo, teacherRollcalls, report]
+    return list;
+  }
+
+  const generatedTeachersList = useMemo(
+    () => generateList(),
+    [isPending, isError, report, teacherRollcalls, lessonInfo, data]
   );
 
-  const [teachersList, setTeachersList] = useState<ListItemType[]>([]);
+  const [teachersList, setTeachersList] = useState<ListItemType[]>(
+    generatedTeachersList
+  );
   const [tempItem, setTempItem] = useState<Partial<ListItemType>>({});
 
   useEffect(() => {
-    if (isPending || isError || !data || !scoreInfo || !lessonInfo) return;
-    setTeachersList(generateList(data));
-  }, [data, scoreInfo, lessonInfo, teacherRollcalls]);
+    if (
+      generatedTeachersList.length === teachersList.length &&
+      teachersList.every((t, i) => t.id === generatedTeachersList[i].id)
+    )
+      return;
+
+    setTeachersList(generatedTeachersList);
+  }, [generatedTeachersList]);
 
   const {
     data: classes,
@@ -349,14 +360,20 @@ export default function LessonDetails({
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         require("@assets/diaryReport.html")
       ).downloadAsync();
-      const html = await readAsStringAsync(asset.localUri ?? "");
+      let html = await readAsStringAsync(asset.localUri ?? "");
 
       // General Information Hydration
-      html.replace("{{DATA_DA_AULA}}", formatDate(lessonInfo?.date ?? ""));
-      html.replace("{{NUMERO_DA_LICAO}}", lessonInfo?.number?.toString() ?? "");
-      html.replace("{{TITULO_DA_LICAO}}", lessonInfo?.title ?? "");
+      html = html.replace(
+        "{{DATA_DA_AULA}}",
+        formatDate(lessonInfo?.date ?? "")
+      );
+      html = html.replace(
+        "{{NUMERO_DA_LICAO}}",
+        lessonInfo?.number?.toString() ?? ""
+      );
+      html = html.replace("{{TITULO_DA_LICAO}}", lessonInfo?.title ?? "");
       // Header Hydration
-      html.replace(
+      html = html.replace(
         "{{SCORE_CABECALHOS}}",
         scoreInfo?.map((score) => `<th>${score.title}</th>`).join("") ?? ""
       );
@@ -366,13 +383,16 @@ export default function LessonDetails({
         (acc, t) => acc + (t.isPresent ? 1 : 0),
         0
       );
-      html.replace("{{PROF_MATRICULADOS}}", teachersList.length.toString());
-      html.replace("{{PROF_PRESENTES}}", teachersPresent.toString());
-      html.replace(
+      html = html.replace(
+        "{{PROF_MATRICULADOS}}",
+        teachersList.length.toString()
+      );
+      html = html.replace("{{PROF_PRESENTES}}", teachersPresent.toString());
+      html = html.replace(
         "{{PROF_FREQ}}",
         ((teachersPresent / teacherListLength) * 100).toFixed(2).concat("%")
       );
-      html.replace(
+      html = html.replace(
         "{{PROF_SCORES}}",
         scoreInfo
           ?.map((score) => {
@@ -398,7 +418,7 @@ export default function LessonDetails({
       );
       //html.replace("{{PROF_OFERTA}}", "-");
       // Classes Cells Hydration
-      html.replace(
+      html = html.replace(
         "{{LINHAS_DAS_CLASSES}}",
         classes
           ?.map((cls) => {

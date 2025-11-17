@@ -4,6 +4,7 @@ export type Rollcall = {
     id: string;
     name: string;
     class: string;
+    isTeacher: boolean;
   };
   lesson: {
     id: string;

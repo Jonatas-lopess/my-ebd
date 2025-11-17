@@ -1,5 +1,5 @@
 export type Score = {
-  _id?: string;
+  _id: string;
   title: string;
   type: "BooleanScore" | "NumberScore";
   flag: string;
