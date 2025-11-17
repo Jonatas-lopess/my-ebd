@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "@shopify/restyle";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -134,123 +134,125 @@ export default function GeneralScreen() {
     data: Rollcall[],
     interval: IntervalOptionTypes
   ) {
+    const now = Date.now();
     return data.filter((item) => {
       const lessonDate = new Date(item.lesson.date);
-      const currentDate = new Date();
+      const month = lessonDate.getMonth();
       const daysDifference = Math.ceil(
-        (currentDate.getTime() - lessonDate.getTime()) / (1000 * 3600 * 24)
+        (now - lessonDate.getTime()) / (1000 * 3600 * 24)
       );
 
       switch (interval) {
         case "Últimas 13 aulas":
           return daysDifference <= 90; // Approx. 3 months
         case "1º Trimestre":
-          return lessonDate.getMonth() < 3; // January to March
+          return month < 3; // January to March
         case "2º Trimestre":
-          return lessonDate.getMonth() >= 3 && lessonDate.getMonth() < 6; // April to June
+          return month >= 3 && month < 6; // April to June
         case "3º Trimestre":
-          return lessonDate.getMonth() >= 6 && lessonDate.getMonth() < 9; // July to September
+          return month >= 6 && month < 9; // July to September
         case "4º Trimestre":
-          return lessonDate.getMonth() >= 9 && lessonDate.getMonth() < 12; // October to December
+          return month >= 9 && month < 12; // October to December
         default:
           return true;
       }
     });
   }
 
-  const generateStudentList = useCallback((): {
-    title: string;
-    data: DataType[];
-  }[] => {
-    if (!rollcalls || !data || !classes) return [];
+  function generateStudentList(): { title: string; data: DataType[] }[] {
+    if (!rollcalls || !data || !classes || !scores) return [];
+
+    const scoreWeightById = new Map<string, number>();
+    scores.forEach((s) => scoreWeightById.set(s._id, s.weight));
 
     const filteredRollcalls = filterRollcallByInterval(rollcalls, interval);
+    const rollcallsByRegister = new Map<string, Rollcall[]>();
+    filteredRollcalls.forEach((r) => {
+      const registerId = r.register.id;
+      if (!rollcallsByRegister.has(registerId))
+        rollcallsByRegister.set(registerId, []);
 
-    const sections: { title: string; data: DataType[] }[] =
-      classes?.map((className) => ({
-        title: className,
-        data: [],
-      })) || [];
+      rollcallsByRegister.get(registerId)!.push(r);
+    });
+
+    const sections = classes.map((className) => ({
+      title: className,
+      data: [] as DataType[],
+    }));
 
     data.forEach((register) => {
       if (register.user) return;
 
-      const sectionData = sections.find(
-        (sec) => sec.title === register.class.name
-      )?.data;
+      const section = sections.find((sec) => sec.title === register.class.name);
 
-      if (!sectionData)
+      if (!section)
         return console.log(
           "Error: generateStudentList register section not found."
         );
+      if (section.data.some((s) => s.id === register._id)) return;
 
-      if (!sectionData.some((s) => s.id === register._id)) {
-        sectionData.push({
-          id: register._id,
-          name: register.name,
-          points: filteredRollcalls.reduce((total, rollcall) => {
-            if (rollcall.register.id === register._id) {
-              const score =
-                rollcall.score?.reduce((acc: number, curr) => {
-                  const scoreObj = scores?.find(
-                    (s) => s._id === curr.scoreInfo
-                  );
+      const registerRollcalls = rollcallsByRegister.get(register._id) || [];
+      const points = registerRollcalls.reduce((total, rollcall) => {
+        const scoreSum = rollcall.score?.reduce((acc: number, curr) => {
+          const weight = scoreWeightById.get(curr.scoreInfo) ?? 0;
 
-                  return acc + (scoreObj && curr.value ? scoreObj.weight : 0);
-                }, 0) ?? (rollcall.isPresent ? 1 : 0);
+          return acc + (weight && curr.value ? weight : 0);
+        }, 0);
 
-              return total + score;
-            }
+        return total + (scoreSum ?? (rollcall.isPresent ? 1 : 0));
+      }, 0);
 
-            return total;
-          }, 0),
-        });
-
-        sections.find((sec) => sec.title === register.class.name)!.data =
-          sectionData.sort((a, b) => b.points - a.points);
-      }
+      section.data.push({ id: register._id, name: register.name, points });
+      section.data.sort((a, b) => b.points - a.points);
     });
 
     return sections;
-  }, [data, rollcalls, classes, scores, interval]);
+  }
 
-  const generateTeacherList = useCallback((): DataType[] => {
-    if (!data || !rollcalls || user?.role === "teacher") return [];
+  function generateTeacherList(): DataType[] {
+    if (!data || !rollcalls || !scores || user?.role === "teacher") return [];
 
-    const filteredRollcalls = filterRollcallByInterval(
-      rollcalls,
-      "Últimas 13 aulas"
-    );
+    const filteredRollcalls = filterRollcallByInterval(rollcalls, interval);
+    const rollcallsByRegister = new Map<string, Rollcall[]>();
+
+    filteredRollcalls.forEach((r) => {
+      const registerId = r.register.id;
+      if (!rollcallsByRegister.has(registerId))
+        rollcallsByRegister.set(registerId, []);
+
+      rollcallsByRegister.get(registerId)?.push(r);
+    });
+
+    const scoreWeightById = new Map<string, number>();
+    scores.forEach((s) => scoreWeightById.set(s._id, s.weight));
 
     return data
       .filter((register) => register.user)
       .map<DataType>((register): DataType => {
-        const points = filteredRollcalls.reduce((total, rollcall) => {
-          if (rollcall.register.id === register._id) {
-            const score =
-              rollcall.score?.reduce((acc: number, curr) => {
-                const scoreObj = scores?.find((s) => s._id === curr.scoreInfo);
+        const regRollcalls = rollcallsByRegister.get(register._id) || [];
+        const points = regRollcalls.reduce((total, rollcall) => {
+          const scoreSum = rollcall.score?.reduce((acc: number, curr) => {
+            const weight = scoreWeightById.get(curr.scoreInfo) ?? 0;
 
-                return acc + (scoreObj && curr.value ? scoreObj.weight : 0);
-              }, 0) ?? (rollcall.isPresent ? 1 : 0);
+            return acc + (weight && curr.value ? weight : 0);
+          }, 0);
 
-            return total + score;
-          }
-
-          return total;
+          return total + (scoreSum ?? (rollcall.isPresent ? 1 : 0));
         }, 0);
 
-        return {
-          id: register._id,
-          name: register.name,
-          points,
-        };
+        return { id: register._id, name: register.name, points };
       })
       .sort((a, b) => b.points - a.points);
-  }, [data, rollcalls]);
+  }
 
-  const DATA_STUDENTS = generateStudentList();
-  const DATA_TEACHERS = generateTeacherList();
+  const DATA_STUDENTS = useMemo(
+    () => generateStudentList(),
+    [data, rollcalls, classes, scores, interval]
+  );
+  const DATA_TEACHERS = useMemo(
+    () => generateTeacherList(),
+    [data, rollcalls, scores, interval]
+  );
 
   const handleCardPress = useCallback((newInterval: IntervalOptionTypes) => {
     setInterval(newInterval);
@@ -296,10 +298,10 @@ export default function GeneralScreen() {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         require("@assets/rankingReport.html")
       ).downloadAsync();
-      const html = await readAsStringAsync(asset.localUri ?? "");
+      let html = await readAsStringAsync(asset.localUri ?? "");
 
-      html.replace("{{INTERVALO}}", interval);
-      html.replace(
+      html = html.replace("{{INTERVALO}}", interval);
+      html = html.replace(
         "{{PROFESSORES}}",
         DATA_TEACHERS.map((teacher, index) => {
           return `<tr><td>${index + 1}º</td><td>${teacher.name}</td><td>${
@@ -307,7 +309,7 @@ export default function GeneralScreen() {
           }</td></tr>`;
         }).join("")
       );
-      html.replace(
+      html = html.replace(
         "{{CLASSES}}",
         DATA_STUDENTS.map((section) => {
           const sectionTitle = `<h4>${section.title}</h4><hr/>`;
@@ -322,7 +324,7 @@ export default function GeneralScreen() {
 
           return (
             sectionTitle +
-            '<table border="1" cellspacing="0" cellpadding="5" width="100%">' +
+            '<table border="1" cellspacing="0" cellpadding="5" width="100%"  style="margin-bottom: 1rem;">' +
             "<tr><th>Posição</th>" +
             "<th>Nome</th>" +
             "<th>Total de Pontos</th></tr>" +
