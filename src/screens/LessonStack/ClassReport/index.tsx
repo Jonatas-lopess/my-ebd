@@ -208,6 +208,7 @@ export default function ClassReport({
           list.push({
             id: item._id,
             name: item.name,
+            isTeacher: false,
             class: classId,
             isPresent:
               rollcalls?.some(
