@@ -11,9 +11,9 @@ export const CustomBottomModal = {
 export type BottomSheetEventType =
   | {
       type: "set";
-      value: any;
+      value: unknown;
     }
   | {
-      value?: undefined;
+      value?: never;
       type: "open" | "close";
     };
