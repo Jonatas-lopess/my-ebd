@@ -15,7 +15,11 @@ import SwitchSelector from "react-native-switch-selector";
 import CustomTextCard from "@components/CustomTextCard";
 import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import IntervalControl, {
-  IntervalOptionTypes,
+  IntervalCustomObj,
+  IntervalLessonsObj,
+  IntervalMonthlyObj,
+  IntervalObj,
+  IntervalQuarterlyObj,
 } from "@components/IntervalControl";
 import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
@@ -39,8 +43,10 @@ export default function GeneralScreen() {
   const { token, user } = useAuth().authState;
   const [selectedList, setSelectedList] = useState("alunos");
   const [isRendering, setIsRendering] = useState(false);
-  const [interval, setInterval] =
-    useState<IntervalOptionTypes>("Últimas 13 aulas");
+  const [interval, setInterval] = useState<IntervalObj>({
+    type: "Intervalo Personalizado",
+    object: null,
+  });
 
   const { data, isError, isPending, isRefetching, refetch } = useQuery({
     queryKey: ["register"],
@@ -130,31 +136,65 @@ export default function GeneralScreen() {
     queryFn: getRollcalls,
   });
 
-  function filterRollcallByInterval(
-    data: Rollcall[],
-    interval: IntervalOptionTypes
-  ) {
-    const now = Date.now();
+  function filterRollcallByInterval(data: Rollcall[], interval: IntervalObj) {
+    const fromTime =
+      (interval.object as IntervalCustomObj).initialDate.getTime() || undefined;
+    const toTime =
+      (interval.object as IntervalCustomObj).finalDate.getTime() || undefined;
+    const monthNames = new Map<number, string>([
+      [0, "Janeiro"],
+      [1, "Fevereiro"],
+      [2, "Março"],
+      [3, "Abril"],
+      [4, "Maio"],
+      [5, "Junho"],
+      [6, "Julho"],
+      [7, "Agosto"],
+      [8, "Setembro"],
+      [9, "Outubro"],
+      [10, "Novembro"],
+      [11, "Dezembro"],
+    ]);
+
+    if (!interval.object) return data;
+
+    if (interval.type === "Últimas X aulas") {
+      Alert.alert(
+        "Funcionalidade em construção! Você pode escolher outros intervalos enquanto isso..."
+      );
+      return data;
+    }
+
     return data.filter((item) => {
       const lessonDate = new Date(item.lesson.date);
       const month = lessonDate.getMonth();
-      const daysDifference = Math.ceil(
-        (now - lessonDate.getTime()) / (1000 * 3600 * 24)
-      );
+      const time = lessonDate.getTime();
 
-      switch (interval) {
-        case "Últimas 13 aulas":
-          return daysDifference <= 90; // Approx. 3 months
-        case "1º Trimestre":
-          return month < 3; // January to March
-        case "2º Trimestre":
-          return month >= 3 && month < 6; // April to June
-        case "3º Trimestre":
-          return month >= 6 && month < 9; // July to September
-        case "4º Trimestre":
-          return month >= 9 && month < 12; // October to December
-        default:
-          return true;
+      if (interval.type === "Mensal") {
+        return (
+          monthNames.get(month) ===
+          (interval.object as IntervalMonthlyObj)?.month
+        );
+      }
+
+      if (interval.type === "Trimestral") {
+        switch ((interval.object as IntervalQuarterlyObj).quarter) {
+          case "1º Trimestre":
+            return month < 3; // January to March
+          case "2º Trimestre":
+            return month >= 3 && month < 6; // April to June
+          case "3º Trimestre":
+            return month >= 6 && month < 9; // July to September
+          case "4º Trimestre":
+            return month >= 9 && month < 12; // October to December
+          default:
+            return true;
+        }
+      }
+
+      if (interval.type === "Intervalo Personalizado") {
+        if (!fromTime || !toTime) return true;
+        return time >= fromTime && time <= toTime;
       }
     });
   }
@@ -254,7 +294,7 @@ export default function GeneralScreen() {
     [data, rollcalls, scores, interval]
   );
 
-  const handleCardPress = useCallback((newInterval: IntervalOptionTypes) => {
+  const handleIntervalSelect = useCallback((newInterval: IntervalObj) => {
     setInterval(newInterval);
   }, []);
 
@@ -290,6 +330,35 @@ export default function GeneralScreen() {
     </ThemedView>
   );
 
+  function handleIntervalReplace() {
+    if (interval.type === "Últimas X aulas") {
+      return `Últimas ${
+        (interval.object as IntervalLessonsObj).lessonsCount
+      } aulas`;
+    }
+
+    if (interval.type === "Intervalo Personalizado") {
+      const initialDate = (interval.object as IntervalCustomObj).initialDate;
+      const finalDate = (interval.object as IntervalCustomObj).finalDate;
+
+      return `${initialDate.toLocaleDateString("pt-BR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      })} - ${finalDate.toLocaleDateString("pt-BR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      })}`;
+    }
+
+    if (interval.type === "Mensal") {
+      return (interval.object as IntervalMonthlyObj).month;
+    }
+
+    return (interval.object as IntervalQuarterlyObj).quarter;
+  }
+
   async function printRanking() {
     setIsRendering(true);
 
@@ -300,7 +369,7 @@ export default function GeneralScreen() {
       ).downloadAsync();
       let html = await readAsStringAsync(asset.localUri ?? "");
 
-      html = html.replace("{{INTERVALO}}", interval);
+      html = html.replace("{{INTERVALO}}", handleIntervalReplace());
       html = html.replace(
         "{{PROFESSORES}}",
         DATA_TEACHERS.map((teacher, index) => {
@@ -386,7 +455,10 @@ export default function GeneralScreen() {
 
       <ScrollView nestedScrollEnabled contentContainerStyle={{ flexGrow: 1 }}>
         <ThemedView mt="m">
-          <IntervalControl interval={interval} onCardPress={handleCardPress} />
+          <IntervalControl
+            interval={interval}
+            onSelect={handleIntervalSelect}
+          />
         </ThemedView>
 
         <ThemedView flexDirection="row" mt="xl" justifyContent="space-around">
