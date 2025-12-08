@@ -1,13 +1,10 @@
 import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
-import { FlatList, Keyboard, TouchableOpacity, View } from "react-native";
+import { FlatList, Keyboard, Pressable, TouchableOpacity } from "react-native";
 import ThemedView from "@components/ThemedView";
 import ThemedText from "@components/ThemedText";
 import { useRef, useState } from "react";
-import {
-  BottomSheetModal,
-  BottomSheetModalProvider,
-} from "@gorhom/bottom-sheet";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import {
   BottomSheetEventType,
   CustomBottomModal,
@@ -91,10 +88,6 @@ export default function IntervalControl({
     null
   );
 
-  const containerStyle =
-    interval?.type === "Intervalo Personalizado"
-      ? { paddingBottom: theme.spacing.m }
-      : {};
   const localeOpt: Intl.DateTimeFormatOptions = {
     year: "numeric",
     month: "2-digit",
@@ -103,8 +96,11 @@ export default function IntervalControl({
 
   function handleIntervalSheet(e: BottomSheetEventType) {
     if (e.type === "open") {
-      if (interval?.type) setTempType(interval.type);
-      if (interval?.object) setTempInterval(interval.object);
+      if (interval?.object && onSelect) {
+        onSelect({ type: "Intervalo Personalizado", object: null });
+        return;
+      }
+
       intervalSheetRef.current?.present();
     }
 
@@ -184,145 +180,134 @@ export default function IntervalControl({
       {display === "compact" ? (
         <StackHeader.Action
           name={
-            (interval?.object as IntervalCustomObj).finalDate ||
-            (interval?.object as IntervalCustomObj).finalDate
-              ? "calendar-times-o"
-              : "calendar-clear-outline"
+            interval?.object ? "calendar-times-o" : "calendar-clear-outline"
           }
           onPress={() => handleIntervalSheet({ type: "open" })}
-          color={
-            (interval?.object as IntervalCustomObj).finalDate ||
-            (interval?.object as IntervalCustomObj).finalDate
-              ? theme.colors.lightBlue
-              : theme.colors.gray
-          }
+          color={interval?.object ? theme.colors.lightBlue : theme.colors.gray}
         />
       ) : (
-        <View style={containerStyle}>
-          <ThemedView
-            flexDirection="row"
-            borderRadius={10}
-            py="s"
-            px="m"
-            my="m"
+        <ThemedView alignItems="center" my="s">
+          <Pressable
+            style={{
+              width: "70%",
+              paddingVertical: theme.spacing.m,
+              borderRadius: 20,
+              backgroundColor: theme.colors.primary,
+              alignItems: "center",
+            }}
+            onPress={() => handleIntervalSheet({ type: "open" })}
           >
-            <ThemedText
-              onPress={() => handleIntervalSheet({ type: "open" })}
-              fontSize={16}
-              fontWeight="600"
-            >
+            <ThemedText fontSize={16} fontWeight="600" color="white">
               {generateContent()}
             </ThemedText>
-          </ThemedView>
-        </View>
+          </Pressable>
+        </ThemedView>
       )}
 
-      <BottomSheetModalProvider>
-        <CustomBottomModal.Root
-          ref={intervalSheetRef}
-          onDismiss={() => setTempInterval(null)}
-          stackBehavior="replace"
+      <CustomBottomModal.Root
+        ref={intervalSheetRef}
+        onDismiss={() => setTempInterval(null)}
+        stackBehavior="replace"
+      >
+        <CustomBottomModal.Content
+          title="Filtrar por Intervalo"
+          subtitle="Selecione o formato do intervalo."
         >
-          <CustomBottomModal.Content
-            title="Filtrar por Intervalo"
-            subtitle="Selecione o formato do intervalo."
-          >
-            <ThemedView g="s">
+          <ThemedView g="s">
+            <TouchableOpacity
+              onPress={() => handleOptionsSheet({ type: "open" })}
+            >
+              <ThemedView
+                padding="s"
+                borderWidth={1}
+                borderColor="lightgrey"
+                borderRadius={25}
+              >
+                <ThemedText style={{ color: tempType ? "black" : "#a0a0a0" }}>
+                  {tempType ? tempType : "Tipo de Intervalo"}
+                </ThemedText>
+              </ThemedView>
+            </TouchableOpacity>
+
+            {tempType === "Intervalo Personalizado" && (
+              <>
+                <IntervalCustomControl.Initial
+                  initialDate={
+                    (tempInterval as IntervalCustomObj | null)?.initialDate
+                  }
+                  onSelectDate={(date) => handleCustomSet(date, "initial")}
+                />
+                <IntervalCustomControl.Final
+                  finalDate={
+                    (tempInterval as IntervalCustomObj | null)?.finalDate
+                  }
+                  onSelectDate={(date) => handleCustomSet(date, "final")}
+                />
+              </>
+            )}
+
+            {tempType === "Mensal" && (
+              <IntervalMonthlyControl
+                interval={tempInterval as IntervalMonthlyObj | null}
+                onSelect={(value) => setTempInterval(value)}
+              />
+            )}
+
+            {tempType === "Trimestral" && (
+              <IntervalQuarterlyControl
+                interval={tempInterval as IntervalQuarterlyObj | null}
+                onSelect={(value) => setTempInterval(value)}
+              />
+            )}
+
+            {tempType === "Últimas X aulas" && (
+              <IntervalLessonsControl
+                interval={tempInterval as IntervalLessonsObj | null}
+                onSelect={(value) => setTempInterval(value)}
+              />
+            )}
+
+            <CustomBottomModal.Action
+              onPress={() =>
+                handleIntervalSheet({
+                  type: "set",
+                  value: { type: tempType, object: tempInterval },
+                })
+              }
+            />
+          </ThemedView>
+        </CustomBottomModal.Content>
+      </CustomBottomModal.Root>
+
+      <CustomBottomModal.Root ref={optionsSheetRef} stackBehavior="push">
+        <CustomBottomModal.Content title="Tipos de Intervalo">
+          <FlatList
+            data={[
+              "Intervalo Personalizado",
+              "Mensal",
+              "Trimestral",
+              "Últimas X aulas",
+            ]}
+            style={{ marginBottom: theme.spacing.m }}
+            contentContainerStyle={{ gap: theme.spacing.s }}
+            renderItem={({ item }) => (
               <TouchableOpacity
-                onPress={() => handleOptionsSheet({ type: "open" })}
+                onPress={() => handleOptionsSheet({ type: "set", value: item })}
               >
                 <ThemedView
-                  padding="s"
+                  py="s"
+                  px="m"
                   borderWidth={1}
                   borderColor="lightgrey"
                   borderRadius={25}
                 >
-                  <ThemedText style={{ color: tempType ? "black" : "#a0a0a0" }}>
-                    {tempType ? tempType : "Tipo de Intervalo"}
-                  </ThemedText>
+                  <ThemedText>{item}</ThemedText>
                 </ThemedView>
               </TouchableOpacity>
-
-              {tempType === "Intervalo Personalizado" && (
-                <>
-                  <IntervalCustomControl.Initial
-                    initialDate={
-                      (tempInterval as IntervalCustomObj).initialDate
-                    }
-                    onSelectDate={(date) => handleCustomSet(date, "initial")}
-                  />
-                  <IntervalCustomControl.Final
-                    finalDate={(tempInterval as IntervalCustomObj).finalDate}
-                    onSelectDate={(date) => handleCustomSet(date, "final")}
-                  />
-                </>
-              )}
-
-              {tempType === "Mensal" && (
-                <IntervalMonthlyControl
-                  interval={tempInterval as IntervalMonthlyObj | null}
-                  onSelect={(value) => setTempInterval(value)}
-                />
-              )}
-
-              {tempType === "Trimestral" && (
-                <IntervalQuarterlyControl
-                  interval={tempInterval as IntervalQuarterlyObj | null}
-                  onSelect={(value) => setTempInterval(value)}
-                />
-              )}
-
-              {tempType === "Últimas X aulas" && (
-                <IntervalLessonsControl
-                  interval={tempInterval as IntervalLessonsObj | null}
-                  onSelect={(value) => setTempInterval(value)}
-                />
-              )}
-
-              <CustomBottomModal.Action
-                onPress={() =>
-                  handleIntervalSheet({
-                    type: "set",
-                    value: { type: tempType, object: tempInterval },
-                  })
-                }
-              />
-            </ThemedView>
-          </CustomBottomModal.Content>
-        </CustomBottomModal.Root>
-
-        <CustomBottomModal.Root ref={optionsSheetRef} stackBehavior="push">
-          <CustomBottomModal.Content title="Tipos de Intervalo">
-            <FlatList
-              data={[
-                "Intervalo Personalizado",
-                "Mensal",
-                "Trimestral",
-                "Últimas X aulas",
-              ]}
-              style={{ marginBottom: theme.spacing.m }}
-              contentContainerStyle={{ gap: theme.spacing.s }}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  onPress={() =>
-                    handleOptionsSheet({ type: "set", value: item })
-                  }
-                >
-                  <ThemedView
-                    py="s"
-                    px="m"
-                    borderWidth={1}
-                    borderColor="lightgrey"
-                    borderRadius={25}
-                  >
-                    <ThemedText>{item}</ThemedText>
-                  </ThemedView>
-                </TouchableOpacity>
-              )}
-            />
-          </CustomBottomModal.Content>
-        </CustomBottomModal.Root>
-      </BottomSheetModalProvider>
+            )}
+          />
+        </CustomBottomModal.Content>
+      </CustomBottomModal.Root>
     </>
   );
 }
