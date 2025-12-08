@@ -27,18 +27,22 @@ export default function IntervalMonthlyControl({ interval, onSelect }: Props) {
 
     if (e.type === "set") {
       bottomSheetRef.current?.dismiss();
-      if (onSelect) onSelect({ month: e.value });
+      if (onSelect) onSelect({ month: e.value as IntervalMonthlyObj["month"] });
     }
   }
 
   return (
     <>
       <ThemedText
-        fontSize={16}
-        fontWeight="600"
+        style={{
+          borderWidth: 1,
+          borderColor: theme.colors.lightgrey,
+          padding: theme.spacing.s,
+          borderRadius: 25,
+        }}
         onPress={() => handleBottomSheet({ type: "open" })}
       >
-        {interval ? interval.month : "Selecione o mês"}
+        {interval ? interval.month : "Selecione o Mês"}
       </ThemedText>
 
       <CustomBottomModal.Root ref={bottomSheetRef} stackBehavior="push">

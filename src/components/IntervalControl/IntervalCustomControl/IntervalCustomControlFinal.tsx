@@ -1,5 +1,10 @@
 import ThemedText from "@components/ThemedText";
-import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
+import {
+  DateTimePickerAndroid,
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+import { useTheme } from "@shopify/restyle";
+import { ThemeProps } from "@theme";
 
 type Props = {
   initialDate?: Date;
@@ -12,18 +17,29 @@ export default function IntervalCustomControlFinal({
   finalDate,
   onSelectDate,
 }: Props) {
+  const theme = useTheme<ThemeProps>();
   const today = new Date();
+
+  function handleOnChange(event: DateTimePickerEvent, date?: Date) {
+    if (event.type === "set") {
+      onSelectDate(date);
+    }
+  }
 
   return (
     <ThemedText
-      fontSize={16}
-      fontWeight="600"
+      style={{
+        borderWidth: 1,
+        borderColor: theme.colors.lightgrey,
+        padding: theme.spacing.s,
+        borderRadius: 25,
+      }}
       onPress={() =>
         DateTimePickerAndroid.open({
           value: finalDate ?? today,
           minimumDate: initialDate,
           maximumDate: today,
-          onChange: (_, date) => onSelectDate(date),
+          onChange: handleOnChange,
         })
       }
     >
@@ -33,7 +49,7 @@ export default function IntervalCustomControlFinal({
             month: "2-digit",
             year: "numeric",
           })
-        : "Selecione fim"}
+        : "Selecione Fim"}
     </ThemedText>
   );
 }

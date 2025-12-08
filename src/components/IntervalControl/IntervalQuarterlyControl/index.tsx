@@ -30,18 +30,23 @@ export default function IntervalQuarterlyControl({
 
     if (e.type === "set") {
       bottomSheetRef.current?.dismiss();
-      if (onSelect) onSelect({ quarter: e.value });
+      if (onSelect)
+        onSelect({ quarter: e.value as IntervalQuarterlyObj["quarter"] });
     }
   }
 
   return (
     <>
       <ThemedText
-        fontSize={16}
-        fontWeight="600"
+        style={{
+          borderWidth: 1,
+          borderColor: theme.colors.lightgrey,
+          padding: theme.spacing.s,
+          borderRadius: 25,
+        }}
         onPress={() => handleBottomSheet({ type: "open" })}
       >
-        {interval ? interval.quarter : "Selecione o trimestre"}
+        {interval ? interval.quarter : "Selecione o Trimestre"}
       </ThemedText>
 
       <CustomBottomModal.Root ref={bottomSheetRef} stackBehavior="push">
