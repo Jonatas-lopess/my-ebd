@@ -3,11 +3,12 @@ import AuthService from "@services/AuthService";
 import StorageService from "@services/StorageService";
 
 export type User = {
+  _id: string;
   name?: string;
   email: string;
   role: "admin" | "teacher" | "owner";
   plan: string;
-  password?: string;
+  recoveryToken: string;
   register?: {
     _id: string;
     name: string;
