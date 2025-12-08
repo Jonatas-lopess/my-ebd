@@ -4,6 +4,7 @@ import config from "config";
 
 type DefaultRegister = {
   name: string;
+  flag: string;
   class: {
     id: string;
     name: string;
