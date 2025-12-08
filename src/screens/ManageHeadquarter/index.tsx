@@ -14,21 +14,13 @@ export default function ManageHeadquarter() {
   const { data, status, refetch } = useQuery({
     queryKey: ["headquarter-info"],
     queryFn: async () => {
-      const response = await fetch(
-        config.apiBaseUrl +
-          "/tokens?id=" +
-          user!.plan +
-          "." +
-          user!._id +
-          "&type=plan",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(config.apiBaseUrl + "/tokens?type=plan", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const resJson = await response.json();
       if (!response.ok)

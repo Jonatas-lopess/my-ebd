@@ -16,12 +16,7 @@ export default function AdminAccess() {
     queryKey: ["admin-token"],
     queryFn: async () => {
       const response = await fetch(
-        config.apiBaseUrl +
-          "/tokens?id=" +
-          user!.plan +
-          "." +
-          user!._id +
-          "&type=administrator",
+        config.apiBaseUrl + "/tokens?type=administrator",
         {
           method: "GET",
           headers: {

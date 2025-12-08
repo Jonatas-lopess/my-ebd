@@ -10,27 +10,19 @@ import copyToClipboard from "utils/copyToClipboard";
 
 export default function TeacherAccess() {
   const navigation = useNavigation();
-  const { user, token } = useAuth().authState;
+  const { token } = useAuth().authState;
 
   // TODO: Substituir a função de query para buscar o token do professor real
   const { data, status, refetch } = useQuery({
     queryKey: ["teacher-token"],
     queryFn: async () => {
-      const response = await fetch(
-        config.apiBaseUrl +
-          "/tokens?id=" +
-          user!.plan +
-          "." +
-          user!._id +
-          "&type=teacher",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(config.apiBaseUrl + "/tokens?type=teacher", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const resJson = await response.json();
       if (!response.ok)
