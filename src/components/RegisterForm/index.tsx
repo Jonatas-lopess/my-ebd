@@ -24,6 +24,7 @@ import config from "config";
 import { useAuth } from "@providers/AuthProvider";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { _Class } from "@screens/ClassStack/ClassScreen/type";
 
 type Props = {
   mutateFallback?: React.Dispatch<React.SetStateAction<boolean>>;
@@ -50,7 +51,7 @@ export default function RegisterForm({ mutateFallback }: Props) {
 
   const { data, isError } = useQuery({
     queryKey: ["altclass"],
-    queryFn: async () => {
+    queryFn: async (): Promise<_Class[]> => {
       const res = await fetch(config.apiBaseUrl + "/classes", {
         method: "GET",
         headers: {
@@ -96,7 +97,7 @@ export default function RegisterForm({ mutateFallback }: Props) {
 
   const { isPending, mutate } = mutation;
 
-  const handleOptionsSheet = useCallback((e: BottomSheetEventType) => {
+  const handleOptionsSheet = useCallback((e: BottomSheetEventType<_Class>) => {
     if (e.type === "open") {
       Keyboard.dismiss();
       optionsSheetRef.current?.present();
@@ -104,7 +105,7 @@ export default function RegisterForm({ mutateFallback }: Props) {
     if (e.type === "set") {
       setInputs((prev) => ({
         ...prev,
-        class: { id: e.value._id, name: e.value.name, group: e.value.group },
+        class: { id: e.value._id!, name: e.value.name, group: e.value.group },
       }));
       optionsSheetRef.current?.dismiss();
     }
@@ -116,7 +117,6 @@ export default function RegisterForm({ mutateFallback }: Props) {
       return Alert.alert("Atenção", "Preencha todos os campos obrigatórios.");
     }
 
-    //console.log(inputs);
     mutate(inputs as RegisterFromApp);
     optionsSheetRef.current?.dismiss();
     setInputs({});

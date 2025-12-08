@@ -29,7 +29,7 @@ export default function ClassForm({ mutateFallback }: Props) {
   const queryClient = useQueryClient();
   const optionsSheetRef = useRef<BottomSheetModal>(null);
 
-  const handleOptionsSheet = useCallback((e: BottomSheetEventType) => {
+  const handleOptionsSheet = useCallback((e: BottomSheetEventType<string>) => {
     if (e.type === "open") {
       Keyboard.dismiss();
       optionsSheetRef.current?.present();

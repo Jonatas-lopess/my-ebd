@@ -8,10 +8,10 @@ export const CustomBottomModal = {
   Action: CustomBottomModalAction,
 };
 
-export type BottomSheetEventType =
+export type BottomSheetEventType<T = unknown> =
   | {
       type: "set";
-      value: unknown;
+      value: T;
     }
   | {
       value?: never;
