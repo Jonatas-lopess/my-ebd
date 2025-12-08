@@ -21,7 +21,9 @@ import config from "config";
 import LessonForm from "@components/LessonForm";
 import IntervalControl, {
   IntervalCustomObj,
+  IntervalMonthlyObj,
   IntervalObj,
+  IntervalQuarterlyObj,
 } from "@components/IntervalControl";
 
 export default function LessonScreen() {
@@ -32,10 +34,7 @@ export default function LessonScreen() {
   const { class: classId } = userRegister || {};
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [isPendingMutate, setIsPendingMutate] = useState(false);
-  const [interval, setInterval] = useState<IntervalObj>({
-    type: "Intervalo Personalizado",
-    object: null,
-  });
+  const [interval, setInterval] = useState<IntervalObj | null>(null);
 
   const {
     data: rawData,
@@ -65,19 +64,59 @@ export default function LessonScreen() {
 
   const data = useMemo(() => {
     if (!rawData) return [];
-    if (
-      !(interval.object as IntervalCustomObj).initialDate ||
-      !(interval.object as IntervalCustomObj).finalDate
-    )
-      return rawData;
+    if (interval === null || interval.object === null) return rawData;
+
+    const fromTime =
+      (interval.object as IntervalCustomObj).initialDate?.getTime() ||
+      undefined;
+    const toTime =
+      (interval.object as IntervalCustomObj).finalDate?.getTime() || undefined;
+    const monthNames = new Map<number, string>([
+      [0, "Janeiro"],
+      [1, "Fevereiro"],
+      [2, "Março"],
+      [3, "Abril"],
+      [4, "Maio"],
+      [5, "Junho"],
+      [6, "Julho"],
+      [7, "Agosto"],
+      [8, "Setembro"],
+      [9, "Outubro"],
+      [10, "Novembro"],
+      [11, "Dezembro"],
+    ]);
 
     return rawData.filter((item) => {
       const lessonDate = new Date(item.date);
+      const month = lessonDate.getMonth();
+      const time = lessonDate.getTime();
 
-      return (
-        lessonDate >= (interval.object as IntervalCustomObj).initialDate! &&
-        lessonDate <= (interval.object as IntervalCustomObj).finalDate!
-      );
+      if (interval.type === "Mensal") {
+        return (
+          monthNames.get(month) ===
+          (interval.object as IntervalMonthlyObj).month
+        );
+      }
+
+      if (interval.type === "Trimestral") {
+        switch ((interval.object as IntervalQuarterlyObj).quarter) {
+          case "1º Trimestre":
+            return month < 3; // January to March
+          case "2º Trimestre":
+            return month >= 3 && month < 6; // April to June
+          case "3º Trimestre":
+            return month >= 6 && month < 9; // July to September
+          case "4º Trimestre":
+            return month >= 9 && month < 12; // October to December
+          default:
+            return true;
+        }
+      }
+
+      if (interval.type === "Intervalo Personalizado") {
+        if (!fromTime || !toTime) return true;
+        return time >= fromTime && time <= toTime;
+      }
     });
   }, [rawData, interval]);
 
@@ -124,7 +163,7 @@ export default function LessonScreen() {
   };
 
   return (
-    <>
+    <BottomSheetModalProvider>
       <ThemedView flex={1} style={{ backgroundColor: "white" }}>
         <FocusAwareStatusBar style="dark" translucent />
 
@@ -147,13 +186,23 @@ export default function LessonScreen() {
         </StackHeader.Root>
 
         {isPending && (
-          <ThemedView flex={1} justifyContent="center" alignItems="center">
+          <ThemedView
+            flex={1}
+            justifyContent="center"
+            alignItems="center"
+            style={{ backgroundColor: theme.colors.white }}
+          >
             <ThemedText>Carregando...</ThemedText>
           </ThemedView>
         )}
 
         {isError && (
-          <ThemedView flex={1} justifyContent="center" alignItems="center">
+          <ThemedView
+            flex={1}
+            justifyContent="center"
+            alignItems="center"
+            style={{ backgroundColor: theme.colors.white }}
+          >
             <ThemedText>Erro ao carregar as lições: {error.message}</ThemedText>
           </ThemedView>
         )}
@@ -267,20 +316,18 @@ export default function LessonScreen() {
         )}
       </ThemedView>
 
-      <BottomSheetModalProvider>
-        <CustomBottomModal.Root ref={bottomSheetRef} stackBehavior="replace">
-          <CustomBottomModal.Content
-            title="Nova Lição"
-            subtitle="Selecione a data e o número da lição para realizar o cadastro e
+      <CustomBottomModal.Root ref={bottomSheetRef} stackBehavior="replace">
+        <CustomBottomModal.Content
+          title="Nova Lição"
+          subtitle="Selecione a data e o número da lição para realizar o cadastro e
                 fazer as chamadas."
-          >
-            <LessonForm
-              mutateFallback={setIsPendingMutate}
-              defaultLessonNumber={defaultLessonNumber}
-            />
-          </CustomBottomModal.Content>
-        </CustomBottomModal.Root>
-      </BottomSheetModalProvider>
-    </>
+        >
+          <LessonForm
+            mutateFallback={setIsPendingMutate}
+            defaultLessonNumber={defaultLessonNumber}
+          />
+        </CustomBottomModal.Content>
+      </CustomBottomModal.Root>
+    </BottomSheetModalProvider>
   );
 }

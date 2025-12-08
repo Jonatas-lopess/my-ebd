@@ -36,6 +36,7 @@ import { readAsStringAsync } from "expo-file-system";
 import { shareAsync } from "expo-sharing";
 import { printToFileAsync } from "expo-print";
 import { Score } from "@screens/ScoreOptions/type";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 export default function GeneralScreen() {
   const theme = useTheme<ThemeProps>();
@@ -43,10 +44,7 @@ export default function GeneralScreen() {
   const { token, user } = useAuth().authState;
   const [selectedList, setSelectedList] = useState("alunos");
   const [isRendering, setIsRendering] = useState(false);
-  const [interval, setInterval] = useState<IntervalObj>({
-    type: "Intervalo Personalizado",
-    object: null,
-  });
+  const [interval, setInterval] = useState<IntervalObj | null>(null);
 
   const { data, isError, isPending, isRefetching, refetch } = useQuery({
     queryKey: ["register"],
@@ -136,11 +134,17 @@ export default function GeneralScreen() {
     queryFn: getRollcalls,
   });
 
-  function filterRollcallByInterval(data: Rollcall[], interval: IntervalObj) {
+  function filterRollcallByInterval(
+    data: Rollcall[],
+    interval: IntervalObj | null
+  ) {
+    if (interval === null || interval.object === null) return data;
+
     const fromTime =
-      (interval.object as IntervalCustomObj).initialDate.getTime() || undefined;
+      (interval.object as IntervalCustomObj).initialDate?.getTime() ||
+      undefined;
     const toTime =
-      (interval.object as IntervalCustomObj).finalDate.getTime() || undefined;
+      (interval.object as IntervalCustomObj).finalDate?.getTime() || undefined;
     const monthNames = new Map<number, string>([
       [0, "Janeiro"],
       [1, "Fevereiro"],
@@ -155,8 +159,6 @@ export default function GeneralScreen() {
       [10, "Novembro"],
       [11, "Dezembro"],
     ]);
-
-    if (!interval.object) return data;
 
     if (interval.type === "Últimas X aulas") {
       Alert.alert(
@@ -173,7 +175,7 @@ export default function GeneralScreen() {
       if (interval.type === "Mensal") {
         return (
           monthNames.get(month) ===
-          (interval.object as IntervalMonthlyObj)?.month
+          (interval.object as IntervalMonthlyObj).month
         );
       }
 
@@ -331,6 +333,9 @@ export default function GeneralScreen() {
   );
 
   function handleIntervalReplace() {
+    if (interval === null || interval.object === null)
+      return "Todos os períodos";
+
     if (interval.type === "Últimas X aulas") {
       return `Últimas ${
         (interval.object as IntervalLessonsObj).lessonsCount
@@ -419,155 +424,156 @@ export default function GeneralScreen() {
   }
 
   return (
-    <ThemedView flex={1} backgroundColor="secondary" pt="safeArea">
-      <FocusAwareStatusBar style="light" translucent />
-      <ThemedView flexDirection="row" mx="s" my="m" alignItems="center">
-        <Ionicons.Button
-          name="arrow-back"
-          onPress={() => navigation.goBack()}
-          size={25}
-          backgroundColor="transparent"
-          underlayColor="transparent"
-          style={{ padding: 0 }}
-          iconStyle={{ marginRight: 0 }}
-        />
-        <ThemedView flex={1} alignItems="center">
-          <ThemedText color="white" variant="h1" fontWeight="bold">
-            Ranque Geral
-          </ThemedText>
-        </ThemedView>
-        <Ionicons.Button
-          name="paper-plane-sharp"
-          color={theme.colors.white}
-          onPress={() =>
-            Alert.alert("Exportar", "Deseja exportar o ranking como pdf?", [
-              { text: "Cancelar", style: "cancel" },
-              { text: "Sim", onPress: printRanking },
-            ])
-          }
-          size={25}
-          backgroundColor="transparent"
-          underlayColor="transparent"
-          style={{ padding: 0 }}
-          iconStyle={{ marginRight: 0 }}
-        />
-      </ThemedView>
-
-      <ScrollView nestedScrollEnabled contentContainerStyle={{ flexGrow: 1 }}>
-        <ThemedView mt="m">
-          <IntervalControl
-            interval={interval}
-            onSelect={handleIntervalSelect}
+    <BottomSheetModalProvider>
+      <ThemedView flex={1} backgroundColor="secondary" pt="safeArea">
+        <FocusAwareStatusBar style="light" translucent />
+        <ThemedView flexDirection="row" mx="s" my="m" alignItems="center">
+          <Ionicons.Button
+            name="arrow-back"
+            onPress={() => navigation.goBack()}
+            size={25}
+            backgroundColor="transparent"
+            underlayColor="transparent"
+            style={{ padding: 0 }}
+            iconStyle={{ marginRight: 0 }}
           />
-        </ThemedView>
-
-        <ThemedView flexDirection="row" mt="xl" justifyContent="space-around">
-          <CustomTextCard
-            text={
-              "Total de Alunos: " +
-              (DATA_STUDENTS.reduce(
-                (acc, item) => acc + (item.data.length || 0),
-                0
-              ) || 0)
-            }
-            height={34}
-          />
-          <CustomTextCard
-            text={"Total de Professores: " + DATA_TEACHERS.length}
-            height={34}
-          />
-        </ThemedView>
-
-        <ThemedView
-          mt="s"
-          height="auto"
-          flex={1}
-          backgroundColor="white"
-          borderTopLeftRadius={20}
-          borderTopRightRadius={20}
-        >
-          <ThemedView alignItems="center">
-            <ThemedText color="black" fontWeight="bold" mt="m">
-              Ranking Geral de Pontuação
-            </ThemedText>
-            <ThemedText color="gray" fontSize={12}>
-              A pontuação é baseada no intervalo selecionado.
+          <ThemedView flex={1} alignItems="center">
+            <ThemedText color="white" variant="h1" fontWeight="bold">
+              Ranque Geral
             </ThemedText>
           </ThemedView>
+          <Ionicons.Button
+            name="paper-plane-sharp"
+            color={theme.colors.white}
+            onPress={() =>
+              Alert.alert("Exportar", "Deseja exportar o ranking como pdf?", [
+                { text: "Cancelar", style: "cancel" },
+                { text: "Sim", onPress: printRanking },
+              ])
+            }
+            size={25}
+            backgroundColor="transparent"
+            underlayColor="transparent"
+            style={{ padding: 0 }}
+            iconStyle={{ marginRight: 0 }}
+          />
+        </ThemedView>
 
-          {user && (user.role === "admin" || user.role === "owner") && (
-            <SwitchSelector
-              options={[
-                { label: "Alunos", value: "alunos" },
-                { label: "Professores", value: "professores" },
-              ]}
-              onPress={(value: string) => setSelectedList(value)}
-              initial={0}
-              textColor={theme.colors.gray}
-              selectedColor={theme.colors.white}
-              buttonColor={theme.colors.gray}
-              style={{ marginVertical: 10, marginHorizontal: 5 }}
+        <IntervalControl interval={interval} onSelect={handleIntervalSelect} />
+
+        <ScrollView nestedScrollEnabled contentContainerStyle={{ flexGrow: 1 }}>
+          <ThemedView flexDirection="row" mt="m" justifyContent="space-around">
+            <CustomTextCard
+              text={
+                "Total de Alunos: " +
+                (DATA_STUDENTS.reduce(
+                  (acc, item) => acc + (item.data.length || 0),
+                  0
+                ) || 0)
+              }
+              height={34}
             />
-          )}
+            <CustomTextCard
+              text={"Total de Professores: " + DATA_TEACHERS.length}
+              height={34}
+            />
+          </ThemedView>
 
-          {(isPending || isRollcallsPending || isClassesPending) && (
-            <ThemedView flex={1} alignItems="center" justifyContent="center">
-              <ThemedText>Carregando...</ThemedText>
+          <ThemedView
+            mt="s"
+            height="auto"
+            flex={1}
+            backgroundColor="white"
+            borderTopLeftRadius={20}
+            borderTopRightRadius={20}
+          >
+            <ThemedView alignItems="center">
+              <ThemedText color="black" fontWeight="bold" mt="m">
+                Ranking Geral de Pontuação
+              </ThemedText>
+              <ThemedText color="gray" fontSize={12}>
+                A pontuação é baseada no intervalo selecionado.
+              </ThemedText>
             </ThemedView>
-          )}
-          {isError && (
-            <ThemedView justifyContent="center" mt="l">
-              <ThemedText>Erro ao carregar dados...</ThemedText>
-            </ThemedView>
-          )}
-          {!isPending &&
-            !isRollcallsPending &&
-            !isError &&
-            !isClassesPending &&
-            (selectedList === "alunos" ? (
-              <SectionList
-                sections={DATA_STUDENTS}
-                scrollEnabled={false}
-                contentContainerStyle={{ gap: theme.spacing.s }}
-                style={{ marginHorizontal: 10 }}
-                renderItem={({ item, index }) => handleRenderItem(item, index)}
-                renderSectionHeader={({ section: { title } }) => (
-                  <ThemedText>{title}</ThemedText>
-                )}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={isRefetching}
-                    onRefresh={refetch}
-                  />
-                }
-              />
-            ) : (
-              <FlatList
-                data={DATA_TEACHERS}
-                scrollEnabled={false}
-                contentContainerStyle={{
-                  gap: theme.spacing.s,
-                  marginVertical: theme.spacing.s,
-                  marginHorizontal: theme.spacing.s,
-                }}
-                renderItem={({ item, index }) => handleRenderItem(item, index)}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={isRefetching}
-                    onRefresh={refetch}
-                  />
-                }
-              />
-            ))}
-        </ThemedView>
-      </ScrollView>
 
-      <Modal visible={isRendering} transparent animationType="fade">
-        <ThemedView flex={1} justifyContent="center" alignItems="center">
-          <ThemedText>Exportando ranking...</ThemedText>
-          <ActivityIndicator size="large" color="primary" />
-        </ThemedView>
-      </Modal>
-    </ThemedView>
+            {user && (user.role === "admin" || user.role === "owner") && (
+              <SwitchSelector
+                options={[
+                  { label: "Alunos", value: "alunos" },
+                  { label: "Professores", value: "professores" },
+                ]}
+                onPress={(value: string) => setSelectedList(value)}
+                initial={0}
+                textColor={theme.colors.gray}
+                selectedColor={theme.colors.white}
+                buttonColor={theme.colors.gray}
+                style={{ marginVertical: 10, marginHorizontal: 5 }}
+              />
+            )}
+
+            {(isPending || isRollcallsPending || isClassesPending) && (
+              <ThemedView flex={1} alignItems="center" justifyContent="center">
+                <ThemedText>Carregando...</ThemedText>
+              </ThemedView>
+            )}
+            {isError && (
+              <ThemedView justifyContent="center" mt="l">
+                <ThemedText>Erro ao carregar dados...</ThemedText>
+              </ThemedView>
+            )}
+            {!isPending &&
+              !isRollcallsPending &&
+              !isError &&
+              !isClassesPending &&
+              (selectedList === "alunos" ? (
+                <SectionList
+                  sections={DATA_STUDENTS}
+                  scrollEnabled={false}
+                  contentContainerStyle={{ gap: theme.spacing.s }}
+                  style={{ marginHorizontal: 10 }}
+                  renderItem={({ item, index }) =>
+                    handleRenderItem(item, index)
+                  }
+                  renderSectionHeader={({ section: { title } }) => (
+                    <ThemedText>{title}</ThemedText>
+                  )}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={isRefetching}
+                      onRefresh={refetch}
+                    />
+                  }
+                />
+              ) : (
+                <FlatList
+                  data={DATA_TEACHERS}
+                  scrollEnabled={false}
+                  contentContainerStyle={{
+                    gap: theme.spacing.s,
+                    marginVertical: theme.spacing.s,
+                    marginHorizontal: theme.spacing.s,
+                  }}
+                  renderItem={({ item, index }) =>
+                    handleRenderItem(item, index)
+                  }
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={isRefetching}
+                      onRefresh={refetch}
+                    />
+                  }
+                />
+              ))}
+          </ThemedView>
+        </ScrollView>
+
+        <Modal visible={isRendering} transparent animationType="fade">
+          <ThemedView flex={1} justifyContent="center" alignItems="center">
+            <ThemedText>Exportando ranking...</ThemedText>
+            <ActivityIndicator size="large" color="primary" />
+          </ThemedView>
+        </Modal>
+      </ThemedView>
+    </BottomSheetModalProvider>
   );
 }
