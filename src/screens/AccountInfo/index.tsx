@@ -7,6 +7,7 @@ import CustomIcon from "@components/CustomIcon";
 import ThemedText from "@components/ThemedText";
 import { Alert, TouchableOpacity } from "react-native";
 import AuthService from "@services/AuthService";
+import copyToClipboard from "utils/copyToClipboard";
 
 export default function AccountInfo() {
   const navigation = useNavigation();
@@ -65,7 +66,10 @@ export default function AccountInfo() {
             Token de recuperação necessário em caso de perda da senha. Clique no
             campo para copiá-lo.
           </CustomCard.Detail>
-          {/* <CustomCard.Pressable text={user?.recoveryToken ?? ""} onPress={() => copyToClipboard(user?.recoveryToken ?? "")} /> TODO: Descomente quando o backend fornecer o token de recuperação */}
+          <CustomCard.Pressable
+            text={user?.recoveryToken ?? "N/A"}
+            onPress={() => user && copyToClipboard(user.recoveryToken)}
+          />
         </CustomCard.Root>
 
         <TouchableOpacity
