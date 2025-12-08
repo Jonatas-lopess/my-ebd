@@ -6,10 +6,26 @@ import { CustomCard } from "@components/CustomCard";
 import CustomIcon from "@components/CustomIcon";
 import ThemedText from "@components/ThemedText";
 import { Alert, TouchableOpacity } from "react-native";
+import AuthService from "@services/AuthService";
 
 export default function AccountInfo() {
   const navigation = useNavigation();
-  const { user } = useAuth().authState;
+  const { user, token } = useAuth().authState;
+  const { onLogOut } = useAuth();
+
+  async function handleDelete() {
+    if (!token) return console.log("No token found. Cannot delete account.");
+
+    const response = await AuthService.deleteAccount(token);
+
+    if (response.status === 200) {
+      Alert.alert("Conta excluída com sucesso.");
+      onLogOut();
+    } else {
+      console.log("Failed to delete account:", response.data);
+      Alert.alert("Erro ao excluir a conta. Tente novamente mais tarde.");
+    }
+  }
 
   return (
     <>
@@ -49,7 +65,7 @@ export default function AccountInfo() {
             Token de recuperação necessário em caso de perda da senha. Clique no
             campo para copiá-lo.
           </CustomCard.Detail>
-          <CustomCard.Pressable text={""} onPress={() => {}} />
+          {/* <CustomCard.Pressable text={user?.recoveryToken ?? ""} onPress={() => copyToClipboard(user?.recoveryToken ?? "")} /> TODO: Descomente quando o backend fornecer o token de recuperação */}
         </CustomCard.Root>
 
         <TouchableOpacity
@@ -57,7 +73,10 @@ export default function AccountInfo() {
             Alert.alert(
               "Tem certeza?",
               "Essa ação é irreversível.",
-              [{ text: "Cancelar" }, { text: "Excluir", onPress: () => {} }],
+              [
+                { text: "Cancelar" },
+                { text: "Excluir", onPress: handleDelete },
+              ],
               { cancelable: true }
             )
           }

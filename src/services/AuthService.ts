@@ -58,4 +58,19 @@ export default class AuthService {
       };
     });
   }
+
+  static async deleteAccount(token: string): Promise<ApiResponse> {
+    return fetch(`${config.apiBaseUrl}/user`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }).then(async (response) => {
+      return {
+        status: response.status,
+        data: await response.json(),
+      };
+    });
+  }
 }

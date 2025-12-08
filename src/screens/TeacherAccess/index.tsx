@@ -3,9 +3,20 @@ import { StackHeader } from "@components/StackHeader";
 import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { useNavigation } from "@react-navigation/native";
+import { useQuery } from "@tanstack/react-query";
+import copyToClipboard from "utils/copyToClipboard";
 
 export default function TeacherAccess() {
   const navigation = useNavigation();
+
+  // TODO: Substituir a função de query para buscar o token do professor real
+  const { data, status, refetch } = useQuery({
+    queryKey: ["teacher-token"],
+    queryFn: async () => {
+      // Simula uma chamada de API para buscar o token do professor
+      return "tokem";
+    },
+  });
 
   return (
     <>
@@ -35,7 +46,21 @@ export default function TeacherAccess() {
           <CustomCard.Detail>
             Pressione sobre o campo para copiar o tokem.
           </CustomCard.Detail>
-          <CustomCard.Pressable text="tokem" onPress={() => {}} />
+          {status === "pending" && (
+            <CustomCard.Pressable text="Carregando..." onPress={() => {}} />
+          )}
+          {status === "success" && data && (
+            <CustomCard.Pressable
+              text={data}
+              onPress={() => copyToClipboard(data)}
+            />
+          )}
+          {status === "error" && (
+            <CustomCard.Pressable
+              text="Erro ao carregar o tokem... Clique para tentar novamente."
+              onPress={refetch}
+            />
+          )}
         </CustomCard.Root>
       </ThemedView>
     </>
