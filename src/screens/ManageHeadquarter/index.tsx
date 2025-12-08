@@ -1,19 +1,42 @@
 import { CustomCard } from "@components/CustomCard";
 import { StackHeader } from "@components/StackHeader";
 import ThemedView from "@components/ThemedView";
+import { useAuth } from "@providers/AuthProvider";
 import { useNavigation } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
+import config from "config";
 import copyToClipboard from "utils/copyToClipboard";
 
 export default function ManageHeadquarter() {
   const navigation = useNavigation();
+  const { user, token } = useAuth().authState;
 
   const { data, status, refetch } = useQuery({
     queryKey: ["headquarter-info"],
     queryFn: async () => {
-      // Fetch headquarter info logic here
-      return "código";
+      const response = await fetch(
+        config.apiBaseUrl +
+          "/tokens?id=" +
+          user!.plan +
+          "." +
+          user!._id +
+          "&type=plan",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const resJson = await response.json();
+      if (!response.ok)
+        throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson.planToken;
     },
+    enabled: user && user.role === "owner",
   });
 
   return (
