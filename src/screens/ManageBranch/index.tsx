@@ -1,6 +1,7 @@
 import { CustomCard } from "@components/CustomCard";
 import CustomTextCard from "@components/CustomTextCard";
 import { StackHeader } from "@components/StackHeader";
+import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { useNavigation } from "@react-navigation/native";
 
@@ -20,6 +21,11 @@ export default function ManageBranch() {
       </StackHeader.Root>
 
       <ThemedView flex={1} backgroundColor="white" py="s" gap="s">
+        <ThemedText textAlign="center" style={{ lineHeight: 20, color: "red" }}>
+          Função em desenvolvimento. Em breve você poderá adicionar filiais
+          dentro do seu plano.
+        </ThemedText>
+
         <CustomCard.Root>
           <CustomCard.Title>Adicione Novas Igrejas</CustomCard.Title>
           <CustomCard.Detail>
