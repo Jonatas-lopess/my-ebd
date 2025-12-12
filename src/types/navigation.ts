@@ -5,6 +5,7 @@ import type {
 import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { DrawerScreenProps } from "@react-navigation/drawer";
+import { User } from "@providers/AuthProvider";
 
 export type AdminRootTabParamList = {
   Lessons: NavigatorScreenParams<LessonStackParamList>;
@@ -71,7 +72,7 @@ export type ClassStackProps<T extends keyof ClassStackParamList> =
   >;
 
 export type AppDrawerParamList = {
-  Home: { renderTab: "admin" | "teacher" };
+  Home: { renderTab: User["role"] };
   AccountInfo: undefined;
   TeacherAccess: undefined;
   AdminAccess: undefined;

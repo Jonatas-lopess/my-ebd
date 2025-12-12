@@ -11,13 +11,9 @@ import ManageBranch from "@screens/ManageBranch";
 import ManageHeadquarter from "@screens/ManageHeadquarter";
 import ScoreOptions from "@screens/ScoreOptions";
 
-type AppDrawerProps = {
-  renderTab: "admin" | "teacher";
-};
-
 const Drawer = createDrawerNavigator<AppDrawerParamList>();
 
-export default function AppDrawer({ renderTab }: AppDrawerProps) {
+export default function AppDrawer({ renderTab }: AppDrawerParamList["Home"]) {
   return (
     <Drawer.Navigator
       initialRouteName="Home"
@@ -50,7 +46,7 @@ export default function AppDrawer({ renderTab }: AppDrawerProps) {
         name="Home"
         options={{ title: "Inicio" }}
         component={
-          renderTab === "admin"
+          renderTab === "admin" || renderTab === "owner"
             ? AdminRootTabNavigator
             : TeacherRootTabNavigator
         }
@@ -60,28 +56,36 @@ export default function AppDrawer({ renderTab }: AppDrawerProps) {
         options={{ title: "Minha Conta" }}
         component={AccountInfo}
       />
-      {renderTab === "admin" && (
+      {(renderTab === "admin" || renderTab === "owner") && (
+        <Drawer.Screen
+          name="TeacherAccess"
+          options={{ title: "Acesso do Professor" }}
+          component={TeacherAccess}
+        />
+      )}
+      {renderTab === "owner" && (
+        <Drawer.Screen
+          name="AdminAccess"
+          options={{ title: "Acesso do Administrador" }}
+          component={AdminAccess}
+        />
+      )}
+      {(renderTab === "admin" || renderTab === "owner") && (
+        <Drawer.Screen
+          name="ManageBranch"
+          options={{ title: "Gerenciar Filial" }}
+          component={ManageBranch}
+        />
+      )}
+      {renderTab === "owner" && (
+        <Drawer.Screen
+          name="ManageHeadquarter"
+          options={{ title: "Gerenciar Sede" }}
+          component={ManageHeadquarter}
+        />
+      )}
+      {(renderTab === "admin" || renderTab === "owner") && (
         <>
-          <Drawer.Screen
-            name="TeacherAccess"
-            options={{ title: "Acesso do Professor" }}
-            component={TeacherAccess}
-          />
-          <Drawer.Screen
-            name="AdminAccess"
-            options={{ title: "Acesso do Administrador" }}
-            component={AdminAccess}
-          />
-          <Drawer.Screen
-            name="ManageBranch"
-            options={{ title: "Gerenciar Filial" }}
-            component={ManageBranch}
-          />
-          <Drawer.Screen
-            name="ManageHeadquarter"
-            options={{ title: "Gerenciar Sede" }}
-            component={ManageHeadquarter}
-          />
           <Drawer.Screen
             name="ScoreOptions"
             options={{ title: "Opções de Pontuação" }}
