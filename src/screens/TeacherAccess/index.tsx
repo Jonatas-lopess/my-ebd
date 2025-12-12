@@ -4,32 +4,42 @@ import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { useAuth } from "@providers/AuthProvider";
 import { useNavigation } from "@react-navigation/native";
+import {
+  getRegisters,
+  RegisterFromApi,
+} from "@screens/RegisterStack/RegisterScreen/type";
+import { useTheme } from "@shopify/restyle";
 import { useQuery } from "@tanstack/react-query";
-import config from "config";
+import { ThemeProps } from "@theme";
+import { Base64 } from "js-base64";
+import { useCallback } from "react";
+import { FlatList, RefreshControl } from "react-native";
 import copyToClipboard from "utils/copyToClipboard";
+
+type AccessArray = {
+  name: string;
+  token: string | null;
+}[];
 
 export default function TeacherAccess() {
   const navigation = useNavigation();
-  const { token } = useAuth().authState;
+  const theme = useTheme<ThemeProps>();
+  const { user, token } = useAuth().authState;
+  const handleApiData = useCallback((data: RegisterFromApi[]): AccessArray => {
+    return data.map((item) => {
+      const token = item.user ? Base64.encode(`teacher:${item.user}`) : null;
 
-  // TODO: Substituir a função de query para buscar o token do professor real
-  const { data, status, refetch } = useQuery({
-    queryKey: ["teacher-token"],
-    queryFn: async () => {
-      const response = await fetch(config.apiBaseUrl + "/tokens?type=teacher", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      return {
+        name: item.name,
+        token,
+      };
+    });
+  }, []);
 
-      const resJson = await response.json();
-      if (!response.ok)
-        throw new Error(resJson.message, { cause: resJson.error });
-
-      return resJson.teacherToken;
-    },
+  const { data, status, isRefetching, refetch } = useQuery({
+    queryKey: ["register"],
+    queryFn: () => getRegisters({ token: token, user: user, hasUser: true }),
+    select: handleApiData,
   });
 
   return (
@@ -55,27 +65,43 @@ export default function TeacherAccess() {
           </CustomCard.Detail>
         </CustomCard.Root>
 
-        <CustomCard.Root>
-          <CustomCard.Title>Josué</CustomCard.Title>
-          <CustomCard.Detail>
-            Pressione sobre o campo para copiar o tokem.
-          </CustomCard.Detail>
-          {status === "pending" && (
-            <CustomCard.Pressable text="Carregando..." onPress={() => {}} />
-          )}
-          {status === "success" && data && (
-            <CustomCard.Pressable
-              text={data}
-              onPress={() => copyToClipboard(data)}
-            />
-          )}
-          {status === "error" && (
-            <CustomCard.Pressable
-              text="Erro ao carregar o tokem... Clique para tentar novamente."
-              onPress={refetch}
-            />
-          )}
-        </CustomCard.Root>
+        {status === "error" && (
+          <ThemedText textAlign="center">
+            Erro ao carregar os registros.
+          </ThemedText>
+        )}
+        {status === "pending" && (
+          <ThemedText textAlign="center">Carregando registros...</ThemedText>
+        )}
+        {status === "success" && data && data.length > 0 && (
+          <FlatList
+            data={data}
+            renderItem={({ item }) => (
+              <CustomCard.Root>
+                <CustomCard.Title>{item.name}</CustomCard.Title>
+                <CustomCard.Detail>
+                  Pressione sobre o campo para copiar o tokem.
+                </CustomCard.Detail>
+                <CustomCard.Pressable
+                  text={item.token ?? "Nenhum token disponível"}
+                  onPress={() => item.token && copyToClipboard(item.token)}
+                />
+              </CustomCard.Root>
+            )}
+            style={{
+              backgroundColor: theme.colors.white,
+              height: "100%",
+            }}
+            contentContainerStyle={{
+              gap: theme.spacing.s,
+              marginTop: theme.spacing.s,
+              paddingHorizontal: theme.spacing.s,
+            }}
+            refreshControl={
+              <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+            }
+          />
+        )}
       </ThemedView>
     </>
   );
