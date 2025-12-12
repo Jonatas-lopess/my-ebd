@@ -17,25 +17,21 @@ export default function RegisterScreen() {
     email: "",
     password: "",
     name: "",
-    isLoading: false,
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   async function handleRegister() {
-    if (registerForm.isLoading) return;
+    if (isLoading) return;
 
     if (!registerForm.email || !registerForm.password) {
-      return Alert.alert("Please fill in all fields.");
+      return Alert.alert("Por favor, preencha todos os campos.");
     }
 
-    setRegisterForm({ ...registerForm, isLoading: true });
+    setIsLoading(true);
 
-    await onSignIn({
-      email: registerForm.email,
-      password: registerForm.password,
-      name: registerForm.name,
-    });
+    await onSignIn(registerForm);
 
-    setRegisterForm({ ...registerForm, isLoading: false });
+    setIsLoading(false);
   }
 
   return (
@@ -126,9 +122,9 @@ export default function RegisterScreen() {
           alignItems: "center",
         }}
         onPress={handleRegister}
-        disabled={registerForm.isLoading}
+        disabled={isLoading}
       >
-        {registerForm.isLoading ? (
+        {isLoading ? (
           <ActivityIndicator color="lightgray" />
         ) : (
           <ThemedText color="white">Sign Up</ThemedText>
