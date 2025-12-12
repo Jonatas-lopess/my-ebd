@@ -2,6 +2,7 @@ import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { useAuth } from "@providers/AuthProvider";
 import { useNavigation } from "@react-navigation/native";
+import { SignInData } from "@services/AuthService";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -13,17 +14,23 @@ import {
 export default function RegisterScreen() {
   const { onSignIn } = useAuth();
   const navigation = useNavigation();
-  const [registerForm, setRegisterForm] = useState({
+  const [registerForm, setRegisterForm] = useState<SignInData>({
+    code: "",
+    name: "",
     email: "",
     password: "",
-    name: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleRegister() {
     if (isLoading) return;
 
-    if (!registerForm.email || !registerForm.password) {
+    if (
+      !registerForm.email ||
+      !registerForm.password ||
+      !registerForm.code ||
+      !registerForm.name
+    ) {
       return Alert.alert("Por favor, preencha todos os campos.");
     }
 
@@ -36,6 +43,29 @@ export default function RegisterScreen() {
 
   return (
     <ThemedView flex={1} justifyContent="center" alignItems="center" g="s">
+      <ThemedView
+        flexDirection="row"
+        justifyContent="space-between"
+        alignItems="center"
+        gap="s"
+      >
+        <TextInput
+          placeholder="Código de Registro"
+          style={{
+            paddingHorizontal: 10,
+            paddingVertical: 5,
+            borderWidth: 1,
+            borderColor: "lightgray",
+            borderRadius: 5,
+            width: 250,
+          }}
+          value={registerForm.code}
+          onChangeText={(text) =>
+            setRegisterForm({ ...registerForm, code: text })
+          }
+          onSubmitEditing={() => {}}
+        />
+      </ThemedView>
       <ThemedView
         flexDirection="row"
         justifyContent="space-between"

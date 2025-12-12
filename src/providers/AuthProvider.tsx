@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import AuthService from "@services/AuthService";
+import AuthService, { SignInData } from "@services/AuthService";
 import StorageService from "@services/StorageService";
 
 export type User = {
@@ -26,7 +26,7 @@ export type AuthState = {
 
 type AuthContextProps = {
   authState: AuthState;
-  onSignIn: (newUser: Partial<User>) => Promise<void>;
+  onSignIn: (newUser: SignInData) => Promise<void>;
   onLogIn: (email: string, password: string) => Promise<void>;
   onLogOut: () => void;
 };
@@ -83,14 +83,9 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     });
   }, []);
 
-  async function onSignIn(newUser: Partial<User>) {
+  async function onSignIn(newUser: SignInData) {
     try {
-      const user = {
-        ...newUser,
-        plan: "6823a5469dc1ccabbcd0659c", // Default plan
-        role: "admin", // Default role
-      };
-      const { data, status } = await AuthService.signIn(user as User);
+      const { data, status } = await AuthService.signIn(newUser);
 
       if (status !== 201) {
         throw new Error(`${status} - ${data.message}`);
@@ -98,7 +93,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
       setAuth({
         token: data.token,
-        user: user as User,
+        user: data.user,
         isLoading: false,
       });
     } catch (error) {

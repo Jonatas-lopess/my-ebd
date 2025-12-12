@@ -1,4 +1,3 @@
-import { User } from "../providers/AuthProvider";
 import config from "config";
 
 type ApiResponse = {
@@ -6,8 +5,15 @@ type ApiResponse = {
   data: any;
 };
 
+export type SignInData = {
+  email: string;
+  password: string;
+  name: string;
+  code: string;
+};
+
 export default class AuthService {
-  static async signIn(newUser: User): Promise<ApiResponse> {
+  static async signIn(newUser: SignInData): Promise<ApiResponse> {
     return fetch(`${config.apiBaseUrl}/auth/signup`, {
       method: "POST",
       headers: {
