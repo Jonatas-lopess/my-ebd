@@ -1,11 +1,21 @@
 import { CustomCard } from "@components/CustomCard";
+import { InfoCard } from "@components/InfoCard";
 import { StackHeader } from "@components/StackHeader";
+import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { useAuth } from "@providers/AuthProvider";
 import { useNavigation } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import config from "config";
+import { FlatList } from "react-native";
 import copyToClipboard from "utils/copyToClipboard";
+
+type Request = {
+  _id: string;
+  idBranch: string;
+  idHeadquarter: string;
+  createdAt: string;
+};
 
 export default function ManageHeadquarter() {
   const navigation = useNavigation();
@@ -29,6 +39,25 @@ export default function ManageHeadquarter() {
       return resJson.planToken;
     },
     enabled: user && user.role === "owner",
+  });
+
+  const { data: requests, isPending } = useQuery({
+    queryKey: ["headquarter-requests"],
+    queryFn: async (): Promise<Request[]> => {
+      const response = await fetch(config.apiBaseUrl + "/afiliations", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const resJson = await response.json();
+      if (!response.ok)
+        throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
+    },
   });
 
   return (
@@ -67,6 +96,27 @@ export default function ManageHeadquarter() {
             />
           )}
         </CustomCard.Root>
+
+        <ThemedText variant="h3">
+          Abaixo estão os pedidos de afiliação. Confirme com sua sede antes de
+          aceitar um pedido.
+        </ThemedText>
+
+        {isPending && (
+          <ThemedText textAlign="center">Carregando pedidos...</ThemedText>
+        )}
+        {requests && (
+          <FlatList
+            data={requests}
+            renderItem={({ item }) => (
+              <InfoCard.Root>
+                <InfoCard.Content>
+                  <ThemedText>Pedido de: {item.idHeadquarter}</ThemedText>
+                </InfoCard.Content>
+              </InfoCard.Root>
+            )}
+          />
+        )}
       </ThemedView>
     </>
   );
