@@ -10,7 +10,7 @@ import { useAuth } from "@providers/AuthProvider";
 import { useTheme } from "@shopify/restyle";
 import { ThemeProps } from "@theme";
 import CustomIcon from "../CustomIcon";
-import config from "config";
+import * as Application from "expo-application";
 
 export default function CustomSettingsDrawer(
   props: DrawerContentComponentProps
@@ -58,7 +58,7 @@ export default function CustomSettingsDrawer(
         mt="m"
         mb="s"
       >
-        Versão: {config.appVersion}
+        Versão: {Application.nativeApplicationVersion}
       </ThemedText>
     </ThemedView>
   );
