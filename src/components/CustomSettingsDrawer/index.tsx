@@ -10,6 +10,7 @@ import { useAuth } from "@providers/AuthProvider";
 import { useTheme } from "@shopify/restyle";
 import { ThemeProps } from "@theme";
 import CustomIcon from "../CustomIcon";
+import config from "config";
 
 export default function CustomSettingsDrawer(
   props: DrawerContentComponentProps
@@ -57,7 +58,7 @@ export default function CustomSettingsDrawer(
         mt="m"
         mb="s"
       >
-        Versão: 0.0.1
+        Versão: {config.appVersion}
       </ThemedText>
     </ThemedView>
   );
