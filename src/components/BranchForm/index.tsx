@@ -6,7 +6,8 @@ import { useMutation } from "@tanstack/react-query";
 import { ThemeProps } from "@theme";
 import config from "config";
 import { useState } from "react";
-import { Alert, TextInput } from "react-native";
+import { TextInput } from "react-native";
+import Toast from "react-native-toast-message";
 
 export default function BranchForm() {
   const theme = useTheme<ThemeProps>();
@@ -39,7 +40,10 @@ export default function BranchForm() {
 
     mutate(code);
     setCode(undefined);
-    Alert.alert("Pedido enviado... A filial deve aceitá-lo em até 7 dias.");
+    Toast.show({
+      type: "success",
+      text1: "Pedido enviado... A filial deve aceitá-lo em até 7 dias.",
+    });
   }
 
   return (
