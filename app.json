@@ -35,6 +35,12 @@
         }
       ],
       "expo-asset"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "471952b0-862a-44a4-9bee-24816f303501"
+      }
+    },
+    "owner": "jonatas_lopes"
   }
 }
