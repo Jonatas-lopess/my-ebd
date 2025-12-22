@@ -37,6 +37,7 @@ import { shareAsync } from "expo-sharing";
 import { printToFileAsync } from "expo-print";
 import { Score } from "@screens/ScoreOptions/type";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import report from "@assets/rankingReport.html";
 
 export default function GeneralScreen() {
   const theme = useTheme<ThemeProps>();
@@ -368,10 +369,7 @@ export default function GeneralScreen() {
     setIsRendering(true);
 
     try {
-      const asset = await Asset.fromModule(
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        require("@assets/rankingReport.html")
-      ).downloadAsync();
+      const asset = await Asset.fromModule(report).downloadAsync();
       let html = await readAsStringAsync(asset.localUri ?? "");
 
       html = html.replace("{{INTERVALO}}", handleIntervalReplace());

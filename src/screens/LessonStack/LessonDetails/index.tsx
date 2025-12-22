@@ -41,6 +41,7 @@ import { printToFileAsync } from "expo-print";
 import { shareAsync } from "expo-sharing";
 import { readAsStringAsync } from "expo-file-system";
 import { Asset } from "expo-asset";
+import diaryReport from "@assets/diaryReport.html";
 
 export default function LessonDetails({
   route,
@@ -356,10 +357,7 @@ export default function LessonDetails({
         return console.log(report);
       }
 
-      const asset = await Asset.fromModule(
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        require("@assets/diaryReport.html")
-      ).downloadAsync();
+      const asset = await Asset.fromModule(diaryReport).downloadAsync();
       let html = await readAsStringAsync(asset.localUri ?? "");
 
       // General Information Hydration

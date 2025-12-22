@@ -10,7 +10,7 @@
       "@services/*": ["./services/*"],
       "@custom/types/*": ["./types/*"],
       "@theme": ["./theme"],
-      "@assets/*": ["./assets/*"]
+      "@assets/*": ["../assets/*"]
     }
   }
 }
