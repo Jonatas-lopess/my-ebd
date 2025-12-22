@@ -69,7 +69,7 @@ export default function LoginScreen() {
       >
         <TextInput
           ref={passwordInputRef}
-          placeholder="Password"
+          placeholder="Senha"
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
@@ -103,16 +103,16 @@ export default function LoginScreen() {
         {loginForm.isLoading ? (
           <ActivityIndicator color="lightgray" />
         ) : (
-          <ThemedText color="white">Login</ThemedText>
+          <ThemedText color="white">Entrar</ThemedText>
         )}
       </TouchableOpacity>
       <ThemedText color="gray" mt="m" textAlign="center" fontSize={16}>
-        Don&apos;t have an account?{" "}
+        Não tem uma conta?{" "}
         <ThemedText
           color="lightBlue"
           onPress={() => navigation.navigate("Signin")}
         >
-          Sign up
+          Inscreva-se
         </ThemedText>
       </ThemedText>
     </ThemedView>

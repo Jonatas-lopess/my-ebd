@@ -1,5 +1,6 @@
 import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
+import { LoginStackParamList } from "@custom/types/navigation";
 import { useAuth } from "@providers/AuthProvider";
 import { useNavigation } from "@react-navigation/native";
 import { SignInData } from "@services/AuthService";
@@ -11,11 +12,13 @@ import {
   TouchableOpacity,
 } from "react-native";
 
-export default function RegisterScreen() {
+export default function RegisterScreen({
+  code,
+}: LoginStackParamList["Signin"]) {
   const { onSignIn } = useAuth();
   const navigation = useNavigation();
   const [registerForm, setRegisterForm] = useState<SignInData>({
-    code: "",
+    code: code ?? "",
     name: "",
     email: "",
     password: "",
@@ -64,6 +67,8 @@ export default function RegisterScreen() {
             setRegisterForm({ ...registerForm, code: text })
           }
           onSubmitEditing={() => {}}
+          editable={code === undefined}
+          selectTextOnFocus={code === undefined}
         />
       </ThemedView>
       <ThemedView
@@ -73,7 +78,7 @@ export default function RegisterScreen() {
         gap="s"
       >
         <TextInput
-          placeholder="Name"
+          placeholder="Nome"
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
@@ -123,7 +128,7 @@ export default function RegisterScreen() {
         gap="s"
       >
         <TextInput
-          placeholder="Password"
+          placeholder="Senha"
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
@@ -157,14 +162,14 @@ export default function RegisterScreen() {
         {isLoading ? (
           <ActivityIndicator color="lightgray" />
         ) : (
-          <ThemedText color="white">Sign Up</ThemedText>
+          <ThemedText color="white">Registrar</ThemedText>
         )}
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.goBack()}>
-        <ThemedText color="lightBlue">
-          Already have an account?{" "}
-          <ThemedText color="primary" fontWeight="bold">
-            Sign In
+        <ThemedText color="gray">
+          Já tem uma conta?{" "}
+          <ThemedText color="lightBlue" fontWeight="bold">
+            Clique aqui
           </ThemedText>
         </ThemedText>
       </TouchableOpacity>
