@@ -1,7 +1,10 @@
-import Clipboard from "@react-native-clipboard/clipboard";
-import { Alert } from "react-native/Libraries/Alert/Alert";
+import * as Clipboard from "expo-clipboard";
+import Toast from "react-native-toast-message";
 
-export default function copyToClipboard(text: string) {
-  Clipboard.setString(text);
-  Alert.alert("Texto copiado para a área de transferência.");
+export default async function copyToClipboard(text: string) {
+  await Clipboard.setStringAsync(text);
+  Toast.show({
+    type: "success",
+    text1: "Texto copiado para a área de transferência.",
+  });
 }

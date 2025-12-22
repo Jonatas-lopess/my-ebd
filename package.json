@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@gorhom/bottom-sheet": "^5.1.2",
-    "@react-native-clipboard/clipboard": "^1.16.3",
     "@react-native-community/datetimepicker": "8.3.0",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/drawer": "^7.2.1",
@@ -40,7 +39,8 @@
     "react-native-screens": "~4.10.0",
     "react-native-switch-selector": "^2.3.0",
     "react-native-toast-message": "^2.3.3",
-    "expo-application": "~6.1.5"
+    "expo-application": "~6.1.5",
+    "expo-clipboard": "~7.1.5"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
