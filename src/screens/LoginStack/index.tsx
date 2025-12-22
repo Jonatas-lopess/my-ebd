@@ -1,22 +1,26 @@
-import { createComponentForStaticNavigation } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { LoginStackParamList } from "@custom/types/navigation";
 import LoginScreen from "./LoginScreen";
 import RegisterScreen from "./RegisterScreen";
+import IntroScreen from "./IntroScreen";
+import PlanScreen from "./PlanScreen";
 
-const StackConfig = createNativeStackNavigator<LoginStackParamList>({
-  initialRouteName: "Login",
-  screens: {
-    Login: LoginScreen,
-    Signin: RegisterScreen,
-  },
-  screenOptions: {
-    headerShown: false,
-  },
-});
+type Props = {
+  isFirstTime: boolean;
+};
 
-const LoginNavigator = createComponentForStaticNavigation(StackConfig, "Login");
+const Stack = createNativeStackNavigator<LoginStackParamList>();
 
-export default function LoginStack() {
-  return <LoginNavigator />;
+export default function LoginStack({ isFirstTime }: Props) {
+  return (
+    <Stack.Navigator
+      initialRouteName={isFirstTime ? "IntroScreen" : "Login"}
+      screenOptions={{ headerShown: false }}
+    >
+      <Stack.Screen name="IntroScreen" component={IntroScreen} />
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="PlanScreen" component={PlanScreen} />
+      <Stack.Screen name="Signin" component={RegisterScreen} />
+    </Stack.Navigator>
+  );
 }

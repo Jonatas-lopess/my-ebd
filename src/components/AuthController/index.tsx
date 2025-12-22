@@ -3,6 +3,7 @@ import LoginStack from "@screens/LoginStack";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import AppDrawer from "@components/AppDrawer";
+import { useFirstTimeOpen } from "utils/useFirstTimeOpen";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -13,17 +14,18 @@ SplashScreen.setOptions({
 
 export default function AuthController() {
   const { authState } = useAuth();
+  const { isFirstTime, isLoading: isFirstTimeLoading } = useFirstTimeOpen();
 
   useEffect(() => {
-    if (authState.isLoading === false) {
+    if (!authState.isLoading || !isFirstTimeLoading) {
       SplashScreen.hideAsync();
     }
-  }, [authState.isLoading]);
+  }, [authState.isLoading, isFirstTimeLoading]);
 
-  if (authState.isLoading) return null;
+  if (authState.isLoading || isFirstTimeLoading) return null;
 
   if (authState.token === undefined || authState.user === undefined) {
-    return <LoginStack />;
+    return <LoginStack isFirstTime={isFirstTime} />;
   }
 
   return (

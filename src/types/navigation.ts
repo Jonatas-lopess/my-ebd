@@ -56,7 +56,9 @@ export type RegisterStackProps<T extends keyof RegisterStackParamList> =
 
 export type LoginStackParamList = {
   Login: undefined;
-  Signin: undefined;
+  Signin: { code: string | undefined };
+  PlanScreen: undefined;
+  IntroScreen: undefined;
 };
 
 export type ClassStackParamList = {
