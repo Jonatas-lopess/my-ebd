@@ -20,6 +20,8 @@ export default function AuthController() {
     }
   }, [authState.isLoading]);
 
+  if (authState.isLoading) return null;
+
   if (authState.token === undefined || authState.user === undefined) {
     return <LoginStack />;
   }
