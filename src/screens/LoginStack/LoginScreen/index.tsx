@@ -110,7 +110,7 @@ export default function LoginScreen() {
         Não tem uma conta?{" "}
         <ThemedText
           color="lightBlue"
-          onPress={() => navigation.navigate("Signin")}
+          onPress={() => navigation.navigate("Signin", {})}
         >
           Inscreva-se
         </ThemedText>
