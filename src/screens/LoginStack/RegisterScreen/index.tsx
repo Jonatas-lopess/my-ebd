@@ -4,7 +4,7 @@ import { LoginStackParamList } from "@custom/types/navigation";
 import { useAuth } from "@providers/AuthProvider";
 import { useNavigation } from "@react-navigation/native";
 import { SignInData } from "@services/AuthService";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -17,13 +17,20 @@ export default function RegisterScreen({
 }: LoginStackParamList["Signin"]) {
   const { onSignIn } = useAuth();
   const navigation = useNavigation();
+
   const [registerForm, setRegisterForm] = useState<SignInData>({
     code: code ?? "",
     name: "",
     email: "",
     password: "",
   });
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const nameInputRef = useRef<TextInput>(null);
+  const emailInputRef = useRef<TextInput>(null);
+  const passwordInputRef = useRef<TextInput>(null);
+  const confirmPasswordInputRef = useRef<TextInput>(null);
 
   async function handleRegister() {
     if (isLoading) return;
@@ -31,10 +38,18 @@ export default function RegisterScreen({
     if (
       !registerForm.email ||
       !registerForm.password ||
+      !confirmPassword ||
       !registerForm.code ||
       !registerForm.name
     ) {
       return Alert.alert("Por favor, preencha todos os campos.");
+    }
+
+    if (registerForm.password !== confirmPassword) {
+      Alert.alert("Senha não compatível.");
+      setRegisterForm((prev) => ({ ...prev, password: "" }));
+      setConfirmPassword("");
+      return;
     }
 
     setIsLoading(true);
@@ -66,7 +81,7 @@ export default function RegisterScreen({
           onChangeText={(text) =>
             setRegisterForm({ ...registerForm, code: text })
           }
-          onSubmitEditing={() => {}}
+          onSubmitEditing={() => nameInputRef.current?.focus()}
           editable={code === undefined}
           selectTextOnFocus={code === undefined}
         />
@@ -79,6 +94,7 @@ export default function RegisterScreen({
       >
         <TextInput
           placeholder="Nome"
+          ref={nameInputRef}
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
@@ -91,7 +107,7 @@ export default function RegisterScreen({
           onChangeText={(text) =>
             setRegisterForm({ ...registerForm, name: text })
           }
-          onSubmitEditing={() => {}}
+          onSubmitEditing={() => emailInputRef.current?.focus()}
         />
       </ThemedView>
       <ThemedView
@@ -102,6 +118,7 @@ export default function RegisterScreen({
       >
         <TextInput
           placeholder="Email"
+          ref={emailInputRef}
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
@@ -114,7 +131,7 @@ export default function RegisterScreen({
           onChangeText={(text) =>
             setRegisterForm({ ...registerForm, email: text })
           }
-          onSubmitEditing={() => {}}
+          onSubmitEditing={() => passwordInputRef.current?.focus()}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
@@ -129,6 +146,7 @@ export default function RegisterScreen({
       >
         <TextInput
           placeholder="Senha"
+          ref={passwordInputRef}
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
@@ -142,6 +160,33 @@ export default function RegisterScreen({
           onChangeText={(text: string) =>
             setRegisterForm({ ...registerForm, password: text })
           }
+          onSubmitEditing={() => confirmPasswordInputRef.current?.focus()}
+          returnKeyType="done"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+      </ThemedView>
+      <ThemedView
+        flexDirection="row"
+        justifyContent="space-between"
+        alignItems="center"
+        gap="s"
+        mb="m"
+      >
+        <TextInput
+          placeholder="Confirmar Senha"
+          ref={confirmPasswordInputRef}
+          style={{
+            paddingHorizontal: 10,
+            paddingVertical: 5,
+            borderWidth: 1,
+            borderColor: "lightgray",
+            borderRadius: 5,
+            width: 250,
+          }}
+          secureTextEntry={true}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
           onSubmitEditing={handleRegister}
           returnKeyType="done"
           autoCapitalize="none"
@@ -155,6 +200,7 @@ export default function RegisterScreen({
           paddingHorizontal: 20,
           borderRadius: 5,
           alignItems: "center",
+          marginBottom: 8,
         }}
         onPress={handleRegister}
         disabled={isLoading}
@@ -165,12 +211,16 @@ export default function RegisterScreen({
           <ThemedText color="white">Registrar</ThemedText>
         )}
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.goBack()}>
+      <TouchableOpacity
+        onPress={() =>
+          navigation.canGoBack()
+            ? navigation.goBack()
+            : navigation.navigate("Login")
+        }
+      >
         <ThemedText color="gray">
           Já tem uma conta?{" "}
-          <ThemedText color="lightBlue" fontWeight="bold">
-            Clique aqui
-          </ThemedText>
+          <ThemedText color="lightBlue">Clique aqui</ThemedText>
         </ThemedText>
       </TouchableOpacity>
     </ThemedView>
