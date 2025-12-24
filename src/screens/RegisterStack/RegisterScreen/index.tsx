@@ -19,11 +19,11 @@ import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
-import { getRegisters } from "./type";
 import { useAuth } from "@providers/AuthProvider";
-import { useQuery } from "@tanstack/react-query";
 import { CustomBottomModal } from "@components/CustomBottomModal";
 import RegisterForm from "@components/RegisterForm";
+import getRegisters from "api/getRegisters";
+import { useQuery } from "@tanstack/react-query";
 
 export default function RegisterScreen() {
   const theme = useTheme<ThemeProps>();
@@ -31,14 +31,19 @@ export default function RegisterScreen() {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [birthdayFilter, setBirthdayFilter] = useState(false);
   const [nameFilter, setNameFilter] = useState("");
-  const { token, user } = useAuth().authState;
+  const { user, token } = useAuth().authState;
   const [mutateState, setMutateState] = useState(false);
+  const registerApiKey = user?.role === "teacher" ? ["register", false] : ["register"];
+  const hasUser = user?.role === "teacher" ? false : undefined;
 
-  const { data, error, isError, isPending, isLoading, isRefetching, refetch } =
-    useQuery({
-      queryKey: ["register"],
-      queryFn: () => getRegisters({ token: token, user: user, hasUser: false }),
-    });
+  const { data, error, isError, isPending, isLoading, isRefetching, refetch } = useQuery({
+    queryKey: registerApiKey,
+    queryFn: () => getRegisters({
+      hasUser,
+      token,
+      _class: user?.register?.class,
+    }), 
+  });
 
   const matchMonth = (aniversary: Date) => {
     const month = aniversary.getMonth() + 1;
@@ -87,11 +92,13 @@ export default function RegisterScreen() {
 
         <TextInput
           placeholder="Pesquisar por nome"
+          placeholderTextColor={theme.colors.gray}
           value={nameFilter}
           onChangeText={setNameFilter}
           style={{
             backgroundColor: theme.colors.white,
             borderRadius: 20,
+            color: theme.colors.black,
             padding: theme.spacing.s,
             marginBottom: theme.spacing.s,
             marginHorizontal: theme.spacing.s,

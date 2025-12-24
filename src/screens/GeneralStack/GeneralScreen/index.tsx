@@ -28,7 +28,6 @@ import { DataType } from "@screens/ClassStack/ClassDetails/type";
 import { skipToken, useQuery } from "@tanstack/react-query";
 import config from "config";
 import { useAuth } from "@providers/AuthProvider";
-import { getRegisters } from "@screens/RegisterStack/RegisterScreen/type";
 import { Rollcall } from "@screens/LessonStack/type";
 import { _Class } from "@screens/ClassStack/ClassScreen/type";
 import { Asset } from "expo-asset";
@@ -38,6 +37,7 @@ import { printToFileAsync } from "expo-print";
 import { Score } from "@screens/ScoreOptions/type";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import report from "@assets/rankingReport.html";
+import getRegisters from "api/getRegisters";
 
 export default function GeneralScreen() {
   const theme = useTheme<ThemeProps>();
@@ -46,15 +46,12 @@ export default function GeneralScreen() {
   const [selectedList, setSelectedList] = useState("alunos");
   const [isRendering, setIsRendering] = useState(false);
   const [interval, setInterval] = useState<IntervalObj | null>(null);
+  const hasUser = user?.role === "teacher" ? false : undefined;
+  const registerApiKey = user?.role === "teacher" ? ["register", false] : ["register"];
 
-  const { data, isError, isPending, isRefetching, refetch } = useQuery({
-    queryKey: ["register"],
-    queryFn: () =>
-      getRegisters({
-        token: token,
-        user: user,
-        ...(user?.role === "teacher" && { hasUser: false }),
-      }),
+  const { data, error, isError, isPending, isRefetching, refetch } = useQuery({
+    queryKey: registerApiKey,
+    queryFn: () => getRegisters({ hasUser, token, _class: user?.register?.class }),
   });
 
   const { data: scores } = useQuery({
@@ -90,7 +87,7 @@ export default function GeneralScreen() {
     return resJson;
   }
 
-  const { data: classes, isPending: isClassesPending } = useQuery({
+  const { data: classes, isLoading: isClassesLoading } = useQuery({
     queryKey: ["altclass"],
     queryFn:
       user?.role === "admin" || user?.role === "owner" ? getClasses : skipToken,
@@ -503,20 +500,22 @@ export default function GeneralScreen() {
               />
             )}
 
-            {(isPending || isRollcallsPending || isClassesPending) && (
+            {(isPending || isRollcallsPending || isClassesLoading) && (
               <ThemedView flex={1} alignItems="center" justifyContent="center">
                 <ThemedText>Carregando...</ThemedText>
               </ThemedView>
             )}
             {isError && (
-              <ThemedView justifyContent="center" mt="l">
-                <ThemedText>Erro ao carregar dados...</ThemedText>
-              </ThemedView>
+              console.log(error),
+              <ThemedText textAlign="center" mt="s">Erro ao carregar dados...</ThemedText>
+            )}
+            {data && rollcalls && scores && (!isClassesLoading) && data.length === 0 && (
+              <ThemedText textAlign="center" mt="s">Nenhum registro encontrado...</ThemedText>
             )}
             {!isPending &&
               !isRollcallsPending &&
               !isError &&
-              !isClassesPending &&
+              !isClassesLoading &&
               (selectedList === "alunos" ? (
                 <SectionList
                   sections={DATA_STUDENTS}

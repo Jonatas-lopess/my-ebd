@@ -5,12 +5,12 @@ import ThemedView from "@components/ThemedView";
 import { useAuth } from "@providers/AuthProvider";
 import { useNavigation } from "@react-navigation/native";
 import {
-  getRegisters,
   RegisterFromApi,
 } from "@screens/RegisterStack/RegisterScreen/type";
 import { useTheme } from "@shopify/restyle";
 import { useQuery } from "@tanstack/react-query";
 import { ThemeProps } from "@theme";
+import getRegisters from "api/getRegisters";
 import { Base64 } from "js-base64";
 import { useCallback } from "react";
 import { FlatList, RefreshControl } from "react-native";
@@ -24,7 +24,8 @@ type AccessArray = {
 export default function TeacherAccess() {
   const navigation = useNavigation();
   const theme = useTheme<ThemeProps>();
-  const { user, token } = useAuth().authState;
+  const { token } = useAuth().authState;
+
   const handleApiData = useCallback((data: RegisterFromApi[]): AccessArray => {
     return data.map((item) => {
       const token = item.user ? Base64.encode(`teacher:${item.user}`) : null;
@@ -37,8 +38,8 @@ export default function TeacherAccess() {
   }, []);
 
   const { data, status, isRefetching, refetch } = useQuery({
-    queryKey: ["register"],
-    queryFn: () => getRegisters({ token: token, user: user, hasUser: true }),
+    queryKey: ["register", true],
+    queryFn: () => getRegisters({ hasUser: true, token }),
     select: handleApiData,
   });
 
