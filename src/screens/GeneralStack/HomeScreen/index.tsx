@@ -5,7 +5,7 @@ import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
-import { TouchableOpacity } from "react-native";
+import { Alert, TouchableOpacity } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@providers/AuthProvider";
 import config from "config";
@@ -19,8 +19,7 @@ type Plan = {
 export default function HomeScreen() {
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
-  const { token, user } = useAuth().authState;
-
+  const { authState: { user, token }, onLogOut } = useAuth();
   const { data, isSuccess } = useQuery({
     queryKey: ["lessonInfo", user?.plan],
     queryFn: async (): Promise<Plan> => {
@@ -40,6 +39,17 @@ export default function HomeScreen() {
     },
   });
 
+  function handleNavbarPress() {
+    if (user?.role === "teacher") {
+      Alert.alert("Desconectar", "Tem certeza que deseja desconectar-se?", [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Sair", style: "destructive", onPress: onLogOut }
+      ], { cancelable: true });
+    }
+
+    navigation.dispatch(DrawerActions.openDrawer());
+  }
+
   return (
     <ThemedView flex={1} backgroundColor="secondary" pt="safeArea">
       <FocusAwareStatusBar style="light" translucent />
@@ -51,9 +61,9 @@ export default function HomeScreen() {
           </ThemedText>
         </ThemedView>
         <Ionicons.Button
-          name="menu"
+          name={user?.role === "teacher" ? "log-out-outline" : "menu"}
           color={theme.colors.lightgrey}
-          onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+          onPress={handleNavbarPress}
           size={25}
           backgroundColor="transparent"
           underlayColor="transparent"

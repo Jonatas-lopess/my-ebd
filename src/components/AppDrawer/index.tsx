@@ -1,6 +1,5 @@
 import AdminRootTabNavigator from "@components/AdminRootTabNavigator";
 import CustomSettingsDrawer from "@components/CustomSettingsDrawer";
-import TeacherRootTabNavigator from "@components/TeacherRootTabNavigator";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { AppDrawerParamList } from "@custom/types/navigation";
@@ -45,11 +44,7 @@ export default function AppDrawer({ renderTab }: AppDrawerParamList["Home"]) {
       <Drawer.Screen
         name="Home"
         options={{ title: "Inicio" }}
-        component={
-          renderTab === "admin" || renderTab === "owner"
-            ? AdminRootTabNavigator
-            : TeacherRootTabNavigator
-        }
+        component={ AdminRootTabNavigator }
       />
       <Drawer.Screen
         name="AccountInfo"

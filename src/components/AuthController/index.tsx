@@ -4,6 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import AppDrawer from "@components/AppDrawer";
 import { useFirstTimeOpen } from "utils/useFirstTimeOpen";
+import TeacherRootTabNavigator from "@components/TeacherRootTabNavigator";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -28,13 +29,5 @@ export default function AuthController() {
     return <LoginStack isFirstTime={isFirstTime} />;
   }
 
-  return (
-    <AppDrawer
-      renderTab={
-        authState.user.role === "admin" || authState.user.role === "owner"
-          ? "admin"
-          : "teacher"
-      }
-    />
-  );
+  return authState.user.role === "teacher" ? <TeacherRootTabNavigator /> : <AppDrawer renderTab={authState.user.role} />;
 }
