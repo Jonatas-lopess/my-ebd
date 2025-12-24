@@ -11,7 +11,7 @@ import {
   ScrollView,
   SectionList,
 } from "react-native";
-import SwitchSelector from "react-native-switch-selector";
+import SwitchSelector from "@components/SwitchSelector";
 import CustomTextCard from "@components/CustomTextCard";
 import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import IntervalControl, {
@@ -496,16 +496,10 @@ export default function GeneralScreen() {
 
             {user && (user.role === "admin" || user.role === "owner") && (
               <SwitchSelector
-                options={[
-                  { label: "Alunos", value: "alunos" },
-                  { label: "Professores", value: "professores" },
-                ]}
-                onPress={(value: string) => setSelectedList(value)}
-                initial={0}
-                textColor={theme.colors.gray}
-                selectedColor={theme.colors.white}
-                buttonColor={theme.colors.gray}
-                style={{ marginVertical: 10, marginHorizontal: 5 }}
+                options={["Alunos", "Professores"]}
+                initialIndex={selectedList === "professores" ? 1 : 0}
+                onChange={(_, value) => setSelectedList(value.toLowerCase())}
+                containerStyle={{ paddingHorizontal: 5, marginVertical: 10 }}
               />
             )}
 
