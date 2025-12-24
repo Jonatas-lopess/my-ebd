@@ -15,7 +15,8 @@
         "foregroundImage": "./assets/adaptative-icon.png",
         "monochromeImage": "./assets/adaptative-icon.png",
         "backgroundColor": "#F2ECD8"
-      }
+      },
+      "package": "com.jonatas_lopes.myebd"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -39,7 +40,8 @@
           "resizeMode": "contain"
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      "expo-font"
     ],
     "extra": {
       "eas": {
