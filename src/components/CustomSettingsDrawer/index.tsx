@@ -4,7 +4,7 @@ import {
   DrawerItemList,
 } from "@react-navigation/drawer";
 import ThemedView from "@components/ThemedView";
-import { TouchableOpacity } from "react-native";
+import { Alert, TouchableOpacity } from "react-native";
 import ThemedText from "@components/ThemedText";
 import { useAuth } from "@providers/AuthProvider";
 import { useTheme } from "@shopify/restyle";
@@ -17,6 +17,13 @@ export default function CustomSettingsDrawer(
 ) {
   const { onLogOut } = useAuth();
   const theme = useTheme<ThemeProps>();
+
+  function handleLogOut() {
+    return Alert.alert("Desconectar", "Tem certeza que deseja desconectar-se?", [
+            { text: "Cancelar", style: "cancel" },
+            { text: "Sair", style: "destructive", onPress: onLogOut }
+          ], { cancelable: true })
+  }
 
   return (
     <ThemedView flex={1} pb="safeArea">
@@ -35,7 +42,7 @@ export default function CustomSettingsDrawer(
       >
         <DrawerItemList {...props} />
       </DrawerContentScrollView>
-      <TouchableOpacity onPress={onLogOut}>
+      <TouchableOpacity onPress={handleLogOut}>
         <ThemedView
           pl="l"
           py="m"
