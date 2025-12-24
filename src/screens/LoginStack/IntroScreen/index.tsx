@@ -5,6 +5,7 @@ import ThemedView from "@components/ThemedView";
 import introImg from "@assets/intro-illustration.png";
 import { LoginStackParamList } from "@custom/types/navigation";
 import { StackActions, useNavigation } from "@react-navigation/native";
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 
 export default function IntroScreen() {
   const navigation = useNavigation();
@@ -23,6 +24,8 @@ export default function IntroScreen() {
       g="s"
       p="l"
     >
+      <FocusAwareStatusBar style="dark" translucent />
+      
       <Image source={introImg} style={styles.illustration} />
 
       <ThemedText

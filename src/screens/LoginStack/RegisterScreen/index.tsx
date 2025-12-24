@@ -1,9 +1,12 @@
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { LoginStackParamList } from "@custom/types/navigation";
 import { useAuth } from "@providers/AuthProvider";
 import { useNavigation } from "@react-navigation/native";
 import { SignInData } from "@services/AuthService";
+import { useTheme } from "@shopify/restyle";
+import { ThemeProps } from "@theme";
 import { useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -17,6 +20,7 @@ export default function RegisterScreen({
 }: LoginStackParamList["Signin"]) {
   const { onSignIn } = useAuth();
   const navigation = useNavigation();
+  const theme = useTheme<ThemeProps>();
 
   const [registerForm, setRegisterForm] = useState<SignInData>({
     code: code ?? "",
@@ -61,6 +65,8 @@ export default function RegisterScreen({
 
   return (
     <ThemedView flex={1} justifyContent="center" alignItems="center" g="s">
+      <FocusAwareStatusBar style="dark" translucent />
+      
       <ThemedView
         flexDirection="row"
         justifyContent="space-between"
@@ -69,9 +75,11 @@ export default function RegisterScreen({
       >
         <TextInput
           placeholder="Código de Registro"
+          placeholderTextColor={theme.colors.gray}
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
+            color: theme.colors.black,
             borderWidth: 1,
             borderColor: "lightgray",
             borderRadius: 5,
@@ -94,10 +102,12 @@ export default function RegisterScreen({
       >
         <TextInput
           placeholder="Nome"
+          placeholderTextColor={theme.colors.gray}
           ref={nameInputRef}
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
+            color: theme.colors.black,
             borderWidth: 1,
             borderColor: "lightgray",
             borderRadius: 5,
@@ -118,10 +128,12 @@ export default function RegisterScreen({
       >
         <TextInput
           placeholder="Email"
+          placeholderTextColor={theme.colors.gray}
           ref={emailInputRef}
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
+            color: theme.colors.black,
             borderWidth: 1,
             borderColor: "lightgray",
             borderRadius: 5,
@@ -146,10 +158,12 @@ export default function RegisterScreen({
       >
         <TextInput
           placeholder="Senha"
+          placeholderTextColor={theme.colors.gray}
           ref={passwordInputRef}
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
+            color: theme.colors.black,
             borderWidth: 1,
             borderColor: "lightgray",
             borderRadius: 5,
@@ -175,10 +189,12 @@ export default function RegisterScreen({
       >
         <TextInput
           placeholder="Confirmar Senha"
+          placeholderTextColor={theme.colors.gray}
           ref={confirmPasswordInputRef}
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
+            color: theme.colors.black,
             borderWidth: 1,
             borderColor: "lightgray",
             borderRadius: 5,

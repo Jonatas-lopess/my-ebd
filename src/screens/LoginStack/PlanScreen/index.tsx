@@ -12,6 +12,7 @@ import { StackActions, useNavigation } from "@react-navigation/native";
 import { useMutation } from "@tanstack/react-query";
 import config from "config";
 import { useState } from "react";
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 
 export default function PlanScreen() {
   const navigation = useNavigation();
@@ -52,6 +53,8 @@ export default function PlanScreen() {
 
   return (
     <ThemedView flex={1} justifyContent="center" p="l" g="s">
+      <FocusAwareStatusBar style="dark" translucent />
+      
       <ThemedView flexDirection="row" alignItems="flex-end" marginBottom="s">
         <ThemedText fontSize={44} fontWeight="700" color="black">
           R$29

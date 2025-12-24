@@ -10,10 +10,14 @@ import { useAuth } from "@providers/AuthProvider";
 import ThemedText from "@components/ThemedText";
 import { useRef, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { useTheme } from "@shopify/restyle";
+import { ThemeProps } from "@theme";
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 
 export default function LoginScreen() {
   const { onLogIn } = useAuth();
   const navigation = useNavigation();
+  const theme = useTheme<ThemeProps>();
   const [loginForm, setLoginForm] = useState({
     email: "",
     password: "",
@@ -38,6 +42,8 @@ export default function LoginScreen() {
 
   return (
     <ThemedView flex={1} justifyContent="center" alignItems="center" g="s">
+      <FocusAwareStatusBar style="dark" translucent />
+
       <ThemedView
         flexDirection="row"
         justifyContent="space-between"
@@ -45,9 +51,11 @@ export default function LoginScreen() {
       >
         <TextInput
           placeholder="Email"
+          placeholderTextColor={theme.colors.gray}
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
+            color: theme.colors.black,
             borderWidth: 1,
             borderColor: "lightgray",
             borderRadius: 5,
@@ -70,9 +78,11 @@ export default function LoginScreen() {
         <TextInput
           ref={passwordInputRef}
           placeholder="Senha"
+          placeholderTextColor={theme.colors.gray}
           style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
+            color: theme.colors.black,
             borderWidth: 1,
             borderColor: "lightgray",
             borderRadius: 5,
