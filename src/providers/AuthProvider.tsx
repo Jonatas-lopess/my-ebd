@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import AuthService, { SignInData } from "@services/AuthService";
 import StorageService from "@services/StorageService";
+import { Alert } from "react-native";
 
 export type User = {
   _id: string;
@@ -98,12 +99,15 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       });
     } catch (error) {
       console.error(error);
+      return Alert.alert("Erro", "Não foi possivel concluir cadastro. Tente novamente mais tarde.");
     }
   }
 
   async function onLogIn(email: string, password: string) {
     try {
       const { data, status } = await AuthService.logIn(email, password);
+
+      if (status === 422) return Alert.alert("Erro", "Email ou senha incorretos.");
 
       if (status !== 200) {
         throw new Error(`${status} - ${data.message}`, { cause: data.error });
