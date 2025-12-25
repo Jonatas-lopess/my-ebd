@@ -1,4 +1,5 @@
 import {
+  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -23,6 +24,7 @@ import { useAuth } from "@providers/AuthProvider";
 import { useQuery } from "@tanstack/react-query";
 import config from "config";
 import ClassForm from "@components/ClassForm";
+import Toast from "react-native-toast-message";
 
 export default function ClassScreen() {
   const theme = useTheme<ThemeProps>();
@@ -99,7 +101,7 @@ export default function ClassScreen() {
                     params: { classId: item._id!.toString() },
                   })
                 }
-                onLongPress={() => console.log(item)}
+                onLongPress={() => Alert.alert("Remover", "Tem certeza que deseja remover essa turma?", [{ style: "cancel", text: "Não" }, { style: "destructive", text: "Sim", onPress: () => Toast.show({ text1: "Em Construção" }) }])}
               >
                 <ThemedView flexDirection="row" alignItems="center" gap="xs">
                   <InfoCard.Title>{item.name}</InfoCard.Title>
@@ -110,7 +112,7 @@ export default function ClassScreen() {
                     Alunos: {item.students?.length.toString()}
                   </ThemedText>
                   <ThemedView borderLeftWidth={1} borderLeftColor="lightgrey" />
-                  <ThemedText>Media: 100%</ThemedText>
+                  <ThemedText>Media: -</ThemedText>
                 </InfoCard.Content>
               </InfoCard.Root>
             )}

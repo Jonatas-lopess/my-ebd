@@ -76,7 +76,6 @@ export default function ClassForm({ mutateFallback }: Props) {
       return Alert.alert("Alerta", "Preencha todos os campos.");
     }
 
-    //console.log(inputs);
     mutate(inputs as _Class);
     optionsSheetRef.current?.dismiss();
     setInputs(EMPTYCLASSDATA);

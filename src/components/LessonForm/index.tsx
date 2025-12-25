@@ -79,11 +79,6 @@ export default function LessonForm({
       };
     });
 
-  const handleCreateNewLesson = () => {
-    //console.log(newLesson);
-    mutate();
-  };
-
   useEffect(() => {
     mutateFallback(isPending);
   }, [isPending]);
@@ -172,7 +167,7 @@ export default function LessonForm({
         </ThemedView>
       </ThemedView>
 
-      <CustomBottomModal.Action onPress={handleCreateNewLesson} />
+      <CustomBottomModal.Action onPress={mutate} />
     </ThemedView>
   );
 }

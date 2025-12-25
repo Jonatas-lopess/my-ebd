@@ -280,10 +280,7 @@ export default function ClassReport({
       },
       {
         text: "Sim",
-        onPress: () => {
-          //console.log(classReport);
-          mutate(classReport);
-        },
+        onPress: () => mutate(classReport),
       },
     ]);
   }

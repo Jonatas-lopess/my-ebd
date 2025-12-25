@@ -80,7 +80,6 @@ export default function ScoreForm({ mutateFallback }: Props) {
     )
       return Alert.alert("Atenção", "Preencha todos os campos obrigatórios.");
 
-    //console.log(JSON.stringify(tempScore));
     mutate(tempScore as Score);
     optionsSheetRef.current?.dismiss();
     setTempScore({ flag: user?.plan });
