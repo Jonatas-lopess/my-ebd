@@ -9,13 +9,14 @@ import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
 import { useCallback, useEffect, useState } from "react";
 import IntervalControl, {
-  IntervalOptionTypes,
+  IntervalObj,
 } from "@components/IntervalControl";
 import { useQuery } from "@tanstack/react-query";
 import config from "config";
 import { useAuth } from "@providers/AuthProvider";
 import { Rollcall } from "@screens/LessonStack/type";
 import Register from "../RegisterScreen/type";
+import filterDataByInterval from "utils/filterDataByInterval";
 
 type GroupedRollcall = {
   month: number;
@@ -29,8 +30,7 @@ export default function HistoryScreen({
   const { token } = useAuth().authState;
   const navigation = useNavigation();
   const theme = useTheme<ThemeProps>();
-  const [interval, setInterval] =
-    useState<IntervalOptionTypes>("Últimas 13 aulas");
+  const [interval, setInterval] = useState<IntervalObj>();
   const [groupedData, setGroupedData] = useState<GroupedRollcall[]>();
 
   const { data: info } = useQuery({
@@ -78,34 +78,6 @@ export default function HistoryScreen({
       },
     });
 
-  function filterDataByInterval(
-    data: Rollcall[],
-    interval: IntervalOptionTypes
-  ) {
-    return data.filter((item) => {
-      const lessonDate = new Date(item.lesson.date);
-      const currentDate = new Date();
-      const daysDifference = Math.ceil(
-        (currentDate.getTime() - lessonDate.getTime()) / (1000 * 3600 * 24)
-      );
-
-      switch (interval) {
-        case "Últimas 13 aulas":
-          return daysDifference <= 90; // Approx. 3 months
-        case "1º Trimestre":
-          return lessonDate.getMonth() < 3; // January to March
-        case "2º Trimestre":
-          return lessonDate.getMonth() >= 3 && lessonDate.getMonth() < 6; // April to June
-        case "3º Trimestre":
-          return lessonDate.getMonth() >= 6 && lessonDate.getMonth() < 9; // July to September
-        case "4º Trimestre":
-          return lessonDate.getMonth() >= 9 && lessonDate.getMonth() < 12; // October to December
-        default:
-          return true;
-      }
-    });
-  }
-
   useEffect(() => {
     if (!isSuccess) return;
 
@@ -128,9 +100,6 @@ export default function HistoryScreen({
     );
   }, [data, isSuccess, interval]);
 
-  useEffect(() => {
-    if (error) console.log(error?.cause);
-  }, [error]);
 
   const MONTHS = [
     "Janeiro",
@@ -159,7 +128,7 @@ export default function HistoryScreen({
     0
   );
 
-  const handleCardPress = useCallback((newInterval: IntervalOptionTypes) => {
+   const handleIntervalSelect = useCallback((newInterval: IntervalObj) => {
     setInterval(newInterval);
   }, []);
 
@@ -197,7 +166,7 @@ export default function HistoryScreen({
         </ThemedView>
 
         <ThemedView mt="l">
-          <IntervalControl interval={interval} onCardPress={handleCardPress} />
+          <IntervalControl interval={interval} onSelect={handleIntervalSelect} />
         </ThemedView>
 
         <ThemedView

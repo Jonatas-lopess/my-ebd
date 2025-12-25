@@ -70,7 +70,7 @@ export type IntervalObj = {
 };
 
 type IntervalControlProps = {
-  interval: IntervalObj | null;
+  interval?: IntervalObj;
   display?: "default" | "compact";
   onSelect?: ((interval: IntervalObj) => void) | undefined;
 };

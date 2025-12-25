@@ -38,6 +38,7 @@ import { Score } from "@screens/ScoreOptions/type";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import report from "@assets/rankingReport.html";
 import getRegisters from "api/getRegisters";
+import filterRollcallByInterval from "utils/filterDataByInterval";
 
 export default function GeneralScreen() {
   const theme = useTheme<ThemeProps>();
@@ -45,7 +46,7 @@ export default function GeneralScreen() {
   const { token, user } = useAuth().authState;
   const [selectedList, setSelectedList] = useState("alunos");
   const [isRendering, setIsRendering] = useState(false);
-  const [interval, setInterval] = useState<IntervalObj | null>(null);
+  const [interval, setInterval] = useState<IntervalObj>();
   const hasUser = user?.role === "teacher" ? false : undefined;
   const registerApiKey = user?.role === "teacher" ? ["register", false] : ["register"];
 
@@ -131,73 +132,6 @@ export default function GeneralScreen() {
     queryKey: ["rollcalls"],
     queryFn: getRollcalls,
   });
-
-  function filterRollcallByInterval(
-    data: Rollcall[],
-    interval: IntervalObj | null
-  ) {
-    if (interval === null || interval.object === null) return data;
-
-    const fromTime =
-      (interval.object as IntervalCustomObj).initialDate?.getTime() ||
-      undefined;
-    const toTime =
-      (interval.object as IntervalCustomObj).finalDate?.getTime() || undefined;
-    const monthNames = new Map<number, string>([
-      [0, "Janeiro"],
-      [1, "Fevereiro"],
-      [2, "Março"],
-      [3, "Abril"],
-      [4, "Maio"],
-      [5, "Junho"],
-      [6, "Julho"],
-      [7, "Agosto"],
-      [8, "Setembro"],
-      [9, "Outubro"],
-      [10, "Novembro"],
-      [11, "Dezembro"],
-    ]);
-
-    if (interval.type === "Últimas X aulas") {
-      Alert.alert(
-        "Funcionalidade em construção! Você pode escolher outros intervalos enquanto isso..."
-      );
-      return data;
-    }
-
-    return data.filter((item) => {
-      const lessonDate = new Date(item.lesson.date);
-      const month = lessonDate.getMonth();
-      const time = lessonDate.getTime();
-
-      if (interval.type === "Mensal") {
-        return (
-          monthNames.get(month) ===
-          (interval.object as IntervalMonthlyObj).month
-        );
-      }
-
-      if (interval.type === "Trimestral") {
-        switch ((interval.object as IntervalQuarterlyObj).quarter) {
-          case "1º Trimestre":
-            return month < 3; // January to March
-          case "2º Trimestre":
-            return month >= 3 && month < 6; // April to June
-          case "3º Trimestre":
-            return month >= 6 && month < 9; // July to September
-          case "4º Trimestre":
-            return month >= 9 && month < 12; // October to December
-          default:
-            return true;
-        }
-      }
-
-      if (interval.type === "Intervalo Personalizado") {
-        if (!fromTime || !toTime) return true;
-        return time >= fromTime && time <= toTime;
-      }
-    });
-  }
 
   function generateStudentList(): { title: string; data: DataType[] }[] {
     if (!rollcalls || !data || !classes || !scores) return [];
@@ -331,7 +265,7 @@ export default function GeneralScreen() {
   );
 
   function handleIntervalReplace() {
-    if (interval === null || interval.object === null)
+    if (interval === undefined || interval.object === null)
       return "Todos os períodos";
 
     if (interval.type === "Últimas X aulas") {
