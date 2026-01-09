@@ -17,8 +17,8 @@ export default function AdminAccess() {
   const navigation = useNavigation();
   const theme = useTheme<ThemeProps>();
   const queryClient = useQueryClient();
-  const { user } = useAuth().authState;
-  const token = user && Base64.encode("admin:" + user.plan);
+  const { user, token } = useAuth().authState;
+  const adminToken = user && Base64.encode("admin:" + user.plan);
 
   const { data, status, isRefetching, refetch } = useQuery({
     queryKey: ["admins"],
@@ -107,8 +107,8 @@ export default function AdminAccess() {
             Pressione sobre o campo para copiar o tokem.
           </CustomCard.Detail>
           <CustomCard.Pressable
-            text={token ?? ""}
-            onPress={() => token && copyToClipboard(token)}
+            text={adminToken ?? ""}
+            onPress={() => adminToken && copyToClipboard(adminToken)}
           />
         </CustomCard.Root>
 
