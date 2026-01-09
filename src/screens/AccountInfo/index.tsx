@@ -7,6 +7,7 @@ import CustomIcon from "@components/CustomIcon";
 import ThemedText from "@components/ThemedText";
 import { Alert, TouchableOpacity } from "react-native";
 import AuthService from "@services/AuthService";
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 
 export default function AccountInfo() {
   const navigation = useNavigation();
@@ -29,6 +30,8 @@ export default function AccountInfo() {
 
   return (
     <>
+      <FocusAwareStatusBar style="light" translucent />
+    
       <StackHeader.Root>
         <StackHeader.Content>
           <StackHeader.Action

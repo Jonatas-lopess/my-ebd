@@ -2,6 +2,7 @@ import BranchForm from "@components/BranchForm";
 import { CustomBottomModal } from "@components/CustomBottomModal";
 import { CustomCard } from "@components/CustomCard";
 import CustomTextCard from "@components/CustomTextCard";
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import { StackHeader } from "@components/StackHeader";
 import ThemedView from "@components/ThemedView";
 import {
@@ -17,6 +18,8 @@ export default function ManageBranch() {
 
   return (
     <BottomSheetModalProvider>
+      <FocusAwareStatusBar style="light" translucent />
+
       <StackHeader.Root>
         <StackHeader.Content>
           <StackHeader.Action

@@ -1,4 +1,5 @@
 import { CustomCard } from "@components/CustomCard";
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import { StackHeader } from "@components/StackHeader";
 import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
@@ -45,6 +46,8 @@ export default function TeacherAccess() {
 
   return (
     <>
+      <FocusAwareStatusBar style="light" translucent />
+
       <StackHeader.Root>
         <StackHeader.Content>
           <StackHeader.Action

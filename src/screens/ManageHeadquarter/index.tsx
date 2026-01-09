@@ -1,4 +1,5 @@
 import { CustomCard } from "@components/CustomCard";
+import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import { InfoCard } from "@components/InfoCard";
 import { StackHeader } from "@components/StackHeader";
 import ThemedText from "@components/ThemedText";
@@ -62,6 +63,8 @@ export default function ManageHeadquarter() {
 
   return (
     <>
+      <FocusAwareStatusBar style="light" translucent />
+
       <StackHeader.Root>
         <StackHeader.Content>
           <StackHeader.Action
