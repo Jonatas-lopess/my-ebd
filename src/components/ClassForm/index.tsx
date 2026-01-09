@@ -43,6 +43,10 @@ export default function ClassForm({ mutateFallback }: Props) {
 
   const mutation = useMutation({
     mutationFn: async (classData: _Class) => {
+      if (!token) {
+        throw new Error("Authentication token missing.");
+      }
+
       const res = await fetch(config.apiBaseUrl + "/classes", {
         method: "POST",
         headers: {
@@ -52,21 +56,32 @@ export default function ClassForm({ mutateFallback }: Props) {
         body: JSON.stringify(classData),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message, { cause: data.error });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        const message = (data && data.message) || `Request failed with status ${res.status}`;
+        const err = (data && data.error) || null;
+
+        throw Object.assign(new Error(message), { cause: err, status: res.status });
+      }
 
       return data;
     },
     onSuccess: () => {
       optionsSheetRef.current?.dismiss();
+      setInputs(EMPTYCLASSDATA);
       return queryClient.invalidateQueries({ queryKey: ["altclass"] });
     },
-    onError: (error) => {
-      Alert.alert(
-        "Algo deu errado!",
-        `Erro ao criar a turma. Confira sua conexão de internet e tente novamente.`
-      );
-      console.log(error.message, error.cause);
+    onError: (error: unknown) => {
+      const defaultMessage =
+        "Erro ao criar a turma. Confira sua conexão de internet e tente novamente.";
+      const message =
+        error && typeof (error as { message?: unknown }).message === "string"
+          ? (error as { message: string }).message
+          : defaultMessage;
+          
+      Alert.alert("Algo deu errado!", message);
+      console.error("Create class error:", error);
     },
   });
   const { isPending, mutate } = mutation;
@@ -77,8 +92,6 @@ export default function ClassForm({ mutateFallback }: Props) {
     }
 
     mutate(inputs as _Class);
-    optionsSheetRef.current?.dismiss();
-    setInputs(EMPTYCLASSDATA);
   }
 
   useEffect(() => {
@@ -129,6 +142,7 @@ export default function ClassForm({ mutateFallback }: Props) {
               "Crianças",
               "Maternal",
             ]}
+            keyExtractor={(item) => item}
             style={{ marginBottom: theme.spacing.m }}
             contentContainerStyle={{ gap: theme.spacing.s }}
             renderItem={({ item }) => (
