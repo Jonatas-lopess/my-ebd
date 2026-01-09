@@ -430,7 +430,7 @@ export default function GeneralScreen() {
                 options={["Alunos", "Professores"]}
                 initialIndex={selectedList === "professores" ? 1 : 0}
                 onChange={(_, value) => setSelectedList(value.toLowerCase())}
-                containerStyle={{ paddingHorizontal: 5, marginVertical: 10 }}
+                containerStyle={{ marginHorizontal: 5, marginVertical: 10 }}
               />
             )}
 
