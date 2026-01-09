@@ -84,13 +84,16 @@ export default function RegisterForm({ mutateFallback }: Props) {
       return data;
     },
     onSuccess: () => {
-      return queryClient.invalidateQueries({ queryKey: ["register"] });
+      queryClient.invalidateQueries({ queryKey: ["register"] });
+      optionsSheetRef.current?.dismiss();
+      setInputs({});
     },
     onError: (error) => {
       Alert.alert(
         "Algo deu errado!",
         `Erro ao criar o registro. Confira sua conexão de internet e tente novamente.`
       );
+      
       console.log(error.message, error.cause);
     },
   });
@@ -118,8 +121,6 @@ export default function RegisterForm({ mutateFallback }: Props) {
     }
 
     mutate(inputs as RegisterFromApp);
-    optionsSheetRef.current?.dismiss();
-    setInputs({});
   }
 
   useEffect(() => {
