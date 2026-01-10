@@ -157,10 +157,8 @@ export default function ClassReport({
     },
     onSuccess: () => {
       bottomSheetRef.current?.close();
-      queryClient.invalidateQueries({ queryKey: ["lessonInfo", lessonId] });
-      queryClient.invalidateQueries({
-        queryKey: ["teacherRollcalls", lessonId],
-      });
+      queryClient.invalidateQueries({ queryKey: ["classReport", lessonId, classId] });
+
       navigation.goBack();
     },
     onError: (error) => {

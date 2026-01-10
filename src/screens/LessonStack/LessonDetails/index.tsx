@@ -170,6 +170,11 @@ export default function LessonDetails({
     onSuccess: () => {
       bottomSheetRef.current?.close();
       queryClient.invalidateQueries({ queryKey: ["lessons"] });
+      queryClient.invalidateQueries({ queryKey: ["lessonInfo", lessonId] });
+      queryClient.invalidateQueries({
+        queryKey: ["teacherRollcalls", lessonId],
+      });
+
       navigation.goBack();
     },
     onError: (error) => {
@@ -297,7 +302,6 @@ export default function LessonDetails({
       return next;
     });
 
-    // Mark teachers list as modified so auto-resets won't overwrite local edits (isPristine)
     setIsPristine(false);
 
     bottomSheetRef.current?.close();
