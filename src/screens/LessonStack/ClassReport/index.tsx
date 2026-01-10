@@ -25,7 +25,9 @@ import { Score } from "@screens/ScoreOptions/type";
 import ScoreOption from "@components/ScoreOption";
 import { Lesson } from "../LessonScreen/type";
 import structuredClone from "@ungap/structured-clone";
+import { updateItemById } from "utils/immutability";
 import { RegisterFromApi } from "@screens/RegisterStack/RegisterScreen/type";
+import getRegisters from "api/getRegisters";
 
 export default function ClassReport({
   route,
@@ -101,29 +103,17 @@ export default function ClassReport({
     },
   });
 
-  const { data, error, isPending, isError } = useQuery({
-    queryKey: ["students", classId],
-    queryFn: async (): Promise<RegisterFromApi[]> => {
-      const response = await fetch(
-        config.apiBaseUrl + `/registers?class=${classId}&hasUser=false`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const resJson = await response.json();
-      if (!response.ok)
-        throw new Error(resJson.message, { cause: resJson.error });
-
-      return resJson;
-    },
+  const { data, error, isLoading, isError } = useQuery({
+    queryKey: ["register", classId, false],
+    queryFn: () => getRegisters({
+        hasUser: false,
+        token,
+        _class: classId,
+      }),
+    enabled: !!classId && !!token,
   });
 
-  const { data: rollcalls, isPending: isRollcallsPending } = useQuery({
+  const { data: rollcalls } = useQuery({
     queryKey: ["classReport", lessonId, classId],
     queryFn: async (): Promise<Rollcall[]> => {
       const res = await fetch(
@@ -227,17 +217,19 @@ export default function ClassReport({
     [report, classId, lessonId, rollcalls]
   );
 
-  const [classReport, setReport] = useState<ListItemType[]>([]);
+  const initialList = useMemo(() => generateList(data), [generateList, data]);
+
+  const [classReport, setReport] = useState<ListItemType[]>(initialList);
   const [tempItem, setTempItem] = useState<Partial<ListItemType>>({});
+  const [isPristine, setIsPristine] = useState(true);
 
   useEffect(() => {
-    if (isPending || isError || isRollcallsPending) return;
-    setReport(generateList(data));
-  }, [isRollcallsPending, isPending, isError]);
+    if (isPristine) setReport(initialList);
+  }, [initialList, isPristine]);
 
   useEffect(() => {
-    if (error) console.log(error.message, error.cause);
-  }, [error]);
+    if (data) setIsPristine(true);
+  }, [data]);
 
   const handleOpenBottomSheet = useCallback(
     (id: string) => {
@@ -260,12 +252,14 @@ export default function ClassReport({
 
   const handleSaveReportChanges = useCallback(() => {
     setReport((prev) =>
-      prev.map((item) =>
-        item.id === tempItem.id
-          ? { ...item, report: tempItem.report, isPresent: true }
-          : item
-      )
+      updateItemById(prev, tempItem.id, (item: ListItemType) => ({
+        ...item,
+        report: (tempItem.report as ListItemType["report"]) ?? item.report,
+        isPresent: true,
+      }))
     );
+
+    setIsPristine(false);
 
     bottomSheetRef.current?.close();
   }, [tempItem]);
@@ -314,7 +308,7 @@ export default function ClassReport({
             <CustomCard.Detail>
               Clique sobre os nomes dos alunos para confirmar a presença.
             </CustomCard.Detail>
-            {isPending && <ActivityIndicator size="small" />}
+            {isLoading && <ActivityIndicator size="small" />}
             {isError && (
               <ThemedView flex={1} justifyContent="center" alignItems="center">
                 <ThemedText>
@@ -382,12 +376,10 @@ export default function ClassReport({
                       <TextButton
                         variant="outline"
                         disabled={!isEditable}
-                        onClick={
-                          () => setReport(generateList(data))
-                          /* queryClient.invalidateQueries({
-                            queryKey: ["students", classId],
-                          }) */
-                        }
+                        onClick={() => {
+                          setReport(initialList);
+                          setIsPristine(true);
+                        }}
                       >
                         <ThemedText
                           fontSize={18}

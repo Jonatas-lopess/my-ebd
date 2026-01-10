@@ -37,6 +37,7 @@ import { Score } from "@screens/ScoreOptions/type";
 import { Rollcall } from "../type";
 import { _Class } from "@screens/ClassStack/ClassScreen/type";
 import structuredClone from "@ungap/structured-clone";
+import { updateItemById } from "utils/immutability";
 import { printToFileAsync } from "expo-print";
 import { shareAsync } from "expo-sharing";
 import { readAsStringAsync } from "expo-file-system";
@@ -229,8 +230,11 @@ export default function LessonDetails({
     generatedTeachersList
   );
   const [tempItem, setTempItem] = useState<Partial<ListItemType>>({});
+  const [isPristine, setIsPristine] = useState(true);
 
   useEffect(() => {
+    if (!isPristine) return;
+
     if (
       generatedTeachersList.length === teachersList.length &&
       teachersList.every((t, i) => t.id === generatedTeachersList[i].id)
@@ -238,7 +242,7 @@ export default function LessonDetails({
       return;
 
     setTeachersList(generatedTeachersList);
-  }, [generatedTeachersList]);
+  }, [generatedTeachersList, isPristine]);
 
   const {
     data: classes,
@@ -283,13 +287,19 @@ export default function LessonDetails({
   }
 
   const handleSaveReportChanges = useCallback(() => {
-    setTeachersList((prev) =>
-      prev.map((item) =>
-        item.id === tempItem.id
-          ? { ...item, report: tempItem.report, isPresent: true }
-          : item
-      )
-    );
+    setTeachersList((prev) => {
+      const next = updateItemById(prev, tempItem.id, (item: ListItemType) => ({
+        ...item,
+        report: (tempItem.report as ListItemType["report"]) ?? item.report,
+        isPresent: true,
+      }));
+
+      return next;
+    });
+
+    // Mark teachers list as modified so auto-resets won't overwrite local edits (isPristine)
+    setIsPristine(false);
+
     bottomSheetRef.current?.close();
   }, [tempItem]);
 
@@ -745,12 +755,10 @@ export default function LessonDetails({
                             ?.value as boolean) ?? false
                         }
                         onClick={() => {
-                          const newState = { ...tempItem };
-                          newState.report!.find(
-                            (r) => r.id === item._id
-                          )!.value = !newState.report!.find(
-                            (r) => r.id === item._id
-                          )!.value;
+                          const newState = structuredClone(tempItem) as Partial<ListItemType>;
+                          newState.report = newState.report?.map((r) =>
+                            r.id === item._id ? { ...r, value: !r.value } : r
+                          );
                           setTempItem(newState);
                         }}
                       />
@@ -771,10 +779,10 @@ export default function LessonDetails({
                             ?.value as number) ?? 0
                         }
                         onChange={(value) => {
-                          const newState = { ...tempItem };
-                          newState.report!.find(
-                            (r) => r.id === item._id
-                          )!.value = value ?? 0;
+                          const newState = structuredClone(tempItem) as Partial<ListItemType>;
+                          newState.report = newState.report?.map((r) =>
+                            r.id === item._id ? { ...r, value: value ?? 0 } : r
+                          );
                           setTempItem(newState);
                         }}
                       />
