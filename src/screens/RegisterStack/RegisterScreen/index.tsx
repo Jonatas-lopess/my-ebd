@@ -6,6 +6,7 @@ import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useRef, useState } from "react";
 import {
+  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -23,10 +24,13 @@ import { useAuth } from "@providers/AuthProvider";
 import { CustomBottomModal } from "@components/CustomBottomModal";
 import RegisterForm from "@components/RegisterForm";
 import getRegisters from "api/getRegisters";
-import { useQuery } from "@tanstack/react-query";
+import Toast from "react-native-toast-message";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import config from "config";
 
 export default function RegisterScreen() {
   const theme = useTheme<ThemeProps>();
+  const queryClient = useQueryClient();
   const navigation = useNavigation();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [birthdayFilter, setBirthdayFilter] = useState(false);
@@ -44,6 +48,43 @@ export default function RegisterScreen() {
       _class: user?.register?.class,
     }), 
   });
+
+
+  const { mutate } = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`${config.apiBaseUrl}/registers/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', }
+      });
+
+      const resJson = await res.json();
+      if (!res.ok) throw new Error(resJson.message || 'Erro ao remover cadastro');
+
+      return resJson;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: registerApiKey });
+      Toast.show({ type: "success", text1: "Cadastro removido com sucesso" });
+      setMutateState(false);
+    },
+    onError: (err) => {
+      Toast.show({ type: "error", text1: err?.message ?? "Erro ao remover cadastro" });
+      setMutateState(false);
+    },
+  });
+
+  function handleRegisterRemoval(id: string) {
+    const reg = data?.find((r) => r._id === id);
+
+    if (!reg) return Alert.alert("Erro", "Cadastro não encontrado.");
+
+    if (reg.user) {
+      return Alert.alert("Atenção", "Não é possível remover um cadastro vinculado a um usuário.");
+    }
+
+    setMutateState(true);
+    mutate(id);
+  }
 
   const matchMonth = (aniversary: Date) => {
     const month = aniversary.getMonth() + 1;
@@ -132,6 +173,10 @@ export default function RegisterScreen() {
                       params: { studentId: item._id },
                     })
                   }
+                  onLongPress={() => Alert.alert("Remover", "Tem certeza que deseja remover esse cadastro?", [
+                    { text: "Não", style: "cancel" },
+                    { text: "Sim", style: "destructive", onPress: () => handleRegisterRemoval(item._id) },
+                  ])}
                 >
                   <ThemedView
                     py="s"
