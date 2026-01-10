@@ -100,7 +100,7 @@ export default function ManageHeadquarter() {
           )}
         </CustomCard.Root>
 
-        <ThemedText variant="h3">
+        <ThemedText textAlign="center" marginTop="s" fontSize={14}>
           Abaixo estão os pedidos de afiliação. Confirme com sua sede antes de
           aceitar um pedido.
         </ThemedText>
