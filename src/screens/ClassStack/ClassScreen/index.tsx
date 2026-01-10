@@ -21,13 +21,14 @@ import { useRef, useState } from "react";
 import ThemedText from "@components/ThemedText";
 import { _Class } from "./type";
 import { useAuth } from "@providers/AuthProvider";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import config from "config";
 import ClassForm from "@components/ClassForm";
 import Toast from "react-native-toast-message";
 
 export default function ClassScreen() {
   const theme = useTheme<ThemeProps>();
+  const queryClient = useQueryClient();
   const navigation = useNavigation();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const { token } = useAuth().authState;
@@ -57,6 +58,41 @@ export default function ClassScreen() {
       return resJson;
     },
   });
+
+  const { mutate } = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(config.apiBaseUrl + `/classes/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      });
+
+      const resJson = await res.json();
+      if (!res.ok) throw new Error(resJson.message || "Erro ao remover turma");
+      
+      return resJson;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["altclass"] });
+      Toast.show({ type: "success", text1: "Turma removida com sucesso" });
+      setIsPendingMutate(false);
+    },
+    onError: (err) => {
+      Toast.show({ type: "error", text1: err?.message ?? "Erro ao remover turma" });
+      setIsPendingMutate(false);
+    },
+  });
+
+  function handleClassRemoval(id: string) {
+    const cls = DATA_CLASS?.find((c) => c._id === id);
+
+    if (!cls) return Alert.alert("Erro", "Turma não encontrada.");
+    if (cls.students && cls.students.length > 0) {
+      return Alert.alert("Atenção", "Não é possível remover uma turma que possui alunos.");
+    }
+
+    setIsPendingMutate(true);
+    mutate(id);
+  }
 
   return (
     <KeyboardAvoidingView
@@ -101,7 +137,7 @@ export default function ClassScreen() {
                     params: { classId: item._id!.toString() },
                   })
                 }
-                onLongPress={() => Alert.alert("Remover", "Tem certeza que deseja remover essa turma?", [{ style: "cancel", text: "Não" }, { style: "destructive", text: "Sim", onPress: () => Toast.show({ text1: "Em Construção" }) }])}
+                onLongPress={() => Alert.alert("Remover", "Tem certeza que deseja remover essa turma?", [{ style: "cancel", text: "Não" }, { style: "destructive", text: "Sim", onPress: () => handleClassRemoval(item._id!) }])}
               >
                 <ThemedView flexDirection="row" alignItems="center" gap="xs">
                   <InfoCard.Title>{item.name}</InfoCard.Title>
