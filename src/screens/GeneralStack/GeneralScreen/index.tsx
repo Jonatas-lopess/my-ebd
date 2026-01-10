@@ -40,6 +40,11 @@ import report from "@assets/rankingReport.html";
 import getRegisters from "api/getRegisters";
 import filterRollcallByInterval from "utils/filterDataByInterval";
 
+type SectionDataType = {
+  title: string | undefined;
+  data: DataType[];
+};
+
 export default function GeneralScreen() {
   const theme = useTheme<ThemeProps>();
   const navigation = useNavigation();
@@ -133,8 +138,8 @@ export default function GeneralScreen() {
     queryFn: getRollcalls,
   });
 
-  function generateStudentList(): { title: string; data: DataType[] }[] {
-    if (!rollcalls || !data || !classes || !scores) return [];
+  function generateStudentList(): Array<SectionDataType | DataType> {
+    if (!rollcalls || !data || (user?.role !== "teacher" && !classes) || !scores) return [];
 
     const scoreWeightById = new Map<string, number>();
     scores.forEach((s) => scoreWeightById.set(s._id, s.weight));
@@ -149,21 +154,11 @@ export default function GeneralScreen() {
       rollcallsByRegister.get(registerId)!.push(r);
     });
 
-    const sections = classes.map((className) => ({
-      title: className,
-      data: [] as DataType[],
-    }));
+    const sections: Array<SectionDataType | DataType> = classes?.map((className) => ({
+      title: className, data: [] })) ?? [];
 
     data.forEach((register) => {
       if (register.user) return;
-
-      const section = sections.find((sec) => sec.title === register.class.name);
-
-      if (!section)
-        return console.log(
-          "Error: generateStudentList register section not found."
-        );
-      if (section.data.some((s) => s.id === register._id)) return;
 
       const registerRollcalls = rollcallsByRegister.get(register._id) || [];
       const points = registerRollcalls.reduce((total, rollcall) => {
@@ -176,8 +171,25 @@ export default function GeneralScreen() {
         return total + (scoreSum ?? (rollcall.isPresent ? 1 : 0));
       }, 0);
 
-      section.data.push({ id: register._id, name: register.name, points });
-      section.data.sort((a, b) => b.points - a.points);
+      if (user?.role === "teacher") {
+        if (sections.some((s) => (s as DataType).id === register._id)) return;
+
+        sections.push({ id: register._id, name: register.name, points });
+        sections.sort((a, b) => (b as DataType).points - (a as DataType).points);
+
+        return;
+      }
+
+      const section = sections.find((sec) => (sec as SectionDataType).title === register.class.name);
+
+      if (!section)
+        return console.log(
+          "Error: generateStudentList register section not found."
+        );
+      if ((section as SectionDataType).data.some((s) => s.id === register._id)) return;
+
+      (section as SectionDataType).data.push({ id: register._id, name: register.name, points });
+      (section as SectionDataType).data.sort((a, b) => b.points - a.points);
     });
 
     return sections;
@@ -315,9 +327,9 @@ export default function GeneralScreen() {
       html = html.replace(
         "{{CLASSES}}",
         DATA_STUDENTS.map((section) => {
-          const sectionTitle = `<h4>${section.title}</h4><hr/>`;
+          const sectionTitle = `<h4>${(section as SectionDataType).title}</h4><hr/>`;
 
-          const sectionData = section.data
+          const sectionData = (section as SectionDataType).data
             .map((student, index) => {
               return `<tr><td>${index + 1}º</td><td>${student.name}</td><td>${
                 student.points
@@ -352,6 +364,12 @@ export default function GeneralScreen() {
     }
   }
 
+  function totalStudentsInSections(arr: Array<SectionDataType | DataType>): number {
+    return user?.role === "teacher"
+      ? arr.length
+      : arr.reduce((total, section) => total + (section as SectionDataType).data.length, 0)
+  }
+
   return (
     <BottomSheetModalProvider>
       <ThemedView flex={1} backgroundColor="secondary" pt="safeArea">
@@ -371,21 +389,24 @@ export default function GeneralScreen() {
               Ranque Geral
             </ThemedText>
           </ThemedView>
-          <Ionicons.Button
-            name="paper-plane-sharp"
-            color={theme.colors.white}
-            onPress={() =>
-              Alert.alert("Exportar", "Deseja exportar o ranking como pdf?", [
-                { text: "Cancelar", style: "cancel" },
-                { text: "Sim", onPress: printRanking },
-              ])
-            }
-            size={25}
-            backgroundColor="transparent"
-            underlayColor="transparent"
-            style={{ padding: 0 }}
-            iconStyle={{ marginRight: 0 }}
-          />
+          {
+            (user && (user.role === "admin" || user.role === "owner")) && (
+              <Ionicons.Button
+              name="paper-plane-sharp"
+              color={theme.colors.white}
+              onPress={() =>
+                Alert.alert("Exportar", "Deseja exportar o ranking como pdf?", [
+                  { text: "Cancelar", style: "cancel" },
+                  { text: "Sim", onPress: printRanking },
+                ])
+              }
+              size={25}
+              backgroundColor="transparent"
+              underlayColor="transparent"
+              style={{ padding: 0 }}
+              iconStyle={{ marginRight: 0 }}
+            />)
+          }
         </ThemedView>
 
         <IntervalControl interval={interval} onSelect={handleIntervalSelect} />
@@ -394,11 +415,7 @@ export default function GeneralScreen() {
           <ThemedView flexDirection="row" mt="m" justifyContent="space-around">
             <CustomTextCard
               text={
-                "Total de Alunos: " +
-                (DATA_STUDENTS.reduce(
-                  (acc, item) => acc + (item.data.length || 0),
-                  0
-                ) || 0)
+                "Total de Alunos: " + totalStudentsInSections(DATA_STUDENTS)
               }
               height={34}
             />
@@ -451,8 +468,8 @@ export default function GeneralScreen() {
               !isError &&
               !isClassesLoading &&
               (selectedList === "alunos" ? (
-                <SectionList
-                  sections={DATA_STUDENTS}
+                user?.role === "teacher" ? (<SectionList
+                  sections={DATA_STUDENTS as SectionDataType[]}
                   scrollEnabled={false}
                   contentContainerStyle={{ gap: theme.spacing.s }}
                   style={{ marginHorizontal: 10 }}
@@ -468,8 +485,26 @@ export default function GeneralScreen() {
                       onRefresh={refetch}
                     />
                   }
-                />
-              ) : (
+                />) : (
+                  <FlatList
+                    data={DATA_STUDENTS as DataType[]}
+                    scrollEnabled={false}
+                    contentContainerStyle={{
+                      gap: theme.spacing.s,
+                      marginVertical: theme.spacing.s,
+                      marginHorizontal: theme.spacing.s,
+                    }}
+                    renderItem={({ item, index }) =>
+                      handleRenderItem(item, index)
+                    }
+                    refreshControl={
+                      <RefreshControl
+                        refreshing={isRefetching}
+                        onRefresh={refetch}
+                      />
+                    }
+                  />
+              )) : (
                 <FlatList
                   data={DATA_TEACHERS}
                   scrollEnabled={false}
