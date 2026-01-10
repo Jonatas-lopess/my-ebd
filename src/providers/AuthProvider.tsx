@@ -126,13 +126,13 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
   function onLogOut() {
     try {
+      StorageService.removeItem("token");
+
       setAuth({
         token: undefined,
         user: undefined,
         isLoading: false,
       });
-
-      return StorageService.removeItem("token");
     } catch (error) {
       console.error(error, (error as Error).cause);
     }

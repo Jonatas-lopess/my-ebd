@@ -13,13 +13,18 @@ import { useMutation } from "@tanstack/react-query";
 import config from "config";
 import { useState } from "react";
 import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
+import StorageService from "@services/StorageService";
 
 export default function PlanScreen() {
   const navigation = useNavigation();
   const [isVisible, setVisibility] = useState<boolean>(false);
 
-  function handlePress() {
-    //StorageService.setItem("hasSeenIntro", "true");
+  async function handlePress() {
+    try {
+      await StorageService.setItem("hasSeenIntro", "true");
+    } catch (err) {
+      console.warn("Failed to set hasSeenIntro:", err);
+    }
 
     navigation.dispatch(StackActions.replace("Signin"));
   }
@@ -38,7 +43,13 @@ export default function PlanScreen() {
     onMutate: () => setVisibility(true),
     onSuccess: (data) => {
       setVisibility(false);
-      //StorageService.setItem("hasSeenIntro", "true");
+      
+      try {
+        StorageService.setItem("hasSeenIntro", "true");
+      } catch (err) {
+        console.warn("Failed to set hasSeenIntro:", err);
+      }
+
       navigation.dispatch(StackActions.replace("Signin", { code: data.code }));
     },
     onError: (err) => {

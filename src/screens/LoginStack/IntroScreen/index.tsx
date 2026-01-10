@@ -6,12 +6,17 @@ import introImg from "@assets/intro-illustration.png";
 import { LoginStackParamList } from "@custom/types/navigation";
 import { StackActions, useNavigation } from "@react-navigation/native";
 import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
+import StorageService from "@services/StorageService";
 
 export default function IntroScreen() {
   const navigation = useNavigation();
 
-  function handleMove(screen: keyof LoginStackParamList) {
-    //await StorageService.setItem("hasSeenIntro", "true");
+  async function handleMove(screen: keyof LoginStackParamList) {
+    try {
+      await StorageService.setItem("hasSeenIntro", "true");
+    } catch (err) {
+      console.warn("Failed to set hasSeenIntro:", err);
+    }
 
     navigation.dispatch(StackActions.replace(screen));
   }
