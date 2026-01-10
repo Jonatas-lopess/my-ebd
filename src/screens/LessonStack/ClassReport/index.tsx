@@ -36,9 +36,10 @@ export default function ClassReport({
   const navigation = useNavigation();
   const queryClient = useQueryClient();
   const theme = useTheme<ThemeProps>();
-  const { token } = useAuth().authState;
+  const { token, user } = useAuth().authState;
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [isEditable, setIsEditable] = useState(false);
+  const dataQueryKey = user?.role === "teacher" ? ["register", false] : ["register", classId];
 
   const { data: classData } = useQuery({
     queryKey: ["classDetails", classId],
@@ -104,7 +105,7 @@ export default function ClassReport({
   });
 
   const { data, error, isLoading, isError } = useQuery({
-    queryKey: ["register", classId, false],
+    queryKey: dataQueryKey,
     queryFn: () => getRegisters({
         hasUser: false,
         token,
