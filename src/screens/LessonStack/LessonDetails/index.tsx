@@ -397,29 +397,25 @@ export default function LessonDetails({
       );
       html = html.replace(
         "{{PROF_MATRICULADOS}}",
-        teachersList.length.toString()
+        teacherListLength.toString()
       );
       html = html.replace("{{PROF_PRESENTES}}", teachersPresent.toString());
-      html = html.replace(
-        "{{PROF_FREQ}}",
-        ((teachersPresent / teacherListLength) * 100).toFixed(2).concat("%")
-      );
+
+      const profFreq = teacherListLength === 0 ? "0.00%" : ((teachersPresent / teacherListLength) * 100).toFixed(2).concat("%");
+      
+      html = html.replace("{{PROF_FREQ}}", profFreq);
       html = html.replace(
         "{{PROF_SCORES}}",
         scoreInfo
           ?.map((score) => {
             const total = teachersList.reduce((acc, t) => {
+              const tr = t.report?.find((tr) => tr.id === score._id);
+
               if (score.type === "BooleanScore")
-                return (
-                  acc +
-                  (t.report?.find((tr) => tr.id === score._id)?.value ? 1 : 0)
-                );
+                return acc + (tr?.value ? 1 : 0);
 
               if (score.type === "NumberScore")
-                return (
-                  acc +
-                  (t.report?.find((tr) => tr.id === score._id)?.value as number)
-                );
+                return acc + Number(tr?.value ?? 0);
 
               return acc;
             }, 0);
@@ -434,31 +430,23 @@ export default function LessonDetails({
         "{{LINHAS_DAS_CLASSES}}",
         classes
           ?.map((cls) => {
-            const classRlc = report.filter((r) => r.register.class === cls._id);
+            const classRlc = report.filter((r) => r.register.class === cls._id && r.register.isTeacher === false);
             const studentsNumber = classRlc.length;
             const studentsPresent = classRlc.reduce(
-              (acc, r) => (r.isPresent ? ++acc : acc),
+              (acc, r) => acc + (r.isPresent ? 1 : 0),
               0
             );
             const classScoreCells =
               scoreInfo
                 ?.map((score) => {
                   const total = classRlc.reduce((acc, r) => {
+                    const rs = r.score?.find((rs) => rs.scoreInfo === score._id);
+
                     if (score.type === "BooleanScore")
-                      return (
-                        acc +
-                        (r.score?.find((rs) => rs.scoreInfo === score._id)
-                          ?.value
-                          ? 1
-                          : 0)
-                      );
+                      return acc + (rs?.value ? 1 : 0);
 
                     if (score.type === "NumberScore")
-                      return (
-                        acc +
-                        (r.score?.find((rs) => rs.scoreInfo === score._id)
-                          ?.value as number)
-                      );
+                      return acc + Number(rs?.value ?? 0);
 
                     return acc;
                   }, 0);
@@ -466,6 +454,8 @@ export default function LessonDetails({
                   return "<td>" + total + "</td>";
                 })
                 .join("") ?? "";
+
+            const classFreq = studentsNumber === 0 ? "0.00%" : ((studentsPresent / studentsNumber) * 100).toFixed(2).concat("%");
 
             return (
               "<tr>" +
@@ -479,9 +469,7 @@ export default function LessonDetails({
               studentsPresent +
               "</td>" +
               "<td>" +
-              ((studentsPresent / studentsNumber) * 100)
-                .toFixed(2)
-                .concat("%") +
+              classFreq +
               "</td>" +
               classScoreCells +
               "<td> - </td>" + // Ofertas das turmas
