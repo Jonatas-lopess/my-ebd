@@ -72,12 +72,11 @@ export default function HomeScreen() {
         />
       </ThemedView>
 
-      <ThemedView flexDirection="column" alignItems="center" mt="xl" flex={1}>
-        <ThemedView width={140} height={140} borderRadius={70} bg="gray" />
+      <ThemedView flexDirection="column" justifyContent="center" alignItems="center" flex={1}>
         <ThemedText variant="h1" color="white">
           Escola Bíblica
         </ThemedText>
-        <ThemedText variant="body" color="white">
+        <ThemedText variant="h3" color="white">
           {isSuccess && data ? data.institution : "Carregando..."}
         </ThemedText>
 
