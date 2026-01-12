@@ -7,7 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { RefreshControl, ScrollView, SectionList } from "react-native";
 import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import IntervalControl, {
   IntervalObj,
 } from "@components/IntervalControl";
@@ -17,6 +17,8 @@ import { useAuth } from "@providers/AuthProvider";
 import { Rollcall } from "@screens/LessonStack/type";
 import Register from "../RegisterScreen/type";
 import filterDataByInterval from "utils/filterDataByInterval";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { Score } from "@screens/ScoreOptions/type";
 
 type GroupedRollcall = {
   month: number;
@@ -31,7 +33,6 @@ export default function HistoryScreen({
   const navigation = useNavigation();
   const theme = useTheme<ThemeProps>();
   const [interval, setInterval] = useState<IntervalObj>();
-  const [groupedData, setGroupedData] = useState<GroupedRollcall[]>();
 
   const { data: info } = useQuery({
     queryKey: ["register_info", studentId],
@@ -55,7 +56,7 @@ export default function HistoryScreen({
     },
   });
 
-  const { data, isPending, isSuccess, isError, error, isRefetching, refetch } =
+  const { data, isPending, isError, error, isRefetching, refetch } =
     useQuery({
       queryKey: ["rollcalls", studentId],
       queryFn: async (): Promise<Rollcall[]> => {
@@ -78,27 +79,50 @@ export default function HistoryScreen({
       },
     });
 
-  useEffect(() => {
-    if (!isSuccess) return;
+  const { data: scores } = useQuery({
+    queryKey: ["scores"],
+    queryFn: async (): Promise<Score[]> => {
+      const res = await fetch(config.apiBaseUrl + "/scores", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const resJson = await res.json();
+      if (!res.ok) throw new Error(resJson.message, { cause: resJson.error });
+
+      return resJson;
+    },
+    select(data) {
+      const scoreWeightById = new Map<string, number>();
+      data.forEach((s) => scoreWeightById.set(s._id, s.weight));
+
+      return scoreWeightById;
+    },
+  });
+
+  const groupedData = useMemo(() => {
+    if (!data) return [];
 
     const filteredData = filterDataByInterval(data, interval);
 
-    setGroupedData(
-      filteredData.reduce<GroupedRollcall[]>((acc, item) => {
-        const lessonDate = new Date(item.lesson.date);
-        const month = lessonDate.getMonth() + 1;
+    return filteredData.reduce<GroupedRollcall[]>((acc, item) => {
+      const lessonDate = new Date(item.lesson.date);
+      const month = lessonDate.getMonth() + 1;
 
-        const existingGroup = acc.find((group) => group.month === month);
-        if (existingGroup) {
-          existingGroup.data.push(item);
-        } else {
-          acc.push({ month, data: [item] });
-        }
+      const existingGroup = acc.find((group) => group.month === month);
 
-        return acc;
-      }, [])
-    );
-  }, [data, isSuccess, interval]);
+      if (existingGroup) {
+        existingGroup.data.push(item);
+      } else {
+        acc.push({ month, data: [item] });
+      }
+
+      return acc;
+    }, [])
+  }, [data, interval]);
 
 
   const MONTHS = [
@@ -122,17 +146,44 @@ export default function HistoryScreen({
     0
   );
 
-  const abscence = groupedData?.reduce(
+  const absence = groupedData?.reduce(
     (acc, item) =>
       acc + item.data.reduce((acc, item) => acc + (item.isPresent ? 0 : 1), 0),
     0
   );
 
-   const handleIntervalSelect = useCallback((newInterval: IntervalObj) => {
+  const points = groupedData?.reduce((total, rl) => {
+    const scoreSum = rl.data.reduce((sum, item) => {
+      const hasScores = Array.isArray(item.score) && item.score.length > 0;
+
+      const itemValue = hasScores
+        ? item.score!.reduce((acc, scr) => {
+            const weight = scores?.get(scr.scoreInfo) ?? 0;
+
+            if (typeof scr.value === "boolean") {
+              return acc + (scr.value ? weight : 0);
+            }
+
+            if (typeof scr.value === "number") {
+              return acc + Number(scr.value) * weight;
+            }
+
+            return acc + (scr.value ? weight : 0);
+          }, 0)
+        : undefined;
+
+      return sum + (itemValue ?? (item.isPresent ? 1 : 0));
+    }, 0);
+
+    return total + scoreSum;
+  }, 0);
+
+  const handleIntervalSelect = useCallback((newInterval: IntervalObj) => {
     setInterval(newInterval);
   }, []);
 
   return (
+    <BottomSheetModalProvider>
     <ThemedView flex={1} backgroundColor="secondary" pt="safeArea">
       <FocusAwareStatusBar style="light" translucent />
 
@@ -177,7 +228,7 @@ export default function HistoryScreen({
         >
           <ThemedView alignItems="center">
             <ThemedText variant="h2" color="white">
-              {presence ?? 0}
+              {presence ?? "-"}
             </ThemedText>
             <ThemedText variant="body" color="white">
               Presenças
@@ -186,7 +237,7 @@ export default function HistoryScreen({
 
           <ThemedView alignItems="center">
             <ThemedText variant="h2" color="white">
-              {abscence ?? 0}
+              {absence ?? "-"}
             </ThemedText>
             <ThemedText variant="body" color="white">
               Ausências
@@ -195,7 +246,7 @@ export default function HistoryScreen({
 
           <ThemedView alignItems="center">
             <ThemedText variant="h2" color="white">
-              0
+              {points ?? "-"}
             </ThemedText>
             <ThemedText variant="body" color="white">
               Pontos
@@ -204,11 +255,13 @@ export default function HistoryScreen({
 
           <ThemedView alignItems="center">
             <ThemedText variant="h2" color="white">
-              {`${
-                presence && abscence
-                  ? (presence / (presence + abscence)) * 100
-                  : 0
-              }%`}
+              {
+                !isNaN(presence) && !isNaN(absence)
+                  ? presence === 0 && absence === 0
+                    ? "-"
+                    : `${(presence / (presence + absence)) * 100}%`
+                  : "-"
+              }
             </ThemedText>
             <ThemedText variant="body" color="white">
               Aproveitamento
@@ -253,6 +306,7 @@ export default function HistoryScreen({
               }}
               style={{ marginVertical: theme.spacing.s }}
               sections={groupedData.sort((a, b) => b.month - a.month)}
+              keyExtractor={(item) => item._id}
               renderItem={({ item }) => (
                 <ThemedView
                   flexDirection="row"
@@ -307,5 +361,6 @@ export default function HistoryScreen({
         </ThemedView>
       </ScrollView>
     </ThemedView>
+    </BottomSheetModalProvider>
   );
 }
