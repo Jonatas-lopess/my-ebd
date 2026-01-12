@@ -162,11 +162,23 @@ export default function GeneralScreen() {
 
       const registerRollcalls = rollcallsByRegister.get(register._id) || [];
       const points = registerRollcalls.reduce((total, rollcall) => {
-        const scoreSum = rollcall.score?.reduce((acc: number, curr) => {
-          const weight = scoreWeightById.get(curr.scoreInfo) ?? 0;
+        const hasScores = Array.isArray(rollcall.score) && rollcall.score.length > 0;
 
-          return acc + (weight && curr.value ? weight : 0);
-        }, 0);
+        const scoreSum = hasScores
+          ? rollcall.score?.reduce((acc, curr) => {
+            const weight = scoreWeightById.get(curr.scoreInfo) ?? 0;
+
+            if (typeof curr.value === "boolean") {
+              return acc + (curr.value ? weight : 0);
+            }
+
+            if (typeof curr.value === "number") {
+              return acc + Number(curr.value) * weight;
+            }
+
+            return acc + (curr.value ? weight : 0);
+          }, 0)
+          : undefined;
 
         return total + (scoreSum ?? (rollcall.isPresent ? 1 : 0));
       }, 0);
