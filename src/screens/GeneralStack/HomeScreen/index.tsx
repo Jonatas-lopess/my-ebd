@@ -124,25 +124,29 @@ export default function HomeScreen() {
             </ThemedText>
           </TouchableOpacity>
 
+          {
+            user?.role === "admin" || user?.role === "owner" && (
           <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("Turmas", { screen: "ClassList" })
-            }
-            style={{
-              backgroundColor: theme.colors.white,
-              paddingVertical: theme.spacing.m,
-              paddingHorizontal: theme.spacing.xxxl,
-              borderRadius: 10,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: theme.spacing.s,
-            }}
-          >
-            <Ionicons name="school" color={theme.colors.primary} size={26} />
-            <ThemedText color="primary" fontWeight="bold">
-              Turmas
-            </ThemedText>
-          </TouchableOpacity>
+                      onPress={() =>
+                        navigation.navigate("Turmas", { screen: "ClassList" })
+                      }
+                      style={{
+                        backgroundColor: theme.colors.white,
+                        paddingVertical: theme.spacing.m,
+                        paddingHorizontal: theme.spacing.xxxl,
+                        borderRadius: 10,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: theme.spacing.s,
+                      }}
+                    >
+                      <Ionicons name="school" color={theme.colors.primary} size={26} />
+                      <ThemedText color="primary" fontWeight="bold">
+                        Turmas
+                      </ThemedText>
+                    </TouchableOpacity>
+            )
+          }
 
           <TouchableOpacity
             onPress={() =>
