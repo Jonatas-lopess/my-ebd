@@ -53,11 +53,13 @@ export default function GeneralScreen() {
   const [isRendering, setIsRendering] = useState(false);
   const [interval, setInterval] = useState<IntervalObj>();
   const hasUser = user?.role === "teacher" ? false : undefined;
-  const registerApiKey = user?.role === "teacher" ? ["register", false] : ["register"];
+  const registerApiKey =
+    user?.role === "teacher" ? ["register", false] : ["register"];
 
   const { data, error, isError, isPending, isRefetching, refetch } = useQuery({
     queryKey: registerApiKey,
-    queryFn: () => getRegisters({ hasUser, token, _class: user?.register?.class }),
+    queryFn: () =>
+      getRegisters({ hasUser, token, _class: user?.register?.class }),
   });
 
   const { data: scores } = useQuery({
@@ -139,7 +141,13 @@ export default function GeneralScreen() {
   });
 
   function generateStudentList(): Array<SectionDataType | DataType> {
-    if (!rollcalls || !data || (user?.role !== "teacher" && !classes) || !scores) return [];
+    if (
+      !rollcalls ||
+      !data ||
+      (user?.role !== "teacher" && !classes) ||
+      !scores
+    )
+      return [];
 
     const scoreWeightById = new Map<string, number>();
     scores.forEach((s) => scoreWeightById.set(s._id, s.weight));
@@ -154,30 +162,34 @@ export default function GeneralScreen() {
       rollcallsByRegister.get(registerId)!.push(r);
     });
 
-    const sections: Array<SectionDataType | DataType> = classes?.map((className) => ({
-      title: className, data: [] })) ?? [];
+    const sections: Array<SectionDataType | DataType> =
+      classes?.map((className) => ({
+        title: className,
+        data: [],
+      })) ?? [];
 
     data.forEach((register) => {
       if (register.user) return;
 
       const registerRollcalls = rollcallsByRegister.get(register._id) || [];
       const points = registerRollcalls.reduce((total, rollcall) => {
-        const hasScores = Array.isArray(rollcall.score) && rollcall.score.length > 0;
+        const hasScores =
+          Array.isArray(rollcall.score) && rollcall.score.length > 0;
 
         const scoreSum = hasScores
           ? rollcall.score?.reduce((acc, curr) => {
-            const weight = scoreWeightById.get(curr.scoreInfo) ?? 0;
+              const weight = scoreWeightById.get(curr.scoreInfo) ?? 0;
 
-            if (typeof curr.value === "boolean") {
+              if (typeof curr.value === "boolean") {
+                return acc + (curr.value ? weight : 0);
+              }
+
+              if (typeof curr.value === "number") {
+                return acc + Number(curr.value) * weight;
+              }
+
               return acc + (curr.value ? weight : 0);
-            }
-
-            if (typeof curr.value === "number") {
-              return acc + Number(curr.value) * weight;
-            }
-
-            return acc + (curr.value ? weight : 0);
-          }, 0)
+            }, 0)
           : undefined;
 
         return total + (scoreSum ?? (rollcall.isPresent ? 1 : 0));
@@ -187,20 +199,29 @@ export default function GeneralScreen() {
         if (sections.some((s) => (s as DataType).id === register._id)) return;
 
         sections.push({ id: register._id, name: register.name, points });
-        sections.sort((a, b) => (b as DataType).points - (a as DataType).points);
+        sections.sort(
+          (a, b) => (b as DataType).points - (a as DataType).points
+        );
 
         return;
       }
 
-      const section = sections.find((sec) => (sec as SectionDataType).title === register.class.name);
+      const section = sections.find(
+        (sec) => (sec as SectionDataType).title === register.class.name
+      );
 
       if (!section)
         return console.log(
           "Error: generateStudentList register section not found."
         );
-      if ((section as SectionDataType).data.some((s) => s.id === register._id)) return;
+      if ((section as SectionDataType).data.some((s) => s.id === register._id))
+        return;
 
-      (section as SectionDataType).data.push({ id: register._id, name: register.name, points });
+      (section as SectionDataType).data.push({
+        id: register._id,
+        name: register.name,
+        points,
+      });
       (section as SectionDataType).data.sort((a, b) => b.points - a.points);
     });
 
@@ -339,7 +360,9 @@ export default function GeneralScreen() {
       html = html.replace(
         "{{CLASSES}}",
         DATA_STUDENTS.map((section) => {
-          const sectionTitle = `<h4>${(section as SectionDataType).title}</h4><hr/>`;
+          const sectionTitle = `<h4>${
+            (section as SectionDataType).title
+          }</h4><hr/>`;
 
           const sectionData = (section as SectionDataType).data
             .map((student, index) => {
@@ -376,10 +399,15 @@ export default function GeneralScreen() {
     }
   }
 
-  function totalStudentsInSections(arr: Array<SectionDataType | DataType>): number {
+  function totalStudentsInSections(
+    arr: Array<SectionDataType | DataType>
+  ): number {
     return user?.role === "teacher"
       ? arr.length
-      : arr.reduce((total, section) => total + (section as SectionDataType).data.length, 0)
+      : arr.reduce(
+          (total, section) => total + (section as SectionDataType).data.length,
+          0
+        );
   }
 
   return (
@@ -401,9 +429,8 @@ export default function GeneralScreen() {
               Ranque Geral
             </ThemedText>
           </ThemedView>
-          {
-            (user && (user.role === "admin" || user.role === "owner")) && (
-              <Ionicons.Button
+          {user && (user.role === "admin" || user.role === "owner") && (
+            <Ionicons.Button
               name="paper-plane-sharp"
               color={theme.colors.white}
               onPress={() =>
@@ -417,8 +444,8 @@ export default function GeneralScreen() {
               underlayColor="transparent"
               style={{ padding: 0 }}
               iconStyle={{ marginRight: 0 }}
-            />)
-          }
+            />
+          )}
         </ThemedView>
 
         <IntervalControl interval={interval} onSelect={handleIntervalSelect} />
@@ -468,36 +495,52 @@ export default function GeneralScreen() {
                 <ThemedText>Carregando...</ThemedText>
               </ThemedView>
             )}
-            {isError && (
-              console.log(error),
-              <ThemedText textAlign="center" mt="s">Erro ao carregar dados...</ThemedText>
-            )}
-            {data && rollcalls && scores && (!isClassesLoading) && data.length === 0 && (
-              <ThemedText textAlign="center" mt="s">Nenhum registro encontrado...</ThemedText>
-            )}
+            {isError &&
+              (console.log(error),
+              (
+                <ThemedText textAlign="center" mt="s">
+                  Erro ao carregar dados...
+                </ThemedText>
+              ))}
+            {data &&
+              rollcalls &&
+              scores &&
+              !isClassesLoading &&
+              data.length === 0 && (
+                <ThemedText textAlign="center" mt="s">
+                  Nenhum registro encontrado...
+                </ThemedText>
+              )}
             {!isPending &&
               !isRollcallsPending &&
               !isError &&
               !isClassesLoading &&
               (selectedList === "alunos" ? (
-                user?.role === "teacher" ? (<SectionList
-                  sections={DATA_STUDENTS as SectionDataType[]}
-                  scrollEnabled={false}
-                  contentContainerStyle={{ gap: theme.spacing.s }}
-                  style={{ marginHorizontal: 10 }}
-                  renderItem={({ item, index }) =>
-                    handleRenderItem(item, index)
-                  }
-                  renderSectionHeader={({ section: { title } }) => (
-                    <ThemedText>{title}</ThemedText>
-                  )}
-                  refreshControl={
-                    <RefreshControl
-                      refreshing={isRefetching}
-                      onRefresh={refetch}
-                    />
-                  }
-                />) : (
+                user?.role !== "teacher" ? (
+                  <SectionList
+                    sections={DATA_STUDENTS as SectionDataType[]}
+                    scrollEnabled={false}
+                    contentContainerStyle={{ gap: theme.spacing.s }}
+                    style={{ marginHorizontal: 10 }}
+                    renderItem={({ item, index }) =>
+                      handleRenderItem(item, index)
+                    }
+                    renderSectionHeader={({ section: { title } }) => (
+                      <ThemedText>{title}</ThemedText>
+                    )}
+                    ListEmptyComponent={
+                      <ThemedView flex={1} alignItems="center" mt="m">
+                        <ThemedText>Nenhum aluno encontrado.</ThemedText>
+                      </ThemedView>
+                    }
+                    refreshControl={
+                      <RefreshControl
+                        refreshing={isRefetching}
+                        onRefresh={refetch}
+                      />
+                    }
+                  />
+                ) : (
                   <FlatList
                     data={DATA_STUDENTS as DataType[]}
                     scrollEnabled={false}
@@ -509,6 +552,11 @@ export default function GeneralScreen() {
                     renderItem={({ item, index }) =>
                       handleRenderItem(item, index)
                     }
+                    ListEmptyComponent={
+                      <ThemedView flex={1} alignItems="center" mt="m">
+                        <ThemedText>Nenhum aluno encontrado.</ThemedText>
+                      </ThemedView>
+                    }
                     refreshControl={
                       <RefreshControl
                         refreshing={isRefetching}
@@ -516,7 +564,8 @@ export default function GeneralScreen() {
                       />
                     }
                   />
-              )) : (
+                )
+              ) : (
                 <FlatList
                   data={DATA_TEACHERS}
                   scrollEnabled={false}
@@ -527,6 +576,11 @@ export default function GeneralScreen() {
                   }}
                   renderItem={({ item, index }) =>
                     handleRenderItem(item, index)
+                  }
+                  ListEmptyComponent={
+                    <ThemedView flex={1} alignItems="center" mt="m">
+                      <ThemedText>Nenhum professor encontrado.</ThemedText>
+                    </ThemedView>
                   }
                   refreshControl={
                     <RefreshControl
