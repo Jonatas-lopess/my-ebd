@@ -609,7 +609,7 @@ export default function LessonDetails({
                   renderItem={({ item }) => (
                     <TextButton
                       variant="outline"
-                      disabled={!isEditable}
+                      disabled={!isEditable && lessonInfo?.isFinished === undefined}
                       onClick={() => handleOpenBottomSheet(item)}
                     >
                       <ThemedView
@@ -665,6 +665,7 @@ export default function LessonDetails({
               )}
               {!isLoadingScores &&
                 !isErrorScores &&
+                isEditable &&
                 scoreInfo &&
                 scoreInfo.length > 0 && (
                   <ThemedText textAlign="center">
@@ -685,6 +686,7 @@ export default function LessonDetails({
                     <ScoreOption
                       key={item._id}
                       type={item.type}
+                      disabled={!isEditable}
                       icon="star"
                       title={
                         item.title.charAt(0).toUpperCase() + item.title.slice(1)
@@ -694,6 +696,8 @@ export default function LessonDetails({
                           ?.value as boolean) ?? false
                       }
                       onClick={() => {
+                        if (!isEditable) return;
+
                         const scoreItemIndex = tempItem.score?.findIndex(
                           (s) => s.scoreInfo === item._id
                         );
@@ -720,6 +724,7 @@ export default function LessonDetails({
                     <ScoreOption
                       key={item._id}
                       type={item.type}
+                      disabled={!isEditable}
                       icon="star"
                       title={
                         item.title.charAt(0).toUpperCase() + item.title.slice(1)
@@ -729,6 +734,8 @@ export default function LessonDetails({
                           ?.value as number) ?? 0
                       }
                       onChange={(value) => {
+                        if (!isEditable) return;
+
                         const scoreItemIndex = tempItem.score?.findIndex(
                           (s) => s.scoreInfo === item._id
                         );
@@ -750,7 +757,7 @@ export default function LessonDetails({
                   );
               }) ?? <ThemedText>Sem informações disponíveis.</ThemedText>}
             </ThemedView>
-            {scoreInfo !== undefined && scoreInfo.length > 0 && (
+            {scoreInfo !== undefined && scoreInfo.length > 0 && isEditable && (
               <CustomBottomModal.Action
                 text="Confirmar"
                 onPress={handleSaveReportChanges}

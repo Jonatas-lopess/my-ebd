@@ -256,7 +256,7 @@ export default function ClassReport({
                 renderItem={({ item }) => (
                   <TextButton
                     variant="outline"
-                    disabled={!isEditable}
+                    disabled={!isEditable && lessonInfo?.isFinished === undefined}
                     onClick={() => handleOpenBottomSheet(item)}
                   >
                     <ThemedView
@@ -362,6 +362,7 @@ export default function ClassReport({
               )}
               {!isLoadingScores &&
                 !isErrorScores &&
+                isEditable &&
                 scoreInfo &&
                 scoreInfo.length > 0 && (
                   <ThemedText textAlign="center">
@@ -382,6 +383,7 @@ export default function ClassReport({
                     <ScoreOption
                       key={item._id}
                       type={item.type}
+                      disabled={!isEditable}
                       icon="star"
                       title={
                         item.title.charAt(0).toUpperCase() + item.title.slice(1)
@@ -417,6 +419,7 @@ export default function ClassReport({
                     <ScoreOption
                       key={item._id}
                       type={item.type}
+                      disabled={!isEditable}
                       icon="star"
                       title={
                         item.title.charAt(0).toUpperCase() + item.title.slice(1)
@@ -448,10 +451,10 @@ export default function ClassReport({
               }) ?? <ThemedText>Sem informações disponíveis.</ThemedText>}
             </ThemedView>
           </CustomBottomModal.Content>
-          <CustomBottomModal.Action
+          {scoreInfo !== undefined && scoreInfo.length > 0 && isEditable && <CustomBottomModal.Action
             text="Confirmar"
             onPress={handleSaveReportChanges}
-          />
+          />}
         </CustomBottomModal.Root>
       </BottomSheetModalProvider>
     </ThemedView>

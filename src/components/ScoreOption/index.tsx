@@ -8,6 +8,7 @@ import { useRef } from "react";
 type DefaultProps = {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
+  disabled?: boolean;
 };
 
 type BooleanScoreProps = DefaultProps & {
@@ -33,6 +34,7 @@ export default function ScoreOption({
   icon,
   title,
   value,
+  disabled = false,
 }: ScoreOptionProps) {
   const inputRef = useRef<FakeCurrencyInput>(null);
 
@@ -46,7 +48,9 @@ export default function ScoreOption({
           }
         : {
             onClick: () => inputRef.current?.focus(),
-          })}
+          }
+      )}
+      disabled={disabled}
     >
       <ThemedView flexDirection="row" alignItems="center">
         <Ionicons name={icon} size={25} style={{ margin: 0 }} />
