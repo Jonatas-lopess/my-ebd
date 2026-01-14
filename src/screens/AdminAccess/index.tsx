@@ -11,6 +11,7 @@ import { ThemeProps } from "@theme";
 import config from "config";
 import { Base64 } from "js-base64";
 import { Alert, FlatList, RefreshControl } from "react-native";
+import Toast from "react-native-toast-message";
 import copyToClipboard from "utils/copyToClipboard";
 
 export default function AdminAccess() {
@@ -54,6 +55,12 @@ export default function AdminAccess() {
       return resJson;
     },
     onMutate: async (adminId) => {
+      Toast.show({
+        type: "info",
+        text1: "Aguarde",
+        text2: "Excluindo administrador...",
+      });
+
       await queryClient.cancelQueries({ queryKey: ["admins"] });
 
       const previousData = queryClient.getQueryData<User[]>(["admins"]);
@@ -65,15 +72,23 @@ export default function AdminAccess() {
 
       return { previousData };
     },
+    onSuccess() {
+      Toast.show({
+        type: "success",
+        text1: "Sucesso",
+        text2: "Administrador excluído com sucesso.",
+      });
+    },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["admins"] }),
-    onError: (error, _, context) => {
+    onError(error, _, context) {
       console.error("Error deleting admin:", error.cause);
 
       queryClient.setQueryData<User[]>(["admins"], context?.previousData);
-      Alert.alert(
-        "Erro",
-        "Não foi possível excluir o administrador. Tente novamente mais tarde."
-      );
+      Toast.show({
+        type: "error",
+        text1: "Erro",
+        text2: "Não foi possível excluir o administrador. Operação revertida.",
+      });
     },
   });
 
@@ -122,20 +137,16 @@ export default function AdminAccess() {
             Carregando lista de administradores...
           </ThemedText>
         )}
-        {status === "success" && data && data.length > 0 && (
+        {status === "success" && data && (
           <CustomCard.Root>
+            <CustomCard.Title>Lista de Administradores</CustomCard.Title>
+            <CustomCard.Detail>
+              Aqui estão os administradores com acesso ao aplicativo.
+              Clique sobre o nome para excluir o acesso.
+            </CustomCard.Detail>
             <FlatList
               data={data}
               keyExtractor={(item) => item._id}
-              ListHeaderComponent={
-                <>
-                  <CustomCard.Title>Lista de Administradores</CustomCard.Title>
-                  <CustomCard.Detail>
-                    Aqui estão os administradores com acesso ao aplicativo.
-                    Clique sobre o nome para excluir o acesso.
-                  </CustomCard.Detail>
-                </>
-              }
               renderItem={({ item }) => (
                 <CustomCard.Pressable
                   key={item._id}
@@ -161,8 +172,14 @@ export default function AdminAccess() {
                   }
                 />
               )}
+              ListEmptyComponent={
+                <ThemedView flex={1} alignItems="center" mt="m">
+                  <ThemedText textAlign="center">
+                    Nenhum administrador cadastrado.
+                  </ThemedText>
+                </ThemedView>
+              }
               style={{
-                backgroundColor: theme.colors.white,
                 height: "100%",
               }}
               contentContainerStyle={{
