@@ -3,7 +3,7 @@ import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { ThemeProps } from "@theme";
 import { useTheme } from "@shopify/restyle";
-import { Alert, FlatList, RefreshControl } from "react-native";
+import { FlatList, RefreshControl } from "react-native";
 import { InfoCard } from "@components/InfoCard";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@providers/AuthProvider";
@@ -19,9 +19,8 @@ import { Lesson } from "./type";
 import { skipToken, useQuery } from "@tanstack/react-query";
 import config from "config";
 import LessonForm from "@components/LessonForm";
-import IntervalControl, {
-  IntervalObj,
-} from "@components/IntervalControl";
+import IntervalControl, { IntervalObj } from "@components/IntervalControl";
+import Toast from "react-native-toast-message";
 
 export default function LessonScreen() {
   const theme = useTheme<ThemeProps>();
@@ -107,9 +106,9 @@ export default function LessonScreen() {
       .padStart(2, "0")}/${date.getUTCFullYear()}`;
   };
 
-    const handleIntervalSelect = useCallback((newInterval: IntervalObj) => {
-      setInterval(newInterval);
-    }, []);
+  const handleIntervalSelect = useCallback((newInterval: IntervalObj) => {
+    setInterval(newInterval);
+  }, []);
 
   return (
     <BottomSheetModalProvider>
@@ -191,7 +190,11 @@ export default function LessonScreen() {
                   }}
                   onLongPress={() =>
                     (userRole === "admin" || userRole === "owner") &&
-                    Alert.alert("Em Breve", "Funcionalidade em desenvolvimento...")
+                    Toast.show({
+                      type: "info",
+                      text1: "Em Breve",
+                      text2: "Funcionalidade em desenvolvimento...",
+                    })
                   }
                 >
                   <ThemedView flexDirection="row" alignItems="center">

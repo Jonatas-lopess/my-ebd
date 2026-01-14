@@ -63,12 +63,15 @@ export default function ClassScreen() {
     mutationFn: async (id: string) => {
       const res = await fetch(config.apiBaseUrl + `/classes/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
 
       const resJson = await res.json();
       if (!res.ok) throw new Error(resJson.message || "Erro ao remover turma");
-      
+
       return resJson;
     },
     onSuccess: () => {
@@ -77,7 +80,10 @@ export default function ClassScreen() {
       setIsPendingMutate(false);
     },
     onError: (err) => {
-      Toast.show({ type: "error", text1: err?.message ?? "Erro ao remover turma" });
+      Toast.show({
+        type: "error",
+        text1: err?.message ?? "Erro ao remover turma",
+      });
       setIsPendingMutate(false);
     },
   });
@@ -87,7 +93,10 @@ export default function ClassScreen() {
 
     if (!cls) return Alert.alert("Erro", "Turma não encontrada.");
     if (cls.students && cls.students.length > 0) {
-      return Alert.alert("Atenção", "Não é possível remover uma turma que possui alunos.");
+      return Alert.alert(
+        "Atenção",
+        "Não é possível remover uma turma que possui alunos."
+      );
     }
 
     setIsPendingMutate(true);
@@ -137,7 +146,20 @@ export default function ClassScreen() {
                     params: { classId: item._id!.toString() },
                   })
                 }
-                onLongPress={() => Alert.alert("Remover", "Tem certeza que deseja remover essa turma?", [{ style: "cancel", text: "Não" }, { style: "destructive", text: "Sim", onPress: () => handleClassRemoval(item._id!) }])}
+                onLongPress={() =>
+                  Alert.alert(
+                    "Remover",
+                    "Tem certeza que deseja remover essa turma?",
+                    [
+                      { style: "cancel", text: "Não" },
+                      {
+                        style: "destructive",
+                        text: "Sim",
+                        onPress: () => handleClassRemoval(item._id!),
+                      },
+                    ]
+                  )
+                }
               >
                 <ThemedView flexDirection="row" alignItems="center" gap="xs">
                   <InfoCard.Title>{item.name}</InfoCard.Title>
