@@ -13,7 +13,7 @@ import {
   DateTimePickerAndroid,
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { RegisterFromApp } from "@screens/RegisterStack/RegisterScreen/type";
+import { RegisterFromApi, RegisterFromApp } from "@screens/RegisterStack/RegisterScreen/type";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { theme } from "@theme";
 import {
@@ -25,6 +25,7 @@ import { useAuth } from "@providers/AuthProvider";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { _Class } from "@screens/ClassStack/ClassScreen/type";
+import Toast from "react-native-toast-message";
 
 type Props = {
   mutateFallback?: React.Dispatch<React.SetStateAction<boolean>>;
@@ -83,16 +84,27 @@ export default function RegisterForm({ mutateFallback }: Props) {
 
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["register"] });
+    onSuccess: (data, variables) => {
+      const registerApiKey = variables.isTeacher ? ["register", false] : ["register"];
+
+      queryClient.setQueryData<RegisterFromApi[]>(registerApiKey, (oldData) => {
+        if (!oldData) return [data]; 
+        return [...oldData, data];
+      });
+
       optionsSheetRef.current?.dismiss();
       setInputs({});
+      Toast.show({
+        type: "success",
+        text1: "Registro criado com sucesso!",
+      });
     },
     onError: (error) => {
-      Alert.alert(
-        "Algo deu errado!",
-        `Erro ao criar o registro. Confira sua conexão de internet e tente novamente.`
-      );
+      Toast.show({
+        type: "error",
+        text1: "Algo deu errado!",
+        text2: `Erro ao criar o registro. Confira sua conexão de internet e tente novamente.`,
+      });
       
       console.log(error.message, error.cause);
     },

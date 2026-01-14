@@ -18,6 +18,7 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
+import Toast from "react-native-toast-message";
 
 type Props = {
   mutateFallback: React.Dispatch<React.SetStateAction<boolean>>;
@@ -60,14 +61,26 @@ export default function ScoreForm({ mutateFallback }: Props) {
 
       return await response.json();
     },
-    onSuccess: () => {
-      return queryClient.invalidateQueries({ queryKey: ["scores"] });
+    onSuccess: (data) => {
+      queryClient.setQueryData<Score[]>(["scores"], (oldData) => {
+        if (!oldData) return [data];
+        return [...oldData, data];
+      });
+      optionsSheetRef.current?.dismiss();
+      setTempScore({ flag: user?.plan });
+
+      Toast.show({
+        type: "success",
+        text1: "Pontuação criada com sucesso!",
+      });
     },
     onError: (err) => {
-      Alert.alert(
-        "Algo deu errado!",
-        `Erro ao criar o registro. Confira sua conexão de internet e tente novamente.`
-      );
+      Toast.show({
+        type: "error",
+        text1: "Erro ao criar pontuação.",
+        text2: "Tente novamente mais tarde.",
+      });
+
       console.log(err.message, err.cause);
     },
   });

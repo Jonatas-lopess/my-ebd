@@ -12,7 +12,7 @@ import { Lesson } from "@screens/LessonStack/LessonScreen/type";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import config from "config";
 import { theme } from "@theme";
-import { Alert } from "react-native/Libraries/Alert/Alert";
+import Toast from "react-native-toast-message";
 
 type Props = {
   mutateFallback: React.Dispatch<React.SetStateAction<boolean>>;
@@ -55,13 +55,23 @@ export default function LessonForm({
       return data;
     },
     onSuccess: () => {
-      return queryClient.invalidateQueries({ queryKey: ["lessons"] });
+      setNewLesson(DEFAULTLESSON);
+      queryClient.setQueryData<Lesson[]>(["lessonList"], (oldData) => {
+        if (!oldData) return [newLesson];
+        return [...oldData, newLesson];
+      });
+
+      Toast.show({
+        type: "success",
+        text1: "Lição criada com sucesso!",
+      });
     },
     onError: (error) => {
-      Alert.alert(
-        "Algo deu errado!",
-        "Não foi possível criar a aula. Tente novamente mais tarde."
-      );
+      Toast.show({
+        type: "error",
+        text1: "Algo deu errado!",
+        text2: "Não foi possível criar a aula. Tente novamente mais tarde.",
+      });
 
       console.log(error.message, error.cause);
     },

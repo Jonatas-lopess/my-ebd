@@ -13,6 +13,7 @@ import config from "config";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, FlatList, Keyboard, TouchableOpacity } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
+import Toast from "react-native-toast-message";
 
 type Props = {
   mutateFallback?: React.Dispatch<React.SetStateAction<boolean>>;
@@ -41,12 +42,8 @@ export default function ClassForm({ mutateFallback }: Props) {
     if (e.type === "close") optionsSheetRef.current?.dismiss();
   }, []);
 
-  const mutation = useMutation({
+  const { isPending, mutate } = useMutation({
     mutationFn: async (classData: _Class) => {
-      if (!token) {
-        throw new Error("Authentication token missing.");
-      }
-
       const res = await fetch(config.apiBaseUrl + "/classes", {
         method: "POST",
         headers: {
@@ -67,10 +64,15 @@ export default function ClassForm({ mutateFallback }: Props) {
 
       return data;
     },
-    onSuccess: () => {
+    onSuccess(data) {
+      queryClient.setQueryData<_Class[]>(["altclass"], (oldData) => {
+        if (!oldData) return [data];
+        return [...oldData, data];
+      });
       optionsSheetRef.current?.dismiss();
       setInputs(EMPTYCLASSDATA);
-      return queryClient.invalidateQueries({ queryKey: ["altclass"] });
+
+      Toast.show({ type: "success", text1: "Turma criada com sucesso!" });
     },
     onError: (error: unknown) => {
       const defaultMessage =
@@ -80,11 +82,10 @@ export default function ClassForm({ mutateFallback }: Props) {
           ? (error as { message: string }).message
           : defaultMessage;
           
-      Alert.alert("Algo deu errado!", message);
+      Toast.show({ type: "error", text1: message });
       console.error("Create class error:", error);
     },
   });
-  const { isPending, mutate } = mutation;
 
   function handleCreateNewClass() {
     if (!inputs.name || !inputs.group) {
