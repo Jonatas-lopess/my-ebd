@@ -4,15 +4,14 @@ import { StackHeader } from "@components/StackHeader";
 import ThemedText from "@components/ThemedText";
 import ThemedView from "@components/ThemedView";
 import { LessonStackProps } from "@custom/types/navigation";
-import { ScrollView, FlatList, Alert, ActivityIndicator } from "react-native";
+import { ScrollView, FlatList, Alert, ActivityIndicator, RefreshControl } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@shopify/restyle";
 import { ThemeProps } from "@theme";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import TextButton from "@components/TextButton";
 import { CustomBottomModal } from "@components/CustomBottomModal";
-import { ListItemType } from "../LessonDetails/type";
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
@@ -24,10 +23,9 @@ import { Rollcall } from "../type";
 import { Score } from "@screens/ScoreOptions/type";
 import ScoreOption from "@components/ScoreOption";
 import { Lesson } from "../LessonScreen/type";
-import structuredClone from "@ungap/structured-clone";
 import { updateItemById } from "utils/immutability";
-import { RegisterFromApi } from "@screens/RegisterStack/RegisterScreen/type";
-import getRegisters from "api/getRegisters";
+import Toast from "react-native-toast-message";
+
 
 export default function ClassReport({
   route,
@@ -36,10 +34,10 @@ export default function ClassReport({
   const navigation = useNavigation();
   const queryClient = useQueryClient();
   const theme = useTheme<ThemeProps>();
-  const { token, user } = useAuth().authState;
+  const { token } = useAuth().authState;
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [isEditable, setIsEditable] = useState(false);
-  const dataQueryKey = user?.role === "teacher" ? ["register", false] : ["register", classId];
+  const [tempItem, setTempItem] = useState<Partial<Rollcall>>({});
 
   const { data: classData } = useQuery({
     queryKey: ["classDetails", classId],
@@ -60,6 +58,7 @@ export default function ClassReport({
 
       return resJson;
     },
+    enabled: !!classId && !!token,
   });
 
   const { data: lessonInfo, isSuccess } = useQuery({
@@ -79,6 +78,7 @@ export default function ClassReport({
 
       return resJson;
     },
+    enabled: !!lessonId && !!token,
   });
 
   const {
@@ -102,23 +102,14 @@ export default function ClassReport({
 
       return resJson;
     },
+    enabled: !!token,
   });
 
-  const { data, error, isLoading, isError } = useQuery({
-    queryKey: dataQueryKey,
-    queryFn: () => getRegisters({
-        hasUser: false,
-        token,
-        _class: classId,
-      }),
-    enabled: !!classId && !!token,
-  });
-
-  const { data: rollcalls } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["classReport", lessonId, classId],
     queryFn: async (): Promise<Rollcall[]> => {
       const res = await fetch(
-        config.apiBaseUrl + `/rollcalls?class=${classId}&lesson=${lessonId}`,
+        config.apiBaseUrl + `/rollcalls?class=${classId}&lesson=${lessonId}&hasUser=false`,
         {
           method: "GET",
           headers: {
@@ -133,10 +124,11 @@ export default function ClassReport({
 
       return resJson;
     },
+    enabled: !!classId && !!token,
   });
 
   const { mutate } = useMutation({
-    mutationFn: async (data: ListItemType[]) => {
+    mutationFn: async (data: Rollcall[]) => {
       const res = await fetch(config.apiBaseUrl + "/report", {
         method: "POST",
         headers: {
@@ -145,12 +137,7 @@ export default function ClassReport({
         },
         body: JSON.stringify({
           list: data,
-          lesson: {
-            id: lessonId,
-            number: lessonInfo?.number,
-            date: lessonInfo?.date,
-          },
-          class: classId,
+          isFinished: false,
         }),
       });
 
@@ -158,110 +145,44 @@ export default function ClassReport({
     },
     onSuccess: () => {
       bottomSheetRef.current?.close();
-      queryClient.invalidateQueries({ queryKey: ["classReport", lessonId, classId] });
-
+      queryClient.invalidateQueries({ queryKey: ["lessonInfo", lessonId] });
+      queryClient.invalidateQueries({
+        queryKey: ["teacherRollcalls", lessonId],
+      });
       navigation.goBack();
     },
     onError: (error) => {
       console.log(error.message, error.cause);
+      Toast.show({
+        type: "error",
+        text1: "Erro",
+        text2: "Não foi possível salvar o relatório. Tente novamente mais tarde.",
+      });
     },
   });
 
-  const report = useMemo(() => {
-    if (!scoreInfo) return undefined;
-
-    return scoreInfo.reduce((acc: ListItemType["report"], cur) => {
-      if (cur.type === "NumberScore") {
-        acc!.push({
-          id: cur._id!,
-          value: 0,
-        });
-      } else {
-        acc!.push({
-          id: cur._id!,
-          value: false,
-        });
-      }
-
-      return acc;
-    }, []);
-  }, [scoreInfo]);
-
-  const generateList = useCallback(
-    (rawList: RegisterFromApi[] | undefined): ListItemType[] => {
-      if (!rawList || !report) return [];
-      const list: ListItemType[] = [];
-
-      if (rawList) {
-        rawList.forEach((item) => {
-          list.push({
-            id: item._id,
-            name: item.name,
-            isTeacher: false,
-            class: classId,
-            isPresent:
-              rollcalls?.some(
-                (rollcall) =>
-                  rollcall.lesson.id === lessonId &&
-                  rollcall.register.id === item._id &&
-                  rollcall.isPresent
-              ) ?? false,
-            report: structuredClone(report),
-          });
-        });
-      }
-
-      return list;
-    },
-    [report, classId, lessonId, rollcalls]
-  );
-
-  const initialList = useMemo(() => generateList(data), [generateList, data]);
-
-  const [classReport, setReport] = useState<ListItemType[]>(initialList);
-  const [tempItem, setTempItem] = useState<Partial<ListItemType>>({});
-  const [isPristine, setIsPristine] = useState(true);
-
-  useEffect(() => {
-    if (isPristine) setReport(initialList);
-  }, [initialList, isPristine]);
-
-  useEffect(() => {
-    if (data) setIsPristine(true);
-  }, [data]);
-
-  const handleOpenBottomSheet = useCallback(
-    (id: string) => {
-      const item = classReport.find((item) => item.id === id);
-      if (typeof item === "undefined")
-        return Alert.alert(
-          "Error",
-          "Item não encontrado por conta de divergência de dados."
-        );
-
-      setTempItem(item);
-      bottomSheetRef.current?.present();
-    },
-    [classReport]
-  );
+  function handleOpenBottomSheet(item: Rollcall) {
+    setTempItem(item);
+    bottomSheetRef.current?.present();
+  };
 
   function onSheetDismiss() {
     setTempItem({});
   }
 
-  const handleSaveReportChanges = useCallback(() => {
-    setReport((prev) =>
-      updateItemById(prev, tempItem.id, (item: ListItemType) => ({
-        ...item,
-        report: (tempItem.report as ListItemType["report"]) ?? item.report,
-        isPresent: true,
-      }))
-    );
+  function handleSaveReportChanges() {
+    queryClient.setQueryData<Rollcall[]>(["classReport", lessonId, classId], (prev) => {
+      if (!prev) return prev;
 
-    setIsPristine(false);
+      return updateItemById(prev, tempItem._id, (item) => ({
+        ...item,
+        score: (tempItem.score) ?? item.score,
+        isPresent: true,
+      }));
+    });
 
     bottomSheetRef.current?.close();
-  }, [tempItem]);
+  };
 
   function saveReport() {
     if (lessonInfo?.isFinished) return;
@@ -273,7 +194,15 @@ export default function ClassReport({
       },
       {
         text: "Sim",
-        onPress: () => mutate(classReport),
+        onPress: () => {
+          if (!data) return Toast.show({
+            type: "error",
+            text1: "Erro",
+            text2: "Nenhum dado para salvar.",
+          });
+
+          mutate(data);
+        },
       },
     ]);
   }
@@ -311,24 +240,24 @@ export default function ClassReport({
             {isError && (
               <ThemedView flex={1} justifyContent="center" alignItems="center">
                 <ThemedText>
-                  Erro ao carregar a chamada: {error.message}
+                  Erro ao carregar a chamada: {error?.message}
                 </ThemedText>
               </ThemedView>
             )}
             {data && (
               <FlatList
-                data={classReport}
+                data={data}
                 scrollEnabled={false}
                 contentContainerStyle={{
                   gap: theme.spacing.s,
                   marginTop: theme.spacing.s,
                 }}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={(item) => item._id.toString()}
                 renderItem={({ item }) => (
                   <TextButton
                     variant="outline"
                     disabled={!isEditable}
-                    onClick={() => handleOpenBottomSheet(item.id)}
+                    onClick={() => handleOpenBottomSheet(item)}
                   >
                     <ThemedView
                       flex={1}
@@ -339,7 +268,7 @@ export default function ClassReport({
                       alignItems="center"
                     >
                       <ThemedText fontSize={16} fontWeight="bold" ml="s">
-                        {item.name}
+                        {item.register.name}
                       </ThemedText>
                       {item.isPresent && (
                         <Ionicons
@@ -352,7 +281,7 @@ export default function ClassReport({
                     </ThemedView>
                   </TextButton>
                 )}
-                ListFooterComponent={(): React.ReactNode =>
+                ListFooterComponent={() =>
                   lessonInfo?.isFinished === undefined && (
                     <ThemedView
                       flexDirection="row"
@@ -375,10 +304,7 @@ export default function ClassReport({
                       <TextButton
                         variant="outline"
                         disabled={!isEditable}
-                        onClick={() => {
-                          setReport(initialList);
-                          setIsPristine(true);
-                        }}
+                        onClick={refetch}
                       >
                         <ThemedText
                           fontSize={18}
@@ -392,6 +318,26 @@ export default function ClassReport({
                     </ThemedView>
                   )
                 }
+                ListEmptyComponent={
+                  <ThemedView
+                    flex={1}
+                    justifyContent="center"
+                    alignItems="center"
+                    padding="m"
+                  >
+                    <ThemedText>Nenhum aluno encontrado.</ThemedText>
+                  </ThemedView>
+                }
+                refreshControl={
+                  <RefreshControl refreshing={isLoading} onRefresh={
+                    () => data.length === 0
+                      ? refetch()
+                      : Toast.show({
+                          type: "info",
+                          text1: "Para recarregar a lista, pressione o botão de resetar.",
+                      })
+                  } />
+                }
               />
             )}
           </CustomCard.Root>
@@ -404,7 +350,7 @@ export default function ClassReport({
           onDismiss={onSheetDismiss}
           stackBehavior="replace"
         >
-          <CustomBottomModal.Content title={tempItem.name ?? ""}>
+          <CustomBottomModal.Content title={tempItem.register?.name ?? ""}>
             <ThemedView g="s" mb="m">
               {isLoadingScores && (
                 <ActivityIndicator size="small" color={theme.colors.primary} />
@@ -441,15 +387,27 @@ export default function ClassReport({
                         item.title.charAt(0).toUpperCase() + item.title.slice(1)
                       }
                       value={
-                        (tempItem.report?.find((r) => r.id === item._id)
+                        (tempItem.score?.find((r) => r.scoreInfo === item._id)
                           ?.value as boolean) ?? false
                       }
                       onClick={() => {
+                        const scoreItemIndex = tempItem.score?.findIndex(
+                          (s) => s.scoreInfo === item._id
+                        );
                         const newState = { ...tempItem };
-                        newState.report!.find((r) => r.id === item._id)!.value =
-                          !newState.report!.find((r) => r.id === item._id)!
-                            .value;
-                        setTempItem(newState);
+
+                        if (
+                          scoreItemIndex !== undefined &&
+                          scoreItemIndex >= 0
+                        ) {
+                          newState.score![scoreItemIndex].value = !newState
+                            .score![scoreItemIndex].value;
+                        } else {
+                          newState.score = [
+                            ...(newState.score ?? []),
+                            { scoreInfo: item._id, kind: "BooleanScore", value: true },
+                          ];
+                        }
                       }}
                     />
                   );
@@ -464,14 +422,26 @@ export default function ClassReport({
                         item.title.charAt(0).toUpperCase() + item.title.slice(1)
                       }
                       value={
-                        (tempItem.report?.find((r) => r.id === item._id)
+                        (tempItem.score?.find((r) => r.scoreInfo === item._id)
                           ?.value as number) ?? 0
                       }
                       onChange={(value) => {
+                        const scoreItemIndex = tempItem.score?.findIndex(
+                          (s) => s.scoreInfo === item._id
+                        );
                         const newState = { ...tempItem };
-                        newState.report!.find((r) => r.id === item._id)!.value =
-                          value ?? 0;
-                        setTempItem(newState);
+
+                        if (
+                          scoreItemIndex !== undefined &&
+                          scoreItemIndex >= 0
+                        ) {
+                          newState.score![scoreItemIndex].value = value ?? 0;
+                        } else {
+                          newState.score = [
+                            ...(newState.score ?? []),
+                            { scoreInfo: item._id, kind: "NumberScore", value: value ?? 0 },
+                          ];
+                        }
                       }}
                     />
                   );

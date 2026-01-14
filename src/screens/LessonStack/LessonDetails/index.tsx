@@ -18,8 +18,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ListItemType } from "./type";
+import { useRef, useState } from "react";
 import { CustomCard } from "@components/CustomCard";
 import TextButton from "@components/TextButton";
 import {
@@ -30,19 +29,18 @@ import { CustomBottomModal } from "@components/CustomBottomModal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@providers/AuthProvider";
 import config from "config";
-import { RegisterFromApi } from "@screens/RegisterStack/RegisterScreen/type";
 import { Lesson } from "../LessonScreen/type";
 import ScoreOption from "@components/ScoreOption";
 import { Score } from "@screens/ScoreOptions/type";
 import { Rollcall } from "../type";
 import { _Class } from "@screens/ClassStack/ClassScreen/type";
-import structuredClone from "@ungap/structured-clone";
 import { updateItemById } from "utils/immutability";
 import { printToFileAsync } from "expo-print";
 import { shareAsync } from "expo-sharing";
 import { readAsStringAsync } from "expo-file-system";
 import { Asset } from "expo-asset";
 import diaryReport from "@assets/diaryReport.html";
+import Toast from "react-native-toast-message";
 
 export default function LessonDetails({
   route,
@@ -55,6 +53,7 @@ export default function LessonDetails({
   const [isRenderingReport, setIsRenderingReport] = useState(false);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const { token } = useAuth().authState;
+  const [tempItem, setTempItem] = useState<Partial<Rollcall>>({});
 
   const {
     data: lessonInfo,
@@ -78,9 +77,14 @@ export default function LessonDetails({
 
       return resJson;
     },
+    enabled: !!lessonId && !!token,
   });
 
-  const { data: scoreInfo } = useQuery({
+  const {
+    data: scoreInfo,
+    isLoading: isLoadingScores,
+    isError: isErrorScores,
+  } = useQuery({
     queryKey: ["scores"],
     queryFn: async (): Promise<Score[]> => {
       const response = await fetch(config.apiBaseUrl + "/scores", {
@@ -97,35 +101,14 @@ export default function LessonDetails({
 
       return resJson;
     },
+    enabled: !!token,
   });
 
-  const { data, isPending, isError, error } = useQuery({
-    queryKey: ["teacherRegister"],
-    queryFn: async (): Promise<RegisterFromApi[]> => {
-      const response = await fetch(
-        config.apiBaseUrl + "/registers?hasUser=true",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const resJson = await response.json();
-      if (!response.ok)
-        throw new Error(resJson.message, { cause: resJson.error });
-
-      return resJson;
-    },
-  });
-
-  const { data: teacherRollcalls } = useQuery({
+  const { data, isLoading, isError, error, refetch: refetchRollcalls } = useQuery({
     queryKey: ["teacherRollcalls", lessonId],
     queryFn: async (): Promise<Rollcall[]> => {
       const response = await fetch(
-        config.apiBaseUrl + `/rollcalls?lesson=${lessonId}&register=hasUser`,
+        config.apiBaseUrl + `/rollcalls?lesson=${lessonId}&hasUser=true`,
         {
           method: "GET",
           headers: {
@@ -141,10 +124,11 @@ export default function LessonDetails({
 
       return resJson;
     },
+    enabled: !!lessonId && !!token,
   });
 
   const { mutate } = useMutation({
-    mutationFn: async (data: ListItemType[]) => {
+    mutationFn: async (data: Rollcall[]) => {
       const res = await fetch(config.apiBaseUrl + "/report", {
         method: "POST",
         headers: {
@@ -153,12 +137,7 @@ export default function LessonDetails({
         },
         body: JSON.stringify({
           list: data,
-          lesson: {
-            id: lessonId,
-            number: lessonInfo?.number,
-            date: lessonInfo?.date,
-            isFinished: true,
-          },
+          isFinished: true,
         }),
       });
 
@@ -179,75 +158,13 @@ export default function LessonDetails({
     },
     onError: (error) => {
       console.log(error.message, error.cause);
+      Toast.show({
+        type: "error",
+        text1: "Erro",
+        text2: "Não foi possível salvar o relatório. Tente novamente mais tarde.",
+      });
     },
   });
-
-  const report = useMemo(() => {
-    if (!scoreInfo) return undefined;
-
-    return scoreInfo.reduce((acc: ListItemType["report"], cur) => {
-      if (cur.type === "NumberScore") {
-        acc!.push({
-          id: cur._id!,
-          value: 0,
-        });
-      } else {
-        acc!.push({
-          id: cur._id!,
-          value: false,
-        });
-      }
-
-      return acc;
-    }, []);
-  }, [scoreInfo]);
-
-  function generateList(): ListItemType[] {
-    if (isPending || isError || !report || !teacherRollcalls) return [];
-    const list: ListItemType[] = [];
-
-    data.forEach((item) => {
-      if (!lessonInfo?.rollcalls?.find((r) => r.classId === item.class.id))
-        return;
-
-      list.push({
-        id: item._id,
-        name: item.name,
-        isTeacher: typeof item.user === "string",
-        class: item.class.id,
-        isPresent: teacherRollcalls
-          ? teacherRollcalls.find((r) => r.register.id === item._id)
-              ?.isPresent ?? false
-          : false,
-        report: structuredClone(report),
-      });
-    });
-
-    return list;
-  }
-
-  const generatedTeachersList = useMemo(
-    () => generateList(),
-    [isPending, isError, report, teacherRollcalls, lessonInfo, data]
-  );
-
-  const [teachersList, setTeachersList] = useState<ListItemType[]>(
-    generatedTeachersList
-  );
-  const [tempItem, setTempItem] = useState<Partial<ListItemType>>({});
-  const [isPristine, setIsPristine] = useState(true);
-
-  useEffect(() => {
-    if (!isPristine) return;
-
-    if (
-      generatedTeachersList.length === teachersList.length &&
-      teachersList.every((t, i) => t.id === generatedTeachersList[i].id)
-    )
-      return;
-
-    setTeachersList(generatedTeachersList);
-  }, [generatedTeachersList, isPristine]);
 
   const {
     data: classes,
@@ -270,42 +187,31 @@ export default function LessonDetails({
 
       return await response.json();
     },
+    enabled: !!lessonId && !!token,
   });
 
-  const handleOpenBottomSheet = useCallback(
-    (id: string) => {
-      const item = teachersList.find((item) => item.id === id);
-      if (item === undefined)
-        return Alert.alert(
-          "Error",
-          "Item não encontrado por conta de divergência de dados."
-        );
-
-      setTempItem(item);
-      bottomSheetRef.current?.present();
-    },
-    [teachersList]
-  );
+  function handleOpenBottomSheet(item: Rollcall) {
+    setTempItem(item);
+    bottomSheetRef.current?.present();
+  };
 
   function onSheetDismiss() {
     setTempItem({});
   }
 
-  const handleSaveReportChanges = useCallback(() => {
-    setTeachersList((prev) => {
-      const next = updateItemById(prev, tempItem.id, (item: ListItemType) => ({
+  function handleSaveReportChanges() {
+    queryClient.setQueryData<Rollcall[]>(["teacherRollcalls", lessonId], (prev) => {
+      if (!prev) return prev;
+
+      return updateItemById(prev, tempItem._id, (item) => ({
         ...item,
-        report: (tempItem.report as ListItemType["report"]) ?? item.report,
+        score: (tempItem.score) ?? item.score,
         isPresent: true,
       }));
-
-      return next;
     });
 
-    setIsPristine(false);
-
     bottomSheetRef.current?.close();
-  }, [tempItem]);
+  };
 
   function isClassReportDone(classId: string): boolean {
     return (
@@ -331,7 +237,13 @@ export default function LessonDetails({
       {
         text: "Sim",
         onPress: () => {
-          mutate(teachersList);
+          if (!data) return Toast.show({
+            type: "error",
+            text1: "Erro",
+            text2: "Nenhum dado para salvar.",
+          });
+
+          mutate(data);
         },
       },
     ]);
@@ -390,26 +302,30 @@ export default function LessonDetails({
         scoreInfo?.map((score) => `<th>${score.title}</th>`).join("") ?? ""
       );
       // Teacher Cells Hydration
-      const teacherListLength = teachersList.length;
-      const teachersPresent = teachersList.reduce(
+      const teacherListLength = data?.length;
+      const teachersPresent = data?.reduce(
         (acc, t) => acc + (t.isPresent ? 1 : 0),
         0
       );
       html = html.replace(
         "{{PROF_MATRICULADOS}}",
-        teacherListLength.toString()
+        teacherListLength?.toString() ?? "-"
       );
-      html = html.replace("{{PROF_PRESENTES}}", teachersPresent.toString());
+      html = html.replace("{{PROF_PRESENTES}}", teachersPresent?.toString() ?? "-");
 
-      const profFreq = teacherListLength === 0 ? "0.00%" : ((teachersPresent / teacherListLength) * 100).toFixed(2).concat("%");
+      const profFreq = teacherListLength === 0 ||
+        teacherListLength === undefined ||
+        teachersPresent === undefined
+          ? "-"
+          : ((teachersPresent / teacherListLength) * 100).toFixed(2).concat("%");
       
       html = html.replace("{{PROF_FREQ}}", profFreq);
       html = html.replace(
         "{{PROF_SCORES}}",
         scoreInfo
           ?.map((score) => {
-            const total = teachersList.reduce((acc, t) => {
-              const tr = t.report?.find((tr) => tr.id === score._id);
+            const total = data?.reduce((acc, t) => {
+              const tr = t.score?.find((tr) => tr.scoreInfo === score._id);
 
               if (score.type === "BooleanScore")
                 return acc + (tr?.value ? 1 : 0);
@@ -424,7 +340,7 @@ export default function LessonDetails({
           })
           .join("") ?? ""
       );
-      //html.replace("{{PROF_OFERTA}}", "-");
+      html = html.replace("{{PROF_OFERTA}}", "-");
       // Classes Cells Hydration
       html = html.replace(
         "{{LINHAS_DAS_CLASSES}}",
@@ -455,7 +371,7 @@ export default function LessonDetails({
                 })
                 .join("") ?? "";
 
-            const classFreq = studentsNumber === 0 ? "0.00%" : ((studentsPresent / studentsNumber) * 100).toFixed(2).concat("%");
+            const classFreq = studentsNumber === 0 ? "-" : ((studentsPresent / studentsNumber) * 100).toFixed(2).concat("%");
 
             return (
               "<tr>" +
@@ -492,6 +408,11 @@ export default function LessonDetails({
       console.log(error);
       return Alert.alert("Erro", "Não foi possível gerar o relatório.");
     }
+  }
+
+  function onRefreshReport() {
+    refetch();
+    refetchRollcalls();
   }
 
   return (
@@ -537,7 +458,7 @@ export default function LessonDetails({
             nestedScrollEnabled
             contentContainerStyle={{ gap: 10, padding: theme.spacing.s }}
             refreshControl={
-              <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+              <RefreshControl refreshing={isRefetching} onRefresh={onRefreshReport} />
             }
           >
             <CustomCard.Root borderRadius={20}>
@@ -656,7 +577,7 @@ export default function LessonDetails({
               <CustomCard.Detail>
                 Clique sobre os nomes para confirmar a presença.
               </CustomCard.Detail>
-              {isPending && (
+              {isLoading && (
                 <ThemedView
                   flex={1}
                   justifyContent="center"
@@ -676,20 +597,20 @@ export default function LessonDetails({
                   </ThemedText>
                 </ThemedView>
               )}
-              {teachersList && (
+              {data && (
                 <FlatList
-                  data={teachersList}
+                  data={data}
                   scrollEnabled={false}
                   contentContainerStyle={{
                     gap: theme.spacing.s,
                     marginTop: theme.spacing.s,
                   }}
-                  keyExtractor={(item) => item.id.toString()}
+                  keyExtractor={(item) => item._id.toString()}
                   renderItem={({ item }) => (
                     <TextButton
                       variant="outline"
                       disabled={!isEditable}
-                      onClick={() => handleOpenBottomSheet(item.id)}
+                      onClick={() => handleOpenBottomSheet(item)}
                     >
                       <ThemedView
                         flex={1}
@@ -700,7 +621,7 @@ export default function LessonDetails({
                         alignItems="center"
                       >
                         <ThemedText fontSize={16} fontWeight="bold" ml="s">
-                          {item.name}
+                          {item.register.name}
                         </ThemedText>
                         {item.isPresent && (
                           <Ionicons
@@ -713,6 +634,16 @@ export default function LessonDetails({
                       </ThemedView>
                     </TextButton>
                   )}
+                  ListEmptyComponent={
+                    <ThemedView
+                      flex={1}
+                      justifyContent="center"
+                      alignItems="center"
+                      padding="m"
+                    >
+                      <ThemedText>Nenhum professor encontrado.</ThemedText>
+                    </ThemedView>
+                  }
                 />
               )}
             </CustomCard.Root>
@@ -722,65 +653,102 @@ export default function LessonDetails({
 
       <BottomSheetModalProvider>
         <CustomBottomModal.Root ref={bottomSheetRef} onDismiss={onSheetDismiss}>
-          <CustomBottomModal.Content title={tempItem.name ?? ""}>
+          <CustomBottomModal.Content title={tempItem.register?.name ?? ""}>
             <ThemedView g="s" mb="m">
-              {scoreInfo === undefined || scoreInfo.length === 0 ? (
-                <ThemedView justifyContent="center" alignItems="center">
-                  <ThemedText color="gray">
-                    Nenhum tipo de pontuação cadastrada.
-                  </ThemedText>
-                </ThemedView>
-              ) : (
-                scoreInfo.map((item) => {
-                  if (item.type === "BooleanScore")
-                    return (
-                      <ScoreOption
-                        key={item._id}
-                        type={item.type}
-                        icon="star"
-                        title={
-                          item.title.charAt(0).toUpperCase() +
-                          item.title.slice(1)
-                        }
-                        value={
-                          (tempItem.report?.find((r) => r.id === item._id)
-                            ?.value as boolean) ?? false
-                        }
-                        onClick={() => {
-                          const newState = structuredClone(tempItem) as Partial<ListItemType>;
-                          newState.report = newState.report?.map((r) =>
-                            r.id === item._id ? { ...r, value: !r.value } : r
-                          );
-                          setTempItem(newState);
-                        }}
-                      />
-                    );
-
-                  if (item.type === "NumberScore")
-                    return (
-                      <ScoreOption
-                        key={item._id}
-                        type={item.type}
-                        icon="star"
-                        title={
-                          item.title.charAt(0).toUpperCase() +
-                          item.title.slice(1)
-                        }
-                        value={
-                          (tempItem.report?.find((r) => r.id === item._id)
-                            ?.value as number) ?? 0
-                        }
-                        onChange={(value) => {
-                          const newState = structuredClone(tempItem) as Partial<ListItemType>;
-                          newState.report = newState.report?.map((r) =>
-                            r.id === item._id ? { ...r, value: value ?? 0 } : r
-                          );
-                          setTempItem(newState);
-                        }}
-                      />
-                    );
-                })
+              {isLoadingScores && (
+                <ActivityIndicator size="small" color={theme.colors.primary} />
               )}
+              {isErrorScores && (
+                <ThemedText>
+                  Erro ao carregar as informações de pontuação.
+                </ThemedText>
+              )}
+              {!isLoadingScores &&
+                !isErrorScores &&
+                scoreInfo &&
+                scoreInfo.length > 0 && (
+                  <ThemedText textAlign="center">
+                    Clique sobre os ícones para editar as informações.
+                  </ThemedText>
+                )}
+              {!isLoadingScores &&
+                !isErrorScores &&
+                scoreInfo &&
+                scoreInfo.length === 0 && (
+                  <ThemedText textAlign="center">
+                    Não há informações de pontuação registradas.
+                  </ThemedText>
+                )}
+              {scoreInfo?.map((item) => {
+                if (item.type === "BooleanScore")
+                  return (
+                    <ScoreOption
+                      key={item._id}
+                      type={item.type}
+                      icon="star"
+                      title={
+                        item.title.charAt(0).toUpperCase() + item.title.slice(1)
+                      }
+                      value={
+                        (tempItem.score?.find((r) => r.scoreInfo === item._id)
+                          ?.value as boolean) ?? false
+                      }
+                      onClick={() => {
+                        const scoreItemIndex = tempItem.score?.findIndex(
+                          (s) => s.scoreInfo === item._id
+                        );
+                        const newState = { ...tempItem };
+
+                        if (
+                          scoreItemIndex !== undefined &&
+                          scoreItemIndex >= 0
+                        ) {
+                          newState.score![scoreItemIndex].value = !newState
+                            .score![scoreItemIndex].value;
+                        } else {
+                          newState.score = [
+                            ...(newState.score ?? []),
+                            { scoreInfo: item._id, kind: "BooleanScore", value: true },
+                          ];
+                        }
+                      }}
+                    />
+                  );
+
+                if (item.type === "NumberScore")
+                  return (
+                    <ScoreOption
+                      key={item._id}
+                      type={item.type}
+                      icon="star"
+                      title={
+                        item.title.charAt(0).toUpperCase() + item.title.slice(1)
+                      }
+                      value={
+                        (tempItem.score?.find((r) => r.scoreInfo === item._id)
+                          ?.value as number) ?? 0
+                      }
+                      onChange={(value) => {
+                        const scoreItemIndex = tempItem.score?.findIndex(
+                          (s) => s.scoreInfo === item._id
+                        );
+                        const newState = { ...tempItem };
+
+                        if (
+                          scoreItemIndex !== undefined &&
+                          scoreItemIndex >= 0
+                        ) {
+                          newState.score![scoreItemIndex].value = value ?? 0;
+                        } else {
+                          newState.score = [
+                            ...(newState.score ?? []),
+                            { scoreInfo: item._id, kind: "NumberScore", value: value ?? 0 },
+                          ];
+                        }
+                      }}
+                    />
+                  );
+              }) ?? <ThemedText>Sem informações disponíveis.</ThemedText>}
             </ThemedView>
             {scoreInfo !== undefined && scoreInfo.length > 0 && (
               <CustomBottomModal.Action
