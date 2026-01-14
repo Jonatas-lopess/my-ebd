@@ -24,7 +24,7 @@ export default function AdminAccess() {
   const { data, status, isRefetching, refetch } = useQuery({
     queryKey: ["admins"],
     queryFn: async (): Promise<User[]> => {
-      const res = await fetch(config.apiBaseUrl + `/admins`, {
+      const res = await fetch(config.apiBaseUrl + `/user?role=admin`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -41,7 +41,7 @@ export default function AdminAccess() {
 
   const { mutate: deleteAdmin } = useMutation({
     mutationFn: async (adminId: string) => {
-      const res = await fetch(config.apiBaseUrl + `/admins/${adminId}`, {
+      const res = await fetch(config.apiBaseUrl + `/user/${adminId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -81,7 +81,7 @@ export default function AdminAccess() {
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["admins"] }),
     onError(error, _, context) {
-      console.error("Error deleting admin:", error.cause);
+      console.log("Error deleting admin:", error.cause);
 
       queryClient.setQueryData<User[]>(["admins"], context?.previousData);
       Toast.show({
