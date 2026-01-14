@@ -74,7 +74,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
       return setAuth({
         token: token,
-        user: data.user,
+        user: data,
         isLoading: false,
       });
     }
@@ -99,7 +99,10 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       });
     } catch (error) {
       console.error(error);
-      return Alert.alert("Erro", "Não foi possivel concluir cadastro. Tente novamente mais tarde.");
+      return Alert.alert(
+        "Erro",
+        "Não foi possivel concluir cadastro. Tente novamente mais tarde."
+      );
     }
   }
 
@@ -107,7 +110,8 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     try {
       const { data, status } = await AuthService.logIn(email, password);
 
-      if (status === 422) return Alert.alert("Erro", "Email ou senha incorretos.");
+      if (status === 422)
+        return Alert.alert("Erro", "Email ou senha incorretos.");
 
       if (status !== 200) {
         throw new Error(`${status} - ${data.message}`, { cause: data.error });
