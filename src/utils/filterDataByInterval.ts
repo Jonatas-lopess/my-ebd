@@ -1,5 +1,4 @@
-import { IntervalCustomObj, IntervalMonthlyObj, IntervalObj, IntervalQuarterlyObj } from "@components/IntervalControl";
-import { Alert } from "react-native";
+import { IntervalCustomObj, IntervalLessonsObj, IntervalMonthlyObj, IntervalObj, IntervalQuarterlyObj } from "@components/IntervalControl";
 
 export default function fn<T>(data: Array<T>, interval?: IntervalObj): Array<T> {
     if (!interval || !interval.object) return data;
@@ -25,11 +24,9 @@ export default function fn<T>(data: Array<T>, interval?: IntervalObj): Array<T> 
     ]); 
 
     if (interval.type === "Últimas X aulas") {
-      Alert.alert(
-        "Funcionalidade em construção! Você pode escolher outros intervalos enquanto isso..."
-      );
+      const lastXLessons = (interval.object as IntervalLessonsObj).lessonsCount;
 
-      return data;
+      return data.slice(-lastXLessons);
     }
 
     return data.filter((item) => {
