@@ -191,7 +191,7 @@ export default function LessonScreen() {
                   }}
                   onLongPress={() =>
                     (userRole === "admin" || userRole === "owner") &&
-                    Alert.alert("log")
+                    Alert.alert("Em Breve", "Funcionalidade em desenvolvimento...")
                   }
                 >
                   <ThemedView flexDirection="row" alignItems="center">

@@ -30,7 +30,7 @@ export default function LoginScreen() {
     Keyboard.dismiss();
 
     if (!loginForm.email || !loginForm.password) {
-      return Alert.alert("Please fill in all fields.");
+      return Alert.alert("Erro", "Por favor, preencha todos os campos.");
     }
 
     setLoginForm({ ...loginForm, isLoading: true });

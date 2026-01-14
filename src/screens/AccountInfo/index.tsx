@@ -8,6 +8,7 @@ import ThemedText from "@components/ThemedText";
 import { Alert, TouchableOpacity } from "react-native";
 import AuthService from "@services/AuthService";
 import FocusAwareStatusBar from "@components/FocusAwareStatusBar";
+import Toast from "react-native-toast-message";
 
 export default function AccountInfo() {
   const navigation = useNavigation();
@@ -20,7 +21,11 @@ export default function AccountInfo() {
     const response = await AuthService.deleteAccount(token);
 
     if (response.status === 200) {
-      Alert.alert("Conta excluída com sucesso.");
+      Toast.show({
+        type: "success",
+        text1: "Conta excluída com sucesso.",
+      });
+      
       onLogOut();
     } else {
       console.log("Failed to delete account:", response.data);
