@@ -353,6 +353,11 @@ export default function HistoryScreen({
                   </ThemedText>
                 </ThemedView>
               )}
+              ListEmptyComponent={
+                <ThemedView flex={1} alignItems="center" mt="m">
+                  <ThemedText textAlign="center">Nenhum registro encontrado.</ThemedText>
+                </ThemedView>
+              }
               refreshControl={
                 <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
               }
