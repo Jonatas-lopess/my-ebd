@@ -40,7 +40,7 @@ export default function RegisterScreen() {
   const registerApiKey = user?.role === "teacher" ? ["register", false] : ["register"];
   const hasUser = user?.role === "teacher" ? false : undefined;
 
-  const { data, error, isError, isPending, isLoading, isRefetching, refetch } = useQuery({
+  const { data, error, isError, isPending, isRefetching, refetch } = useQuery({
     queryKey: registerApiKey,
     queryFn: () => getRegisters({
       hasUser,
@@ -146,7 +146,7 @@ export default function RegisterScreen() {
           }}
         />
 
-        {isLoading && (
+        {isPending && (
           <ThemedView flex={1} justifyContent="center" alignItems="center">
             <ThemedText>Carregando...</ThemedText>
           </ThemedView>
@@ -223,6 +223,13 @@ export default function RegisterScreen() {
                   <ThemedText>Adicionando o novo aluno...</ThemedText>
                 </ThemedView>
               )
+            }
+            ListEmptyComponent={
+              <ThemedView flex={1} alignItems="center" mt="m">
+                <ThemedText textAlign="center" mt="m">
+                  Nenhum cadastro encontrado.
+                </ThemedText>
+              </ThemedView>
             }
             keyExtractor={(item, index) => item._id ?? index.toString()}
             style={{
